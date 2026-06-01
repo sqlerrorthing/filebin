@@ -1,0 +1,33 @@
+syntax = "proto2";
+
+package folder.v1;
+
+service FolderService {
+  rpc CreateFolder() returns (OwnedFolder);
+}
+
+message FolderId {
+  required string value = 1;
+}
+
+message FolderToken {
+  required string value = 2;
+}
+
+message FileView {
+  required string mime = 1;
+  required string name = 2;
+  required sint64 size = 3;
+}
+
+message Folder {
+  required FolderId id = 1;
+  required google.type.DateTime created = 3;
+  optional google.type.Duration alive = 4;
+  repeated FileView files = 2;
+}
+
+message OwnedFolder {
+  required Folder folder = 1;
+  required FolderToken token = 2;
+}

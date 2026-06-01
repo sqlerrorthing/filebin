@@ -1,0 +1,23 @@
+syntax = "proto2";
+
+import "folder.proto";
+
+package folder.v1;
+
+service FilesService {
+  rpc InitiateUpload(InitiateUploadRequest) returns (InitiateUploadResponse);
+}
+
+message FileId {
+  required string value = 1;
+}
+
+message InitiateUploadResponse {
+  required FileId file = 1;
+  required string upload_url = 2;
+}
+
+message InitiateUploadRequest {
+  required FileView view = 1;
+  required FolderToken token = 2;
+}
