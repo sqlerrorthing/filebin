@@ -1,15 +1,20 @@
 syntax = "proto2";
 
+import "google/protobuf/empty.proto";
+import "google/type/datetime.proto";
+import "google/protobuf/duration.proto";
+
 package folder.v1;
 
 service FolderService {
-  rpc CreateFolder() returns (OwnedFolder);
+  rpc CreateFolder(google.protobuf.Empty) returns (OwnedFolder);
 }
 
 message FolderId {
   required string value = 1;
 }
 
+// A token to edit files in the folder
 message FolderToken {
   required string value = 2;
 }
@@ -23,7 +28,7 @@ message FileView {
 message Folder {
   required FolderId id = 1;
   required google.type.DateTime created = 3;
-  optional google.type.Duration alive = 4;
+  optional google.protobuf.Duration alive = 4;
   repeated FileView files = 2;
 }
 

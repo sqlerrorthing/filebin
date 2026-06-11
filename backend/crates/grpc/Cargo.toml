@@ -4,3 +4,8 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
+tonic = "0.14.6"
+
+[build-dependencies]
+tonic-prost-build = "0.14.6"
+glob = "0.3.3"
