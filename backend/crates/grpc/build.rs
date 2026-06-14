@@ -1,5 +1,5 @@
 use glob::glob;
-pub use tonic_prost_build;
+use tonic_prost_build;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let protos: Vec<String> = glob("../../../proto/proto/**/*.proto")?

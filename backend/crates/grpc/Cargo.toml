@@ -5,6 +5,9 @@ edition.workspace = true
 
 [dependencies]
 tonic = "0.14.6"
+tracing.workspace = true
+derive-new.workspace = true
+async-trait.workspace = true
 
 [build-dependencies]
 tonic-prost-build = "0.14.6"
