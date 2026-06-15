@@ -16,7 +16,7 @@ CREATE TABLE files
     encrypted_file_hash VARCHAR(64)                           NOT NULL,
     encrypted_file_size BIGINT                                NOT NULL,
     created_at          TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
-)
+);
 
 CREATE INDEX idx_folders_long_id ON folders (long_id);
 CREATE INDEX idx_files_long_id ON files (long_id);

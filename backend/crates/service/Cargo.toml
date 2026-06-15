@@ -4,5 +4,5 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
-service_macro = { path = "../service_macro" }
+service_macro.path = "../service_macro"
 thiserror.workspace = true

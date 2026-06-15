@@ -1,12 +1,11 @@
 use crate::args::Args;
 use proc_macro2::TokenStream;
-use quote::quote;
-use syn::{parse_quote, Attribute, ItemTrait, Meta, ReturnType, Token, TraitItem, TraitItemFn, Type, TypeParamBound};
+use syn::{parse_quote, Attribute, ItemTrait, Meta, ReturnType, Token, TraitBoundModifier, TraitItem, TraitItemFn, Type, TypeParamBound};
 use syn::punctuated::Punctuated;
 
 pub fn expand(input: &mut ItemTrait, args: Args) {
     modify_associated_type(input, args);
-
+    expand_supertraits(args, true, &mut input.supertraits);
     for item in &mut input.items {
         if let TraitItem::Fn(method) = item {
             process_method(method, args)
@@ -35,14 +34,22 @@ fn wrap_ret_with_async_impl(is_async: &mut Option<Token![async]>, current_output
         ::core::future::Future<Output = #current_output>
     });
 
+    expand_supertraits(args, false, &mut future_bounds);
+    *current_output = parse_quote! { impl #future_bounds };
+}
+
+fn expand_supertraits<P: Default>(args: Args, debug: bool, bounds: &mut Punctuated<TypeParamBound, P>) {
     if args.require_send {
-        future_bounds.push(syn::parse_quote!(Send));
-    }
-    if args.require_sync {
-        future_bounds.push(syn::parse_quote!(Sync));
+        bounds.push(syn::parse_quote!(Send));
     }
 
-    *current_output = parse_quote! { impl #future_bounds };
+    if args.require_sync {
+        bounds.push(syn::parse_quote!(Sync));
+    }
+
+    if args.require_debug && debug {
+        bounds.push(syn::parse_quote!(std::fmt::Debug));
+    }
 }
 
 fn wrap_ret_with_error(attrs: &mut Vec<Attribute>, current_output: &mut Type) {
@@ -51,11 +58,11 @@ fn wrap_ret_with_error(attrs: &mut Vec<Attribute>, current_output: &mut Type) {
     if let Some(maybe_err_wrapper) = require_attr_info {
         if let Some(custom_error) = maybe_err_wrapper {
             *current_output = syn::parse_quote! {
-                core::result::Result<#current_output, service::error::ServiceError<#custom_error, Self::Error>>
+                ::core::result::Result<#current_output, service::error::ServiceError<#custom_error, Self::Error>>
             };
         } else {
             *current_output = syn::parse_quote! {
-                core::result::Result<#current_output, Self::Error>
+                ::core::result::Result<#current_output, Self::Error>
             };
         }
     }
@@ -79,15 +86,10 @@ fn extract_and_remove_result_attr(
     }
 }
 
-fn modify_associated_type(input: &mut ItemTrait, args: Args) {
+fn modify_associated_type(input: &mut ItemTrait, mut args: Args) {
     for item in &mut input.items {
         if let TraitItem::Type(assoc_type) = item {
-            if args.require_send {
-                assoc_type.bounds.push(syn::parse_quote!(Send));
-            }
-            if args.require_sync {
-                assoc_type.bounds.push(syn::parse_quote!(Sync));
-            }
+            expand_supertraits(args, true, &mut assoc_type.bounds);
         }
     }
 }

@@ -1,8 +1,9 @@
 [package]
-name = "folders"
+name = "auth"
 version.workspace = true
 edition.workspace = true
 
 [dependencies]
 service.path = "../service"
+jwt = "0.16.0"
 domain.path = "../domain"

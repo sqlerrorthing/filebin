@@ -1,8 +1,8 @@
 [package]
-name = "folders"
+name = "config"
 version.workspace = true
 edition.workspace = true
 
 [dependencies]
-service.path = "../service"
-domain.path = "../domain"
+serde.workspace = true
+pastey = "0.2.3"

@@ -21,3 +21,7 @@ derive-new = "0.7.0"
 async-trait = "0.1.89"
 thiserror = "2.0.18"
 tokio = { version = "1.52.3" }
+sea-orm = { version = "2.0.0-rc.40", features = ["sqlx-postgres", "runtime-tokio"] }
+chrono = "0.4.45"
+nutype = { version = "0.7.0", features = ["serde", "derive_unchecked"] }
+serde = { version = "1.0.228", features = ["derive"] }

@@ -6,14 +6,16 @@ use crate::kw;
 #[derive(Debug, Copy, Clone)]
 pub struct Args {
     pub require_send: bool,
-    pub require_sync: bool
+    pub require_sync: bool,
+    pub require_debug: bool
 }
 
 fn try_parse(input: ParseStream) -> Result<Args> {
     let mut require_send = true;
     let mut require_sync = true;
+    let mut require_debug = true;
     if input.is_empty() {
-        return Ok(Args { require_send, require_sync });
+        return Ok(Args { require_send, require_sync, require_debug });
     }
 
     while !input.is_empty() {
@@ -25,13 +27,16 @@ fn try_parse(input: ParseStream) -> Result<Args> {
             } else if input.peek(kw::Sync) {
                 input.parse::<kw::Sync>()?;
                 require_sync = false;
+            }else if input.peek(kw::Debug) {
+                input.parse::<kw::Debug>()?;
+                require_debug = false;
             }
         }
 
         if input.peek(Token![,]) { input.parse::<Token![,]>()?; }
     }
 
-    Ok(Args { require_send, require_sync })
+    Ok(Args { require_send, require_sync, require_debug })
 }
 
 impl Parse for Args {
