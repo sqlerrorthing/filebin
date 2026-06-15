@@ -49,29 +49,23 @@ impl<T, B, I> ResultExt<T, B, I> for Result<T, ServiceError<B, I>> {
         business: impl FnOnce(B) -> BN,
         internal: impl FnOnce(I) -> IN,
     ) -> Result<T, ServiceError<BN, IN>> {
-        self.map_err(|err| {
-            match err {
-                ServiceError::Business(b) => business!(business(b)),
-                ServiceError::Internal(i) => internal!(internal(i))
-            }
+        self.map_err(|err| match err {
+            ServiceError::Business(b) => business!(business(b)),
+            ServiceError::Internal(i) => internal!(internal(i)),
         })
     }
 
     fn map_business<BN>(self, business: impl FnOnce(B) -> BN) -> Result<T, ServiceError<BN, I>> {
-        self.map_err(|err| {
-            match err {
-                ServiceError::Business(b) => business!(business(b)),
-                ServiceError::Internal(i) => internal!(i)
-            }
+        self.map_err(|err| match err {
+            ServiceError::Business(b) => business!(business(b)),
+            ServiceError::Internal(i) => internal!(i),
         })
     }
 
     fn map_internal<IN>(self, internal: impl FnOnce(I) -> IN) -> Result<T, ServiceError<B, IN>> {
-        self.map_err(|err| {
-            match err {
-                ServiceError::Business(b) => business!(b),
-                ServiceError::Internal(i) => internal!(internal(i))
-            }
+        self.map_err(|err| match err {
+            ServiceError::Business(b) => business!(b),
+            ServiceError::Internal(i) => internal!(internal(i)),
         })
     }
 }

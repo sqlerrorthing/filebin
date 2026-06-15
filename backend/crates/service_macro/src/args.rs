@@ -1,5 +1,5 @@
 use proc_macro2::Span;
-use syn::{parenthesized, Attribute, Error, Signature, Token, Type, Result};
+use syn::{Error, Token, Result};
 use syn::parse::{Parse, ParseStream};
 use crate::kw;
 

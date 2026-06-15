@@ -51,11 +51,11 @@ fn wrap_ret_with_error(attrs: &mut Vec<Attribute>, current_output: &mut Type) {
     if let Some(maybe_err_wrapper) = require_attr_info {
         if let Some(custom_error) = maybe_err_wrapper {
             *current_output = syn::parse_quote! {
-                Result<#current_output, service::error::ServiceError<#custom_error, Self::Error>>
+                core::result::Result<#current_output, service::error::ServiceError<#custom_error, Self::Error>>
             };
         } else {
             *current_output = syn::parse_quote! {
-                Result<#current_output, Self::Error>
+                core::result::Result<#current_output, Self::Error>
             };
         }
     }
