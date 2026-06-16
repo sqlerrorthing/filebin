@@ -1,0 +1,10 @@
+# Use SERVER__CONFIG to use file instead env vars
+# Use SERVER__<VAR> with separator __ to override config variable
+
+jwt:
+  # use `openssl rand -hex 64` to generate a random 64 string for security.
+  secret:
+
+db:
+  # postgres db url
+  postgres-url:

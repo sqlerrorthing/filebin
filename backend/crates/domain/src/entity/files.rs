@@ -2,6 +2,8 @@
 
 use nutype::nutype;
 use sea_orm::entity::prelude::*;
+use tinystr::TinyStr16;
+use crate::macros::tiny_str_sea_orm_derive;
 
 #[nutype(
     derive(Debug, PartialEq, Eq, Copy, Clone, Serialize, Deserialize, Hash, Deref, Display, FromStr),
@@ -9,13 +11,20 @@ use sea_orm::entity::prelude::*;
 )]
 pub struct Id(i32);
 
+#[nutype(
+    derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize, Hash, Deref, Display, FromStr),
+)]
+pub struct PublicId(TinyStr16);
+
+tiny_str_sea_orm_derive!(PublicId(TinyStr16));
+
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel)]
 #[sea_orm(table_name = "files")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: Id,
     #[sea_orm(unique)]
-    pub long_id: String,
+    pub public_id: PublicId,
     pub folder_id: Option<super::folders::Id>,
     #[sea_orm(column_type = "Text")]
     pub encrypted_name: String,

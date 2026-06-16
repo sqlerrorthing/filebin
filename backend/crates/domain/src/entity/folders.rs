@@ -2,18 +2,42 @@
 
 use nutype::nutype;
 use sea_orm::entity::prelude::*;
+use tinystr::TinyStr8;
+use crate::macros::tiny_str_sea_orm_derive;
 
 #[nutype(
-    derive(Debug, PartialEq, Eq, Copy, Clone, Serialize, Deserialize, Hash, Deref, Display, FromStr),
+    derive(
+        Debug,
+        PartialEq,
+        Eq,
+        Copy,
+        Clone,
+        Serialize,
+        Deserialize,
+        Hash,
+        Deref,
+        Display,
+        FromStr
+    ),
     derive_unchecked(DeriveValueType)
 )]
 pub struct Id(i32);
 
-#[nutype(
-    derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize, Hash, Deref, Display, FromStr),
-    derive_unchecked(DeriveValueType)
-)]
-pub struct LongId(String);
+#[nutype(derive(
+    Debug,
+    PartialEq,
+    Eq,
+    Clone,
+    Serialize,
+    Deserialize,
+    Hash,
+    Deref,
+    Display,
+    FromStr
+))]
+pub struct PublicId(TinyStr8);
+
+tiny_str_sea_orm_derive!(PublicId(TinyStr8));
 
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel)]
 #[sea_orm(table_name = "folders")]
@@ -21,7 +45,10 @@ pub struct Model {
     #[sea_orm(primary_key)]
     pub id: Id,
     #[sea_orm(unique)]
-    pub long_id: LongId,
+    pub public_id: PublicId,
+    #[sea_orm(column_type = "Text")]
+    pub encrypted_name: String,
+    pub expired_at: Option<DateTimeWithTimeZone>,
     pub created_at: DateTimeWithTimeZone,
 }
 

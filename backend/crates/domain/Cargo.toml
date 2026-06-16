@@ -8,3 +8,4 @@ sea-orm.workspace = true
 chrono.workspace = true
 nutype.workspace = true
 serde.workspace = true
+tinystr.workspace = true

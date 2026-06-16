@@ -6,3 +6,4 @@ edition.workspace = true
 [dependencies]
 service_macro.path = "../service_macro"
 thiserror.workspace = true
+auto_impl.workspace = true

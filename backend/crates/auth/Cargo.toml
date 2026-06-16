@@ -5,5 +5,11 @@ edition.workspace = true
 
 [dependencies]
 service.path = "../service"
-jwt = "0.16.0"
+jsonwebtoken = "10.4.0"
 domain.path = "../domain"
+hmac = { workspace = true, features = ["zeroize"] }
+sha2 = { workspace = true, features = ["zeroize"] }
+secrecy.workspace = true
+chrono.workspace = true
+serde.workspace = true
+thiserror.workspace = true

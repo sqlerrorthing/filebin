@@ -6,3 +6,7 @@ edition.workspace = true
 [dependencies]
 service.path = "../service"
 domain.path = "../domain"
+sea-orm.workspace = true
+derive-new.workspace = true
+thiserror.workspace = true
+id_generator.path = "../id_generator"

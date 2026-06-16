@@ -8,6 +8,10 @@ tonic = "0.14.6"
 tracing.workspace = true
 derive-new.workspace = true
 async-trait.workspace = true
+pastey = "0.2.3"
+config_impl = { package = "config", version = "0.15.23", default-features = false, features = ["yaml", "serde_json"] }
+secrecy = { workspace = true, features = ["serde"] }
+serde.workspace = true
 
 [build-dependencies]
 tonic-prost-build = "0.14.6"
