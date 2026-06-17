@@ -12,6 +12,12 @@ use crate::macros::tiny_str_sea_orm_derive;
 pub struct Id(i32);
 
 #[nutype(
+    derive(Debug, PartialEq, Eq, Copy, Clone, Serialize, Deserialize, Hash, Deref, Display, FromStr),
+    derive_unchecked(DeriveValueType)
+)]
+pub struct StoragePath(Uuid);
+
+#[nutype(
     derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize, Hash, Deref, Display, FromStr),
 )]
 pub struct PublicId(TinyStr16);
@@ -25,13 +31,16 @@ pub struct Model {
     pub id: Id,
     #[sea_orm(unique)]
     pub public_id: PublicId,
-    pub folder_id: Option<super::folders::Id>,
+    pub folder_id: super::folders::Id,
+    #[sea_orm(unique)]
+    pub storage_path: StoragePath,
     #[sea_orm(column_type = "Text")]
-    pub encrypted_name: String,
+    pub encrypted_path: String,
     #[sea_orm(column_type = "Text")]
     pub encrypted_mime_type: String,
+    #[sea_orm(column_type = "Text")]
     pub encrypted_file_hash: String,
-    pub encrypted_file_size: i64,
+    pub file_size: i64,
     pub created_at: DateTimeWithTimeZone,
 }
 

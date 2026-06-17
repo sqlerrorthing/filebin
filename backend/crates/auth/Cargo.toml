@@ -5,7 +5,7 @@ edition.workspace = true
 
 [dependencies]
 service.path = "../service"
-jsonwebtoken = "10.4.0"
+jsonwebtoken = { version = "10.4.0", features = ["aws_lc_rs"] }
 domain.path = "../domain"
 hmac = { workspace = true, features = ["zeroize"] }
 sha2 = { workspace = true, features = ["zeroize"] }

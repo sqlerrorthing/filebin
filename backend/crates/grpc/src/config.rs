@@ -4,6 +4,7 @@ use secrecy::{ExposeSecret, SecretString};
 use serde::Deserialize;
 use std::env::var;
 use std::sync::LazyLock;
+use std::time::Duration;
 pub use secrecy;
 
 macro_rules! config {
@@ -102,6 +103,8 @@ config! {
     #[serde(rename_all = "kebab-case")]
     pub Config {
         pub jwt: {
+            #[serde(with = "humantime_serde")]
+            pub expires: Duration,
             pub secret: SecretString
         },
         pub db: {

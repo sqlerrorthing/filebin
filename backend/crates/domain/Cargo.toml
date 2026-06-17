@@ -9,3 +9,4 @@ chrono.workspace = true
 nutype.workspace = true
 serde.workspace = true
 tinystr.workspace = true
+derive_more.workspace = true

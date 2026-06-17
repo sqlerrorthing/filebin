@@ -8,3 +8,4 @@ service.path = "../service"
 domain.path = "../domain"
 rand.workspace = true
 tinystr.workspace = true
+uuid.workspace = true

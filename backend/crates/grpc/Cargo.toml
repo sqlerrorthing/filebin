@@ -6,12 +6,28 @@ edition.workspace = true
 [dependencies]
 tonic = "0.14.6"
 tracing.workspace = true
+tracing-subscriber = "0.3.23"
 derive-new.workspace = true
 async-trait.workspace = true
 pastey = "0.2.3"
 config_impl = { package = "config", version = "0.15.23", default-features = false, features = ["yaml", "serde_json"] }
 secrecy = { workspace = true, features = ["serde"] }
 serde.workspace = true
+tokio.workspace = true
+sea-orm.workspace = true
+sea-orm-migration.workspace = true
+migration.path = "../migration"
+color-eyre.workspace = true
+folders.path = "../folders"
+id_generator.path = "../id_generator"
+auth.path = "../auth"
+domain.path = "../domain"
+chrono.workspace = true
+humantime-serde = "1.1.1"
+prost = "0.14.4"
+tonic-prost = "0.14.6"
+prost-types = "0.14.4"
+thiserror.workspace = true
 
 [build-dependencies]
 tonic-prost-build = "0.14.6"

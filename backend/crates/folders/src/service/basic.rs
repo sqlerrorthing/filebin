@@ -5,9 +5,10 @@ use id_generator::service::IdGeneratorService;
 use sea_orm::sea_query::prelude::Utc;
 use sea_orm::{NotSet, Set};
 use std::time::Duration;
+use derive_new::new;
 use thiserror::Error;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, new)]
 pub struct BasicFoldersService<FR, IGS> {
     folder_repository: FR,
     id_generator_service: IGS,
@@ -29,15 +30,17 @@ impl<FR: FoldersRepository, IGS: IdGeneratorService> FoldersService
         encrypted_name: String,
         expires: Option<Duration>,
     ) -> Result<folders::Model, Self::Error> {
+        let model = folders::ActiveModel {
+            public_id: Set(self.id_generator_service.next_public_folder_id()),
+            encrypted_name: Set(encrypted_name),
+            expired_at: expires
+                .map_or(NotSet, |expires| Set(Some((Utc::now() + expires).into()))),
+            created_at: Set(Utc::now().into()),
+            ..Default::default()
+        };
+
         self.folder_repository
-            .insert(folders::ActiveModel {
-                public_id: Set(self.id_generator_service.next_public_folder_id()),
-                encrypted_name: Set(encrypted_name),
-                expired_at: expires
-                    .map_or(NotSet, |expires| Set(Some((Utc::now() + expires).into()))),
-                created_at: Set(Utc::now().into()),
-                ..Default::default()
-            })
+            .insert(model)
             .await
             .map_err(Error::Repository)
     }

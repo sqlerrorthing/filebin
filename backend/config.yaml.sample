@@ -2,9 +2,10 @@
 # Use SERVER__<VAR> with separator __ to override config variable
 
 jwt:
-  # use `openssl rand -hex 64` to generate a random 64 string for security.
-  secret:
+  # !!! REPLACE THIS !!!. use `openssl rand -hex 64` to generate a new random 128 string.
+  secret: 91cda2c4fa7ebaaedef48886d08c9428be4df0f713ff4bf6f886dcdacb1b837946f69c5a138b74a1c9b57c0d5bd850295c54e604c28f7593ad5b21e4dceeedff
+  expires: 16h
 
 db:
-  # postgres db url
-  postgres-url:
+  # !!! REPLACE THIS !!!. Postgres db url
+  postgres-url: postgres://user:password@localhost:5432/filebin

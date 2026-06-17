@@ -1,13 +1,6 @@
-use sea_orm_migration::prelude::*;
-use crate::migrator::migrator;
-
-mod migrator;
-
-migrator! [
-    m20260614_231015_initial
-];
+use sea_orm_migration::cli;
 
 #[tokio::main]
 async fn main() {
-    cli::run_cli(Migrator).await;
+    cli::run_cli(migration::Migrator).await;
 }

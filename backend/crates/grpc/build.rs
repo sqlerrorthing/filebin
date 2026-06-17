@@ -1,11 +1,16 @@
-use glob::glob;
+use glob::{glob, PatternError};
 use tonic_prost_build;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let protos: Vec<String> = glob("../../../proto/proto/**/*.proto")?
+fn find_protos(pat: &str) -> Result<Vec<String>, PatternError> {
+    Ok(glob(pat)?
         .filter_map(Result::ok)
         .map(|p| p.to_string_lossy().into_owned())
-        .collect();
+        .collect())
+}
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let mut protos: Vec<String> = find_protos("../../../proto/proto/**/*.proto")?;
+    protos.extend(find_protos("../../../proto/vendor/**/*.proto")?);
 
     let includes = vec![
         "../../../proto/proto".to_string(),

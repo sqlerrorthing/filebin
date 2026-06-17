@@ -5,4 +5,4 @@ edition.workspace = true
 
 [dependencies]
 tokio.workspace = true
-sea-orm-migration = { version = "2.0.0-rc.40", features = ["sqlx-postgres", "runtime-tokio"] }
+sea-orm-migration = { workspace = true, features = ["sqlx-postgres", "runtime-tokio"] }
