@@ -11,6 +11,7 @@ use service::error::ServiceError;
 use thiserror::Error;
 use tokio::spawn;
 use tokio::sync::{mpsc, oneshot};
+use tokio_util::sync::CancellationToken;
 
 #[derive(Clone, Debug, new)]
 pub struct BasicFilesService<FS, FR, IGS> {
@@ -48,6 +49,7 @@ where
         encrypted_mime_type: String,
         encrypted_file_hash: String,
         mut chunks: mpsc::Receiver<Bytes>,
+        cancellation: CancellationToken,
     ) -> oneshot::Receiver<Result<files::Model, ServiceError<UploadFileError, Self::Error>>> {
         let (mut tx, rx) = oneshot::channel();
 
@@ -68,6 +70,9 @@ where
                 loop {
                     let chunk = tokio::select! {
                         _ = tx.closed() => {
+                            return Err(business!(UploadFileError::Cancelled))
+                        }
+                        _ = cancellation.cancelled() => {
                             return Err(business!(UploadFileError::Cancelled))
                         }
                         maybe_chunk = chunks.recv() => {
@@ -91,7 +96,7 @@ where
                         .map_err(Error::Files)?;
                 }
 
-                if tx.is_closed() {
+                if tx.is_closed() || cancellation.is_cancelled() {
                     return Err(business!(UploadFileError::Cancelled))
                 }
 

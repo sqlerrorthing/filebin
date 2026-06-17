@@ -12,6 +12,7 @@ use derive_new::new;
 use domain::entity;
 use tokio::spawn;
 use tokio::sync::mpsc;
+use tokio_util::sync::CancellationToken;
 use tonic::codegen::tokio_stream::StreamExt;
 use tonic::{Request, Response, Status, Streaming};
 use tracing::error;
@@ -93,24 +94,38 @@ where
             .ok_or_not_found("folder not found")?;
 
         let (tx, rx) = mpsc::channel::<Bytes>(10);
+        let cancellation = CancellationToken::new();
 
-        let metadata = initiate.metadata;
         let result_rx = self.files_service.upload_file(
             folder.id,
-            metadata.encrypted_path,
-            metadata.encrypted_mime,
-            metadata.encrypted_hash,
+            initiate.metadata.encrypted_path,
+            initiate.metadata.encrypted_mime,
+            initiate.metadata.encrypted_hash,
             rx,
+            cancellation.clone()
         );
 
         spawn(async move {
-            while let Some(Ok(UploadFileRequest {
-                data: Some(upload_file_request::Data::ChunkData(bytes)),
-            })) = stream.next().await
-            {
-                if tx.send(Bytes::from(bytes)).await.is_err() {
-                    break;
+            let mut stream_broken = false;
+
+            while let Some(res) = stream.next().await {
+                match res {
+                    Ok(UploadFileRequest {
+                           data: Some(upload_file_request::Data::ChunkData(bytes)),
+                       }) => {
+                        if tx.send(Bytes::from(bytes)).await.is_err() {
+                            break;
+                        }
+                    }
+                    _ => {
+                        stream_broken = true;
+                        break;
+                    }
                 }
+            }
+
+            if stream_broken {
+                cancellation.cancel();
             }
         });
 

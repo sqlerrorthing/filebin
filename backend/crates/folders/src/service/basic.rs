@@ -29,8 +29,20 @@ impl<FR: FoldersRepository, IGS: IdGeneratorService> FoldersService
         &self,
         public_id: folders::PublicId,
     ) -> Result<Option<folders::Model>, Self::Error> {
-        self.folder_repository.find_folder_by_public_id(public_id)
-            .await.map_err(Error::Repository)
+        let folder = self
+            .folder_repository
+            .find_folder_by_public_id(public_id)
+            .await
+            .map_err(Error::Repository)?;
+
+        if let Some(folder) = &folder
+            && folder.expired_at.is_some_and(|exp| Utc::now() > exp)
+        {
+            todo!("delete entire folder");
+            return Ok(None)
+        }
+
+        Ok(folder)
     }
 
     async fn create_folder(

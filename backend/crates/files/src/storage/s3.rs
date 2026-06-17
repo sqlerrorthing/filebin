@@ -57,6 +57,7 @@ pub struct S3MultipartUploadHandle {
 impl Drop for S3MultipartUploadHandle {
     fn drop(&mut self) {
         if let Some(inner) = self.inner.take() {
+            cold_path();
             spawn(async move {
                 if let Err(e) = inner
                     .client

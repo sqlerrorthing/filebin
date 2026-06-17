@@ -1708,6 +1708,7 @@ dependencies = [
  "service",
  "thiserror",
  "tokio",
+ "tokio-util",
  "tracing",
 ]
 
@@ -1958,6 +1959,7 @@ dependencies = [
  "thiserror",
  "tinystr",
  "tokio",
+ "tokio-util",
  "tonic",
  "tonic-prost",
  "tonic-prost-build",

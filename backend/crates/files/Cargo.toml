@@ -14,3 +14,4 @@ tracing.workspace = true
 id_generator.path = "../id_generator"
 sea-orm.workspace = true
 derive-new.workspace = true
+tokio-util.workspace = true

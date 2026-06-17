@@ -34,6 +34,7 @@ bytes.workspace = true
 aws-sdk-s3.workspace = true
 aws-config = "1.8.18"
 byte-unit = { version = "5.2.3", features = ["serde"] }
+tokio-util.workspace = true
 
 [build-dependencies]
 tonic-prost-build = "0.14.6"
