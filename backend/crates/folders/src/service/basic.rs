@@ -1,11 +1,11 @@
 use crate::repository::FoldersRepository;
 use crate::service::FoldersService;
+use derive_new::new;
 use domain::entity::folders;
 use id_generator::service::IdGeneratorService;
 use sea_orm::sea_query::prelude::Utc;
 use sea_orm::{NotSet, Set};
 use std::time::Duration;
-use derive_new::new;
 use thiserror::Error;
 
 #[derive(Debug, Clone, new)]
@@ -25,6 +25,14 @@ impl<FR: FoldersRepository, IGS: IdGeneratorService> FoldersService
 {
     type Error = Error<FR>;
 
+    async fn find_folder_by_public_id(
+        &self,
+        public_id: folders::PublicId,
+    ) -> Result<Option<folders::Model>, Self::Error> {
+        self.folder_repository.find_folder_by_public_id(public_id)
+            .await.map_err(Error::Repository)
+    }
+
     async fn create_folder(
         &self,
         encrypted_name: String,
@@ -33,8 +41,7 @@ impl<FR: FoldersRepository, IGS: IdGeneratorService> FoldersService
         let model = folders::ActiveModel {
             public_id: Set(self.id_generator_service.next_public_folder_id()),
             encrypted_name: Set(encrypted_name),
-            expired_at: expires
-                .map_or(NotSet, |expires| Set(Some((Utc::now() + expires).into()))),
+            expired_at: expires.map_or(NotSet, |expires| Set(Some((Utc::now() + expires).into()))),
             created_at: Set(Utc::now().into()),
             ..Default::default()
         };

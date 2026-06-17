@@ -1,20 +1,34 @@
-use crate::schema::ServiceResultExt;
 use crate::schema::api::folder::v1::folder_service_server::FolderService;
-use crate::schema::api::folder::v1::{CreateFolderRequest, OwnedFolder};
-use crate::v1::dto::{prost_duration_to_datetime_duration, prost_duration_to_std_duration};
+use crate::schema::api::folder::v1::{
+    CreateFolderRequest, OwnedFolder, UploadFileRequest, UploadFileResponse,
+    upload_file_request,
+};
+use crate::schema::{ServiceErrorExt, ServiceResultExt};
+use crate::v1::dto::{prost_duration_to_std_duration};
 use async_trait::async_trait;
+use auth::service::TokenService;
+use bytes::Bytes;
 use derive_new::new;
-use tonic::{Request, Response, Status};
+use domain::entity;
+use tokio::spawn;
+use tokio::sync::mpsc;
+use tonic::codegen::tokio_stream::StreamExt;
+use tonic::{Request, Response, Status, Streaming};
+use tracing::error;
 
 #[derive(Debug, Clone, new)]
-pub struct BasicGrpcFolderService<FS, TS> {
-    folders_service: FS,
+pub struct BasicGrpcFolderService<FilesS, FolderS, TS> {
+    files_service: FilesS,
+    folders_service: FolderS,
     token_service: TS,
 }
 
 #[async_trait]
-impl<FS: folders::service::FoldersService, TS: auth::service::TokenService> FolderService
-    for BasicGrpcFolderService<FS, TS>
+impl<FilesS, FolderS, TS> FolderService for BasicGrpcFolderService<FilesS, FolderS, TS>
+where
+    FilesS: files::service::FilesService,
+    FolderS: folders::service::FoldersService,
+    TS: TokenService,
 {
     async fn create_folder(
         &self,
@@ -45,5 +59,71 @@ impl<FS: folders::service::FoldersService, TS: auth::service::TokenService> Fold
             folder: folder.into(),
             token: token.as_str().into(),
         }))
+    }
+
+    async fn upload_file(
+        &self,
+        request: Request<Streaming<UploadFileRequest>>,
+    ) -> Result<Response<UploadFileResponse>, Status> {
+        let mut stream = request.into_inner();
+
+        let Some(Ok(UploadFileRequest {
+            data: Some(upload_file_request::Data::Initiate(initiate)),
+        })) = dbg!(stream.next().await)
+        else {
+            return Err(Status::invalid_argument("invalid initial request"));
+        };
+
+        let public_id = entity::folders::PublicId::try_from(initiate.id)?;
+
+        if !self
+            .token_service
+            .is_token_valid_for_folder(&public_id, initiate.token.value)
+            .await
+            .ok_or_internal()?
+        {
+            return Err(Status::unauthenticated("invalid token"));
+        }
+
+        let folder = self
+            .folders_service
+            .find_folder_by_public_id(public_id)
+            .await
+            .ok_or_internal()?
+            .ok_or_not_found("folder not found")?;
+
+        let (tx, rx) = mpsc::channel::<Bytes>(10);
+
+        let metadata = initiate.metadata;
+        let result_rx = self.files_service.upload_file(
+            folder.id,
+            metadata.encrypted_path,
+            metadata.encrypted_mime,
+            metadata.encrypted_hash,
+            rx,
+        );
+
+        spawn(async move {
+            while let Some(Ok(UploadFileRequest {
+                data: Some(upload_file_request::Data::ChunkData(bytes)),
+            })) = stream.next().await
+            {
+                if tx.send(Bytes::from(bytes)).await.is_err() {
+                    break;
+                }
+            }
+        });
+
+        match result_rx.await.ok_or_internal()? {
+            Ok(file) => {
+                Ok(Response::new(UploadFileResponse {
+                    id: file.public_id.into(),
+                }))
+            }
+            Err(e) => {
+                error!("Upload dropped: {e}");
+                Err(Status::aborted("upload droppped"))
+            }
+        }
     }
 }

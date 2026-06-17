@@ -1,20 +1,26 @@
-use derive_new::new;
-use sea_orm::{ActiveModelTrait, DatabaseConnection};
+use crate::repository::FoldersRepository;
 use domain::entity::folders;
 use domain::entity::folders::ActiveModel;
-use crate::repository::FoldersRepository;
+use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
 
-#[derive(Debug, Clone, new)]
-pub struct DbFoldersRepository(DatabaseConnection);
-
-impl FoldersRepository for DbFoldersRepository {
+impl FoldersRepository for DatabaseConnection {
     type Error = sea_orm::DbErr;
 
+    async fn find_folder_by_public_id(
+        &self,
+        folder: folders::PublicId,
+    ) -> Result<Option<folders::Model>, Self::Error> {
+        folders::Entity::find()
+            .filter(folders::Column::PublicId.eq(folder))
+            .one(self)
+            .await
+    }
+
     async fn insert(&self, folder: ActiveModel) -> Result<folders::Model, Self::Error> {
-        folder.insert(&self.0).await
+        folder.insert(self).await
     }
 
     async fn update(&self, folder: ActiveModel) -> Result<folders::Model, Self::Error> {
-        folder.update(&self.0).await
+        folder.update(self).await
     }
 }

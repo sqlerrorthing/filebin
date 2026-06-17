@@ -2,6 +2,7 @@ use crate::repository::FilesRepository;
 use crate::service::{FilesService, UploadFileError};
 use crate::storage::{FILES_PREFIX, FilesStorage};
 use bytes::Bytes;
+use derive_new::new;
 use sea_orm::Set;
 use domain::entity::{files, folders};
 use id_generator::service::IdGeneratorService;
@@ -11,12 +12,12 @@ use thiserror::Error;
 use tokio::spawn;
 use tokio::sync::{mpsc, oneshot};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, new)]
 pub struct BasicFilesService<FS, FR, IGS> {
     files_storage: FS,
     files_repository: FR,
     id_generator_service: IGS,
-    max_filesize: i64,
+    max_filesize: u64,
 }
 
 #[derive(Debug, Error)]
@@ -62,7 +63,7 @@ where
                     .await
                     .map_err(Error::Files)?;
 
-                let mut total_bytes_received = 0_i64;
+                let mut total_bytes_received = 0_u64;
 
                 loop {
                     let chunk = tokio::select! {
@@ -77,7 +78,7 @@ where
                         }
                     };
 
-                    let chunk_len = chunk.len() as i64;
+                    let chunk_len = chunk.len() as u64;
                     if total_bytes_received + chunk_len > this.max_filesize {
                         return Err(business!(UploadFileError::FileTooLarge))
                     }
@@ -108,7 +109,7 @@ where
                         encrypted_path: Set(encrypted_path),
                         encrypted_mime_type: Set(encrypted_mime_type),
                         encrypted_file_hash: Set(encrypted_file_hash),
-                        file_size: Set(total_bytes_received),
+                        file_size: Set(total_bytes_received as _),
                         ..Default::default()
                     }).await
                     .map_err(Error::Repository)?;

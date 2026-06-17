@@ -1,16 +1,38 @@
-use thiserror::Error;
-use std::time::Duration;
-use chrono::{Datelike, Timelike};
-use sea_orm::prelude::DateTimeUtc;
-use domain::entity;
-use crate::schema::api::folder::v1::{Folder, FolderId, FolderToken};
+use crate::schema::ServiceErrorExt;
+use crate::schema::api::folder::v1::{FileId, Folder, FolderId, FolderToken};
 use crate::schema::api::google;
+use chrono::{Datelike, Timelike};
+use domain::entity;
+use sea_orm::prelude::DateTimeUtc;
+use std::time::Duration;
+use thiserror::Error;
+use tinystr::TinyStr8;
+use tonic::Status;
+use files::service::UploadFileError;
 
 impl From<entity::folders::PublicId> for FolderId {
     fn from(value: entity::folders::PublicId) -> Self {
         FolderId {
             value: value.into_inner().to_string(),
         }
+    }
+}
+
+impl From<entity::files::PublicId> for FileId {
+    fn from(value: entity::files::PublicId) -> Self {
+        FileId {
+            value: value.into_inner().to_string(),
+        }
+    }
+}
+
+impl TryFrom<FolderId> for entity::folders::PublicId {
+    type Error = Status;
+
+    fn try_from(value: FolderId) -> Result<Self, Self::Error> {
+        Ok(entity::folders::PublicId::new(
+            TinyStr8::try_from_str(&value.value).ok_or_invalid_argument("invalid public id")?,
+        ))
     }
 }
 
@@ -37,7 +59,7 @@ impl From<DateTimeUtc> for google::r#type::DateTime {
 impl From<&str> for FolderToken {
     fn from(value: &str) -> Self {
         FolderToken {
-            value: value.to_owned()
+            value: value.to_owned(),
         }
     }
 }
@@ -54,8 +76,7 @@ impl From<entity::folders::Model> for Folder {
 }
 
 pub fn prost_duration_to_datetime_duration(duration: prost_types::Duration) -> chrono::Duration {
-    chrono::Duration::seconds(duration.seconds)
-    + chrono::Duration::nanoseconds(duration.nanos as _)
+    chrono::Duration::seconds(duration.seconds) + chrono::Duration::nanoseconds(duration.nanos as _)
 }
 
 #[derive(Debug, Error)]
@@ -63,19 +84,19 @@ pub enum ConvertDurationError {
     #[error("the duration is negative")]
     Negative,
     #[error("out of range")]
-    OutOfRange
+    OutOfRange,
 }
 
-pub fn prost_duration_to_std_duration(duration: prost_types::Duration) -> Result<Duration, ConvertDurationError> {
+pub fn prost_duration_to_std_duration(
+    duration: prost_types::Duration,
+) -> Result<Duration, ConvertDurationError> {
     if duration.seconds < 0 || duration.nanos < 0 {
         return Err(ConvertDurationError::Negative);
     }
 
-    let secs = u64::try_from(duration.seconds)
-        .map_err(|_| ConvertDurationError::OutOfRange)?;
+    let secs = u64::try_from(duration.seconds).map_err(|_| ConvertDurationError::OutOfRange)?;
 
-    let nanos = u32::try_from(duration.nanos)
-        .map_err(|_| ConvertDurationError::OutOfRange)?;
+    let nanos = u32::try_from(duration.nanos).map_err(|_| ConvertDurationError::OutOfRange)?;
 
     Ok(Duration::new(secs, nanos))
 }

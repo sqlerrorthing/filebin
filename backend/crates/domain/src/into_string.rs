@@ -22,3 +22,12 @@ where
         self.as_ref().and_then(|s| s.as_ref())
     }
 }
+
+impl<S> IntoOptionalString for &S
+where 
+    S: IntoOptionalString
+{
+    fn as_ref(&self) -> Option<&str> {
+        S::as_ref(self)
+    }
+}

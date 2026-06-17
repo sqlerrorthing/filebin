@@ -28,6 +28,12 @@ prost = "0.14.4"
 tonic-prost = "0.14.6"
 prost-types = "0.14.4"
 thiserror.workspace = true
+files.path = "../files"
+tinystr.workspace = true
+bytes.workspace = true
+aws-sdk-s3.workspace = true
+aws-config = "1.8.18"
+byte-unit = { version = "5.2.3", features = ["serde"] }
 
 [build-dependencies]
 tonic-prost-build = "0.14.6"

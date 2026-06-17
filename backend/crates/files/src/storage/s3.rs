@@ -10,12 +10,13 @@ use bytes::Bytes;
 use domain::sync::shared_string::SharedString;
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicI32, Ordering};
+use derive_new::new;
 use thiserror::Error;
 use tokio::spawn;
 use tracing::error;
 
-#[derive(Debug, Clone)]
-pub struct S3Storage {
+#[derive(Debug, Clone, new)]
+pub struct S3FilesStorage {
     client: S3Client,
     bucket: SharedString,
 }
@@ -73,7 +74,7 @@ impl Drop for S3MultipartUploadHandle {
     }
 }
 
-impl FilesStorage for S3Storage {
+impl FilesStorage for S3FilesStorage {
     type Error = Error;
     type MultipartUploadHandle = S3MultipartUploadHandle;
 
@@ -120,6 +121,7 @@ impl FilesStorage for S3Storage {
             .upload_part()
             .bucket(handle.bucket.clone())
             .key(handle.key.clone())
+            .upload_id(handle.upload_id.clone())
             .part_number(part_number)
             .body(part.into())
             .send()

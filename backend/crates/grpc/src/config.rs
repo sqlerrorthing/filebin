@@ -6,6 +6,7 @@ use std::env::var;
 use std::sync::LazyLock;
 use std::time::Duration;
 pub use secrecy;
+use byte_unit::Byte;
 
 macro_rules! config {
     (@gen_struct [$(#[$struct_attrs:meta])*] $vis:vis $field:ident { $($sub:tt)* }) => {
@@ -105,10 +106,21 @@ config! {
         pub jwt: {
             #[serde(with = "humantime_serde")]
             pub expires: Duration,
-            pub secret: SecretString
+            pub secret: SecretString,
+        },
+        pub limits: {
+            pub max_filesize: Byte,
+        },
+        pub storage: {
+            pub access_key: SecretString,
+            pub secret_key: SecretString,
+            pub bucket: String,
+            pub region: String,
+            pub endpoint_url: Option<String>,
+            pub force_path_style: Option<bool>
         },
         pub db: {
-            pub postgres_url: String
+            pub postgres_url: String,
         },
     }
 }
