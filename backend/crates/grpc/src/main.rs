@@ -1,11 +1,13 @@
 #![feature(min_specialization)]
 
-use aws_config::{BehaviorVersion, Region};
-use aws_sdk_s3::config::Credentials;
 use crate::config::{CONFIG, Db, Storage};
 use crate::schema::api::folder::v1::folder_service_server::FolderServiceServer;
 use crate::v1::folder::BasicGrpcFolderService;
 use auth::service::jwt::JwtTokenService;
+use aws_config::{BehaviorVersion, Region};
+use aws_sdk_s3::config::Credentials;
+use files::service::basic::BasicFilesService;
+use files::storage::s3::S3FilesStorage;
 use folders::service::basic::BasicFoldersService;
 use id_generator::service::random::RandomIdGeneratorService;
 use sea_orm::{Database, DatabaseConnection, DbErr};
@@ -16,8 +18,6 @@ use tracing::info;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{EnvFilter, fmt};
-use files::service::basic::BasicFilesService;
-use files::storage::s3::S3FilesStorage;
 
 pub mod config;
 pub mod schema;
@@ -39,7 +39,7 @@ async fn up_s3_client(config: &Storage) -> aws_sdk_s3::Client {
         config.secret_key.expose_secret(),
         None,
         None,
-        "config"
+        "config",
     );
 
     let mut builder = aws_config::defaults(BehaviorVersion::latest())
@@ -78,17 +78,18 @@ async fn main() -> color_eyre::Result<()> {
 
     let files_storage = S3FilesStorage::new(
         up_s3_client(&CONFIG.storage).await,
-        CONFIG.storage.bucket.clone().into()
+        CONFIG.storage.bucket.clone().into(),
     );
 
     let files_service = BasicFilesService::new(
         files_storage,
         db.clone(),
         RandomIdGeneratorService,
-        CONFIG.limits.max_filesize.as_u64()
+        CONFIG.limits.max_filesize.as_u64(),
     );
 
-    let folders_service = BasicFoldersService::new(db, RandomIdGeneratorService);
+    let folders_service =
+        BasicFoldersService::new(db, files_service.clone(), RandomIdGeneratorService);
 
     Server::builder()
         .add_service(FolderServiceServer::new(BasicGrpcFolderService::new(

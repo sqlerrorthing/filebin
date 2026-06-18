@@ -1,14 +1,14 @@
 FROM rust:latest AS planner
-WORKDIR /backend
+WORKDIR /filebin/backend
 RUN cargo install cargo-chef
 COPY . .
 RUN cargo chef prepare --recipe-path recipe.json
 
 FROM rust AS cacher
-WORKDIR /backend
+WORKDIR /filebin/backend
 RUN rustup default nightly && rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
 RUN cargo install cargo-chef
-COPY --from=planner /backend/recipe.json recipe.json
+COPY --from=planner /filebin/backend/recipe.json recipe.json
 
 ARG CARGO_FLAGS="--release"
 RUN cargo chef cook ${CARGO_FLAGS} --recipe-path recipe.json
@@ -22,14 +22,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     protobuf-compiler \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /backend
+WORKDIR /filebin/backend
 
 COPY . .
-COPY --from=cacher /backend/target target
+COPY --from=cacher /filebin/backend/target target
 
 ARG CARGO_FLAGS="--release"
 RUN rustup default nightly && rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
-RUN cargo build ${CARGO_FLAGS} --bin grpc
+RUN --mount=type=bind,source=proto,target=/filebin/proto\
+    cargo build ${CARGO_FLAGS} --bin grpc
 
 FROM debian:stable-slim AS runtime
 RUN groupadd -g 1001 backendgroup && \
@@ -37,10 +38,11 @@ RUN groupadd -g 1001 backendgroup && \
 
 RUN apt-get update && \
     apt-get install -y ca-certificates && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* \
+
 ARG CARGO_FLAGS="--release"
 COPY --from=build --chown=backenduser:backendgroup \
-    /backend/target/${CARGO_FLAGS:+release}${CARGO_FLAGS:-debug}/grpc \
+    /filebin/backend/target/${CARGO_FLAGS:+release}${CARGO_FLAGS:-debug}/grpc \
     /usr/local/bin/backend
 
 USER backenduser

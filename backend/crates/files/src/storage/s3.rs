@@ -187,7 +187,7 @@ impl FilesStorage for S3FilesStorage {
 
         for chunk in ids.chunks(AWS_BULK_DELETE_CHUNKS) {
             let object_ids = chunk
-                .into_iter()
+                .iter()
                 .map(|key| {
                     ObjectIdentifier::builder()
                         .key(format!("{FILES_PREFIX}/{key}"))
