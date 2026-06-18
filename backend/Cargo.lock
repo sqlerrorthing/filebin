@@ -1700,6 +1700,7 @@ name = "files"
 version = "0.1.0"
 dependencies = [
  "aws-sdk-s3",
+ "aws-smithy-types",
  "bytes",
  "derive-new",
  "domain",
@@ -1747,10 +1748,13 @@ version = "0.1.0"
 dependencies = [
  "derive-new",
  "domain",
+ "files",
  "id_generator",
  "sea-orm",
  "service",
  "thiserror",
+ "tokio",
+ "tracing",
 ]
 
 [[package]]

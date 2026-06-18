@@ -1,13 +1,12 @@
 FROM rust:latest AS planner
 WORKDIR /backend
-RUN rustup default nightly
 RUN cargo install cargo-chef
 COPY . .
 RUN cargo chef prepare --recipe-path recipe.json
 
 FROM rust AS cacher
 WORKDIR /backend
-RUN rustup default nightly
+RUN rustup default nightly && rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
 RUN cargo install cargo-chef
 COPY --from=planner /backend/recipe.json recipe.json
 
@@ -20,6 +19,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     pkg-config \
     libssl-dev \
     build-essential \
+    protobuf-compiler \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /backend
@@ -28,7 +28,7 @@ COPY . .
 COPY --from=cacher /backend/target target
 
 ARG CARGO_FLAGS="--release"
-RUN rustup default nightly
+RUN rustup default nightly && rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
 RUN cargo build ${CARGO_FLAGS} --bin grpc
 
 FROM debian:stable-slim AS runtime

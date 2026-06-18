@@ -1,19 +1,24 @@
-use std::hint::cold_path;
-use crate::storage::FilesStorage;
+use crate::storage::{FILES_PREFIX, FilesStorage};
 use aws_sdk_s3::error::SdkError;
 use aws_sdk_s3::operation::complete_multipart_upload::CompleteMultipartUploadError;
 use aws_sdk_s3::operation::create_multipart_upload::CreateMultipartUploadError;
 use aws_sdk_s3::operation::upload_part::UploadPartError;
-use aws_sdk_s3::types::{CompletedMultipartUpload, CompletedPart};
+use aws_sdk_s3::types::{CompletedMultipartUpload, CompletedPart, Delete, ObjectIdentifier};
 use aws_sdk_s3::{Client as S3Client, Client};
+use aws_smithy_types::error::operation::BuildError;
 use bytes::Bytes;
+use derive_new::new;
+use domain::entity::files;
 use domain::sync::shared_string::SharedString;
+use std::hint::cold_path;
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicI32, Ordering};
-use derive_new::new;
+use aws_sdk_s3::operation::delete_objects::DeleteObjectsError;
 use thiserror::Error;
 use tokio::spawn;
 use tracing::error;
+
+const AWS_BULK_DELETE_CHUNKS: usize = 1000;
 
 #[derive(Debug, Clone, new)]
 pub struct S3FilesStorage {
@@ -34,6 +39,12 @@ pub enum Error {
 
     #[error("missing `uplodad_id` after create multipart upload")]
     MissingUploadId,
+
+    #[error("build error: {0}")]
+    Build(#[from] BuildError),
+
+    #[error("delete objects error: {0}")]
+    DeleteObjects(#[from] SdkError<DeleteObjectsError>),
 
     #[error("the multipart handler dropped")]
     MultipartHandlerDropped,
@@ -147,7 +158,8 @@ impl FilesStorage for S3FilesStorage {
         let mut parts = handle_inner.completed_parts.lock().unwrap().clone();
         parts.sort_by_key(|p| p.part_number);
 
-        if let Err(e) = self.client
+        if let Err(e) = self
+            .client
             .complete_multipart_upload()
             .bucket(handle_inner.bucket.clone())
             .key(handle_inner.key.clone())
@@ -162,9 +174,38 @@ impl FilesStorage for S3FilesStorage {
         {
             cold_path();
             handle.inner = Some(handle_inner);
-            return Err(e.into())
+            return Err(e.into());
         }
 
         Ok(handle_inner.key.into())
+    }
+
+    async fn bulk_delete(&self, ids: Vec<files::StoragePath>) -> Result<(), Self::Error> {
+        if ids.is_empty() {
+            return Ok(());
+        }
+
+        for chunk in ids.chunks(AWS_BULK_DELETE_CHUNKS) {
+            let object_ids = chunk
+                .into_iter()
+                .map(|key| {
+                    ObjectIdentifier::builder()
+                        .key(format!("{FILES_PREFIX}/{key}"))
+                        .build()
+                })
+                .collect::<Result<Vec<_>, _>>()?;
+
+            self.client
+                .delete_objects()
+                .bucket(self.bucket.clone())
+                .delete(Delete::builder()
+                    .set_objects(Some(object_ids))
+                    .build()?
+                )
+                .send()
+                .await?;
+        }
+
+        Ok(())
     }
 }

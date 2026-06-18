@@ -23,4 +23,11 @@ impl FoldersRepository for DatabaseConnection {
     async fn update(&self, folder: ActiveModel) -> Result<folders::Model, Self::Error> {
         folder.update(self).await
     }
+
+    async fn delete(&self, folder_id: folders::Id) -> Result<bool, Self::Error> {
+        folders::Entity::delete_by_id(folder_id)
+            .exec(self)
+            .await
+            .map(|res| res.rows_affected == 1)
+    }
 }

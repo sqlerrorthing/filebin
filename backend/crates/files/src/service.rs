@@ -21,6 +21,9 @@ pub trait FilesService: 'static {
     type Error;
 
     fn min_upload_chunk_size(&self) -> i64;
+    
+    #[result]
+    async fn delete_files_from_folder(&self, folder_id: folders::Id);
 
     /// Uploads the file to folder.
     /// To cancel the upload, just drop the [`oneshot::Receiver`] half or call cancellation

@@ -3,9 +3,9 @@ use crate::service::{FilesService, UploadFileError};
 use crate::storage::{FILES_PREFIX, FilesStorage};
 use bytes::Bytes;
 use derive_new::new;
-use sea_orm::Set;
 use domain::entity::{files, folders};
 use id_generator::service::IdGeneratorService;
+use sea_orm::Set;
 use service::business;
 use service::error::ServiceError;
 use thiserror::Error;
@@ -40,6 +40,23 @@ where
 
     fn min_upload_chunk_size(&self) -> i64 {
         5 * 1024 * 1024
+    }
+
+    async fn delete_files_from_folder(&self, folder_id: folders::Id) -> Result<(), Self::Error> {
+        let files = self
+            .files_repository
+            .delete_files_from_folder(folder_id)
+            .await
+            .map_err(Error::Repository)?;
+
+        if files.is_empty() {
+            return Ok(());
+        }
+
+        self.files_storage
+            .bulk_delete(files.into_iter().map(|f| f.storage_path).collect())
+            .await
+            .map_err(Error::Files)
     }
 
     fn upload_file(
@@ -85,7 +102,7 @@ where
 
                     let chunk_len = chunk.len() as u64;
                     if total_bytes_received + chunk_len > this.max_filesize {
-                        return Err(business!(UploadFileError::FileTooLarge))
+                        return Err(business!(UploadFileError::FileTooLarge));
                     }
 
                     total_bytes_received += chunk_len;
@@ -97,16 +114,16 @@ where
                 }
 
                 if tx.is_closed() || cancellation.is_cancelled() {
-                    return Err(business!(UploadFileError::Cancelled))
+                    return Err(business!(UploadFileError::Cancelled));
                 }
 
-                this
-                    .files_storage
+                this.files_storage
                     .complete_multipart_upload(handle)
                     .await
                     .map_err(Error::Files)?;
 
-                let model = this.files_repository
+                let model = this
+                    .files_repository
                     .insert(files::ActiveModel {
                         public_id: Set(this.id_generator_service.next_public_file_id()),
                         folder_id: Set(folder_id),
@@ -116,9 +133,10 @@ where
                         encrypted_file_hash: Set(encrypted_file_hash),
                         file_size: Set(total_bytes_received as _),
                         ..Default::default()
-                    }).await
+                    })
+                    .await
                     .map_err(Error::Repository)?;
-                
+
                 Ok(model)
             }
             .await;

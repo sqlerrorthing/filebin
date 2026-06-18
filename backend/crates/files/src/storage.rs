@@ -1,4 +1,5 @@
 use bytes::Bytes;
+use domain::entity::files;
 use service::service;
 
 pub mod s3;
@@ -27,4 +28,8 @@ pub trait FilesStorage: 'static {
     /// Returns the key
     #[result]
     async fn complete_multipart_upload(&self, handle: Self::MultipartUploadHandle) -> String;
+
+    /// Bulk deletes the provided ids
+    #[result]
+    async fn bulk_delete(&self, ids: Vec<files::StoragePath>);
 }
