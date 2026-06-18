@@ -7,24 +7,25 @@ limits:
 
 jwt:
   # !!! REPLACE THIS !!!. Use `openssl rand -hex 64` to generate a new random 128 string.
-  secret: 91cda2c4fa7ebaaedef48886d08c9428be4df0f713ff4bf6f886dcdacb1b837946f69c5a138b74a1c9b57c0d5bd850295c54e604c28f7593ad5b21e4dceeedff
+  # Or replace with SERVER__JWT__SECRET
+  secret:
   expires: 16h
 
 storage:
   # S3 access key
-  access-key: replace_me
+  access-key:
 
   # S3 secret key
-  secret-key: replace_me
+  secret-key:
 
   # S3 bucket
-  bucket: filebin
+  bucket:
 
   # S3 Region
   region: auto # for aws use us-east-1, auto is disallowed
 
   # Set null if it's not required
-  endpoint-url: http://localhost:9000
+  endpoint-url:
 
   # Not required
   force-path-style: true
