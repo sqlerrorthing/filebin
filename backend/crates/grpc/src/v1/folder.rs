@@ -17,7 +17,6 @@ use tonic::codegen::tokio_stream::StreamExt;
 use tonic::{Request, Response, Status, Streaming};
 use tracing::error;
 
-#[derive(Debug, Clone, new)]
 pub struct BasicGrpcFolderService<FilesS, FolderS, TS> {
     files_service: FilesS,
     folders_service: FolderS,

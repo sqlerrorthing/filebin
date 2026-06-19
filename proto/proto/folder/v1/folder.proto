@@ -4,6 +4,7 @@ import "google/protobuf/empty.proto";
 import "google/type/datetime.proto";
 import "google/protobuf/duration.proto";
 import "folder/v1/files.proto";
+import "folder/v1/common.proto";
 
 package folder.v1;
 
@@ -33,15 +34,6 @@ message InitiateUpload {
 
 message UploadFileResponse {
   required FileId id = 1;
-}
-
-message FolderId {
-  required string value = 1;
-}
-
-// A token to edit files in the folder
-message FolderToken {
-  required string value = 2;
 }
 
 message Folder {

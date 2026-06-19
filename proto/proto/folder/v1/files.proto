@@ -2,11 +2,19 @@ syntax = "proto2";
 
 package folder.v1;
 
+import "folder/v1/common.proto";
+
+
 service FilesService {
+  rpc ListFiles(ListFilesRequest) returns (ListFilesResponse);
 }
 
-message FileId {
-  required string value = 1;
+message ListFilesRequest {
+  required FolderId folder = 1;
+}
+
+message ListFilesResponse {
+  repeated FileView files = 1;
 }
 
 message FileView {
