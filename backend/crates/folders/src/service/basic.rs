@@ -6,6 +6,7 @@ use files::service::FilesService;
 use id_generator::service::IdGeneratorService;
 use sea_orm::sea_query::prelude::Utc;
 use sea_orm::{NotSet, Set};
+use std::hint::cold_path;
 use std::time::Duration;
 use thiserror::Error;
 use tokio::spawn;
@@ -40,9 +41,12 @@ where
             .delete_files_from_folder(folder_id)
             .await
             .map_err(Error::Files)?;
-        
-        self.folder_repository.delete(folder_id).await
+
+        self.folder_repository
+            .delete(folder_id)
+            .await
             .map_err(Error::Repository)
+            .map(|f| f.is_some())
     }
 
     async fn find_folder_by_public_id(
@@ -58,11 +62,12 @@ where
         if let Some(folder) = &folder
             && folder.expired_at.is_some_and(|exp| Utc::now() > exp)
         {
+            cold_path();
             info!("Expired folder found, deleting");
-            let folder_id = folder.id.clone();
+            let folder_id = folder.id;
             let this = self.clone();
             spawn(async move {
-                if let Err(err) = this.remove_entire_folder(folder_id.clone()).await {
+                if let Err(err) = this.remove_entire_folder(folder_id).await {
                     error!(folder = %folder_id, error = %err, "Failed to remove expired folder");
                 }
             });

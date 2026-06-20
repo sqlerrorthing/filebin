@@ -1,11 +1,15 @@
 #![feature(min_specialization)]
 
-use crate::config::{CONFIG, Db, Storage};
+use crate::config::{CONFIG, Db, Redis, Storage};
+use crate::schema::api::folder::v1::files_service_server::FilesServiceServer;
 use crate::schema::api::folder::v1::folder_service_server::FolderServiceServer;
+use crate::v1::files::BasicGrpcFilesService;
 use crate::v1::folder::BasicGrpcFolderService;
 use auth::service::jwt::JwtTokenService;
 use aws_config::{BehaviorVersion, Region};
 use aws_sdk_s3::config::Credentials;
+use cache::Cache;
+use deadpool_redis::{CreatePoolError, Runtime};
 use files::service::basic::BasicFilesService;
 use files::storage::s3::S3FilesStorage;
 use folders::service::basic::BasicFoldersService;
@@ -13,8 +17,11 @@ use id_generator::service::random::RandomIdGeneratorService;
 use sea_orm::{Database, DatabaseConnection, DbErr};
 use sea_orm_migration::migrator::MigratorTrait;
 use secrecy::ExposeSecret;
+use std::any::type_name_of_val;
+use std::time::Duration;
+use tokio::time::sleep;
 use tonic::transport::Server;
-use tracing::info;
+use tracing::{error, info};
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{EnvFilter, fmt};
@@ -31,6 +38,24 @@ async fn up_db(config: &Db) -> Result<DatabaseConnection, DbErr> {
     migration::Migrator::up(&db, None).await?;
 
     Ok(db)
+}
+
+async fn up_redis(config: &Redis) -> Result<deadpool_redis::Pool, deadpool_redis::PoolError> {
+    loop {
+        let cfg = deadpool_redis::Config::from_url(&config.url);
+        let builder = cfg.builder().unwrap().runtime(Runtime::Tokio1);
+
+        let error = match builder.build().map_err(CreatePoolError::Build) {
+            Ok(pool) => match pool.get().await {
+                Ok(_) => break Ok(pool),
+                Err(e) => e.to_string(),
+            },
+            Err(e) => e.to_string(),
+        };
+
+        error!("Failed connect to redis: {error}, waiting 5 secs");
+        sleep(Duration::from_secs(5)).await;
+    }
 }
 
 async fn up_s3_client(config: &Storage) -> aws_sdk_s3::Client {
@@ -70,9 +95,10 @@ async fn main() -> color_eyre::Result<()> {
     tracing();
 
     let db = up_db(&CONFIG.db).await?;
+    let redis = up_redis(&CONFIG.redis).await?;
 
     let token_service = JwtTokenService::new(
-        chrono::Duration::from_std(CONFIG.jwt.expires)?,
+        CONFIG.jwt.expires,
         CONFIG.jwt.secret.expose_secret(),
     );
 
@@ -83,19 +109,34 @@ async fn main() -> color_eyre::Result<()> {
 
     let files_service = BasicFilesService::new(
         files_storage,
-        db.clone(),
+        Cache::new(
+            redis.clone(),
+            db.clone(),
+            CONFIG.caches.files.as_secs() as _,
+        ),
         RandomIdGeneratorService,
         CONFIG.limits.max_filesize.as_u64(),
     );
 
-    let folders_service =
-        BasicFoldersService::new(db, files_service.clone(), RandomIdGeneratorService);
+    let folders_service = BasicFoldersService::new(
+        Cache::new(
+            redis.clone(),
+            db.clone(),
+            CONFIG.caches.folders.as_secs() as _,
+        ),
+        files_service.clone(),
+        RandomIdGeneratorService,
+    );
 
     Server::builder()
         .add_service(FolderServiceServer::new(BasicGrpcFolderService::new(
+            files_service.clone(),
+            folders_service.clone(),
+            token_service,
+        )))
+        .add_service(FilesServiceServer::new(BasicGrpcFilesService::new(
             files_service,
             folders_service,
-            token_service,
         )))
         .serve("[::1]:50051".parse()?)
         .await?;

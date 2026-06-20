@@ -59,6 +59,13 @@ where
             .map_err(Error::Files)
     }
 
+    async fn list_folder_files(&self, folder_id: folders::Id) -> Result<Vec<files::Model>, Self::Error> {
+        self.files_repository
+            .list_folder_files(folder_id)
+            .await
+            .map_err(Error::Repository)
+    }
+
     fn upload_file(
         &self,
         folder_id: folders::Id,
@@ -113,7 +120,7 @@ where
                         .map_err(Error::Files)?;
                 }
 
-                if tx.is_closed() || cancellation.is_cancelled() {
+                if cancellation.is_cancelled() || tx.is_closed() {
                     return Err(business!(UploadFileError::Cancelled));
                 }
 

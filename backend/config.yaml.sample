@@ -5,27 +5,34 @@ limits:
   max-filesize: 10 MB
   max-files-per-folder: 100
 
+caches:
+  folders: "30m"
+  files: "1h"
+
+redis:
+  url: redis://localhost:6379
+
 jwt:
   # !!! REPLACE THIS !!!. Use `openssl rand -hex 64` to generate a new random 128 string.
   # Or replace with SERVER__JWT__SECRET
-  secret:
+  secret: b35d6f77ffd07203115eb045a754c6cd40a0af0bfd39d69e2aefc284956fa2b5e18f9e7469186c4335912414d02184210a72543ce9932a400692e40558fa1412
   expires: 16h
 
 storage:
   # S3 access key
-  access-key:
+  access-key: replace_me
 
   # S3 secret key
-  secret-key:
+  secret-key: replace_me
 
   # S3 bucket
-  bucket:
+  bucket: filebin
 
   # S3 Region
   region: auto # for aws use us-east-1, auto is disallowed
 
   # Set null if it's not required
-  endpoint-url:
+  endpoint-url: http://localhost:9000
 
   # Not required
   force-path-style: true

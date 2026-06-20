@@ -15,6 +15,13 @@ impl FilesRepository for DatabaseConnection {
             .await
     }
 
+    async fn list_folder_files(&self, folder_id: folders::Id) -> Result<Vec<files::Model>, Self::Error> {
+        files::Entity::find()
+            .filter(files::Column::FolderId.eq(folder_id))
+            .all(self)
+            .await
+    }
+
     async fn insert(&self, folder: files::ActiveModel) -> Result<files::Model, Self::Error> {
         folder.insert(self).await
     }

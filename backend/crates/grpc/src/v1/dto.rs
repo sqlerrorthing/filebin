@@ -1,5 +1,5 @@
 use crate::schema::ServiceErrorExt;
-use crate::schema::api::folder::v1::{FileId, Folder, FolderId, FolderToken};
+use crate::schema::api::folder::v1::{EncryptedFileMetadata, FileId, FileView, Folder, FolderId, FolderToken};
 use crate::schema::api::google;
 use chrono::{Datelike, Timelike};
 use domain::entity;
@@ -8,7 +8,6 @@ use std::time::Duration;
 use thiserror::Error;
 use tinystr::TinyStr8;
 use tonic::Status;
-use files::service::UploadFileError;
 
 impl From<entity::folders::PublicId> for FolderId {
     fn from(value: entity::folders::PublicId) -> Self {
@@ -56,10 +55,10 @@ impl From<DateTimeUtc> for google::r#type::DateTime {
     }
 }
 
-impl From<&str> for FolderToken {
-    fn from(value: &str) -> Self {
+impl From<String> for FolderToken {
+    fn from(value: String) -> Self {
         FolderToken {
-            value: value.to_owned(),
+            value,
         }
     }
 }
@@ -71,6 +70,20 @@ impl From<entity::folders::Model> for Folder {
             encrypted_name: value.encrypted_name,
             created_at: value.created_at.to_utc().into(),
             expired_at: value.expired_at.map(|exp| exp.to_utc().into()),
+        }
+    }
+}
+
+impl From<entity::files::Model> for FileView {
+    fn from(value: entity::files::Model) -> Self {
+        FileView {
+            id: value.public_id.into(),
+            metadata: EncryptedFileMetadata {
+                encrypted_path: value.encrypted_path,
+                encrypted_mime: value.encrypted_mime_type,
+                encrypted_hash: value.encrypted_file_hash,
+            },
+            size: value.file_size,
         }
     }
 }

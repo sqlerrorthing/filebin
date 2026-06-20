@@ -2,6 +2,7 @@
 
 use nutype::nutype;
 use sea_orm::entity::prelude::*;
+use serde::{Deserialize, Serialize};
 use tinystr::TinyStr16;
 use crate::macros::tiny_str_sea_orm_derive;
 
@@ -24,7 +25,7 @@ pub struct PublicId(TinyStr16);
 
 tiny_str_sea_orm_derive!(PublicId(TinyStr16));
 
-#[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel)]
+#[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Deserialize, Serialize)]
 #[sea_orm(table_name = "files")]
 pub struct Model {
     #[sea_orm(primary_key)]

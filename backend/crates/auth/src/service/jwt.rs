@@ -1,5 +1,6 @@
+use std::time::Duration;
 use crate::service::TokenService;
-use chrono::{DateTime, Duration, Utc};
+use chrono::{DateTime, Utc};
 use domain::entity::folders::PublicId;
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use serde::{Deserialize, Serialize};
@@ -49,9 +50,7 @@ impl TokenService for JwtTokenService {
         folder_long_id: &PublicId,
     ) -> Result<String, Self::Error> {
         let claims = ModifyFolderToken {
-            expiration: Utc::now()
-                .checked_add_signed(self.expires)
-                .ok_or(Error::InvalidExpires)?,
+            expiration: Utc::now() + self.expires,
             issued_at: Utc::now(),
             folder: folder_long_id.clone(),
         };
@@ -66,7 +65,7 @@ impl TokenService for JwtTokenService {
     ) -> Result<bool, Self::Error> {
         Ok(
             decode::<ModifyFolderToken>(&token, &self.decoding_key, &Validation::new(Algorithm::HS256))
-                .map_or(false, |data| &data.claims.folder == folder_long_id),
+                .is_ok_and(|data| &data.claims.folder == folder_long_id),
         )
     }
 }

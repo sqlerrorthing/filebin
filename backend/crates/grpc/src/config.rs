@@ -108,6 +108,15 @@ config! {
             pub expires: Duration,
             pub secret: SecretString,
         },
+        pub caches: {
+            #[serde(with = "humantime_serde")]
+            pub folders: Duration,
+            #[serde(with = "humantime_serde")]
+            pub files: Duration,
+        },
+        pub redis: {
+            pub url: String
+        },
         pub limits: {
             pub max_filesize: Byte,
         },

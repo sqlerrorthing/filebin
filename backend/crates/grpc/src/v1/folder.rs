@@ -17,6 +17,7 @@ use tonic::codegen::tokio_stream::StreamExt;
 use tonic::{Request, Response, Status, Streaming};
 use tracing::error;
 
+#[derive(new)]
 pub struct BasicGrpcFolderService<FilesS, FolderS, TS> {
     files_service: FilesS,
     folders_service: FolderS,
@@ -57,7 +58,7 @@ where
 
         Ok(Response::new(OwnedFolder {
             folder: folder.into(),
-            token: token.as_str().into(),
+            token: token.into(),
         }))
     }
 

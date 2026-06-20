@@ -25,6 +25,9 @@ pub trait FilesService: 'static {
     #[result]
     async fn delete_files_from_folder(&self, folder_id: folders::Id);
 
+    #[result]
+    async fn list_folder_files(&self, folder_id: folders::Id) -> Vec<files::Model>;
+    
     /// Uploads the file to folder.
     /// To cancel the upload, just drop the [`oneshot::Receiver`] half or call cancellation
     fn upload_file(

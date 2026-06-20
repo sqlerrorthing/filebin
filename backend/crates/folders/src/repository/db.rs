@@ -8,10 +8,10 @@ impl FoldersRepository for DatabaseConnection {
 
     async fn find_folder_by_public_id(
         &self,
-        folder: folders::PublicId,
+        public_id: folders::PublicId,
     ) -> Result<Option<folders::Model>, Self::Error> {
         folders::Entity::find()
-            .filter(folders::Column::PublicId.eq(folder))
+            .filter(folders::Column::PublicId.eq(public_id))
             .one(self)
             .await
     }
@@ -24,10 +24,9 @@ impl FoldersRepository for DatabaseConnection {
         folder.update(self).await
     }
 
-    async fn delete(&self, folder_id: folders::Id) -> Result<bool, Self::Error> {
+    async fn delete(&self, folder_id: folders::Id) -> Result<Option<folders::Model>, Self::Error> {
         folders::Entity::delete_by_id(folder_id)
-            .exec(self)
+            .exec_with_returning(self)
             .await
-            .map(|res| res.rows_affected == 1)
     }
 }
