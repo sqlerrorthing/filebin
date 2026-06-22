@@ -1,36 +1,26 @@
-FROM rust:latest AS planner
-WORKDIR /filebin/backend
-RUN cargo install cargo-chef
-COPY . .
-RUN cargo chef prepare --recipe-path recipe.json
-
-FROM rust AS cacher
-WORKDIR /filebin/backend
-RUN rustup default nightly && rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
-RUN cargo install cargo-chef
-COPY --from=planner /filebin/backend/recipe.json recipe.json
-
-ARG CARGO_FLAGS="--release"
-RUN cargo chef cook ${CARGO_FLAGS} --recipe-path recipe.json
-
-FROM rust AS build
+FROM rustlang/rust:nightly-slim AS build
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     pkg-config \
     libssl-dev \
     build-essential \
     protobuf-compiler \
+    libprotobuf-dev \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /filebin/backend
+RUN rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
 
-COPY . .
-COPY --from=cacher /filebin/backend/target target
+WORKDIR /app
+
+COPY backend .
+COPY proto proto
 
 ARG CARGO_FLAGS="--release"
-RUN rustup default nightly && rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
-RUN --mount=type=bind,source=proto,target=/filebin/proto\
-    cargo build ${CARGO_FLAGS} --bin grpc
+
+RUN --mount=type=cache,target=/app/target \
+    --mount=type=cache,target=/usr/local/cargo/registry \
+    cargo build --bin grpc --features proto-in-root ${CARGO_FLAGS} && \
+    cp /app/target/${CARGO_FLAGS:+release}${CARGO_FLAGS:-debug}/grpc /app/grpc
 
 FROM debian:stable-slim AS runtime
 RUN groupadd -g 1001 backendgroup && \
@@ -38,11 +28,11 @@ RUN groupadd -g 1001 backendgroup && \
 
 RUN apt-get update && \
     apt-get install -y ca-certificates && \
-    rm -rf /var/lib/apt/lists/* \
+    rm -rf /var/lib/apt/lists/*
 
 ARG CARGO_FLAGS="--release"
 COPY --from=build --chown=backenduser:backendgroup \
-    /filebin/backend/target/${CARGO_FLAGS:+release}${CARGO_FLAGS:-debug}/grpc \
+    /app/grpc \
     /usr/local/bin/backend
 
 USER backenduser

@@ -1,6 +1,6 @@
 use crate::repository::FilesRepository;
 use crate::service::{FilesService, UploadFileError};
-use crate::storage::{FILES_PREFIX, FilesStorage};
+use crate::storage::FilesStorage;
 use bytes::Bytes;
 use derive_new::new;
 use domain::entity::{files, folders};

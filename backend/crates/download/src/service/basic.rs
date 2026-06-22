@@ -33,14 +33,14 @@ where
     FoldersS: FoldersService,
 {
     type Error = Error<FilesS, FoldersS>;
-    type DownloadFileStreamByPublicIdsStream =
+    type DownloadFileByPublicIdsStream =
         impl Stream<Item = Result<Bytes, Self::Error>> + Debug;
 
     async fn download_file_stream_by_public_ids(
         &self,
         folder_id: entity::folders::PublicId,
         file_id: entity::files::PublicId,
-    ) -> Result<Option<Self::DownloadFileStreamByPublicIdsStream>, Self::Error> {
+    ) -> Result<Option<Self::DownloadFileByPublicIdsStream>, Self::Error> {
         let Some(folder) = self
             .folders_service
             .find_folder_by_public_id(folder_id)

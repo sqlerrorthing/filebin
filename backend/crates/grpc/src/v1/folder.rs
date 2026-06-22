@@ -65,7 +65,7 @@ where
 
         let Some(Ok(UploadFileRequest {
             data: Some(upload_file_request::Data::Initiate(initiate)),
-        })) = dbg!(stream.next().await)
+        })) = stream.next().await
         else {
             return Err(Status::invalid_argument("invalid initial request"));
         };

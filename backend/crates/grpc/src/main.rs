@@ -41,22 +41,11 @@ async fn up_db(config: &Db) -> Result<DatabaseConnection, DbErr> {
     Ok(db)
 }
 
-async fn up_redis(config: &Redis) -> Result<deadpool_redis::Pool, deadpool_redis::PoolError> {
-    loop {
-        let cfg = deadpool_redis::Config::from_url(&config.url);
-        let builder = cfg.builder().unwrap().runtime(Runtime::Tokio1);
+async fn up_redis(config: &Redis) -> color_eyre::Result<deadpool_redis::Pool> {
+    let cfg = deadpool_redis::Config::from_url(&config.url);
+    let builder = cfg.builder()?.runtime(Runtime::Tokio1);
 
-        let error = match builder.build().map_err(CreatePoolError::Build) {
-            Ok(pool) => match pool.get().await {
-                Ok(_) => break Ok(pool),
-                Err(e) => e.to_string(),
-            },
-            Err(e) => e.to_string(),
-        };
-
-        error!("Failed connect to redis: {error}, waiting 5 secs");
-        sleep(Duration::from_secs(5)).await;
-    }
+    Ok(builder.build()?)
 }
 
 async fn up_s3_client(config: &Storage) -> aws_sdk_s3::Client {
@@ -140,7 +129,7 @@ async fn main() -> color_eyre::Result<()> {
             folders_service,
             download_service,
         )))
-        .serve("[::1]:50051".parse()?)
+        .serve("0.0.0.0:50051".parse()?)
         .await?;
 
     Ok(())

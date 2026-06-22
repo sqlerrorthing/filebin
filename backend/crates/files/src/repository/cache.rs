@@ -36,7 +36,7 @@ where
         self.clear_cache_keys(
             result
                 .iter()
-                .flat_map(|f| [key_by_id(f.id), key_by_public_id(&f.public_id)]),
+                .flat_map(|f| [key_by_id(f.id), folder_files_key(folder_id), key_by_public_id(&f.public_id)]),
         )
         .await;
 

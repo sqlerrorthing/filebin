@@ -10,33 +10,32 @@ caches:
   files: "1h"
 
 redis:
-  url: redis://localhost:6379
+  # Set via SERVER__REDIS__URL
+  # url: redis://localhost:6379
 
 jwt:
-  # !!! REPLACE THIS !!!. Use `openssl rand -hex 64` to generate a new random 128 string.
-  # Or replace with SERVER__JWT__SECRET
-  secret: b35d6f77ffd07203115eb045a754c6cd40a0af0bfd39d69e2aefc284956fa2b5e18f9e7469186c4335912414d02184210a72543ce9932a400692e40558fa1412
   expires: 16h
+  # Set via SERVER__JWT__SECRET
+  # secret:
 
 storage:
-  # S3 access key
-  access-key: replace_me
-
-  # S3 secret key
-  secret-key: replace_me
-
-  # S3 bucket
-  bucket: filebin
-
   # S3 Region
-  region: auto # for aws use us-east-1, auto is disallowed
+  region: auto
 
-  # Set null if it's not required
-  endpoint-url: http://localhost:9000
+  # Set via SERVER__STORAGE__ACCESS_KEY
+  # access_key:
 
-  # Not required
+  # Set via SERVER__STORAGE__SECRET_KEY
+  # secret_key:
+
+  # Set via SERVER__STORAGE__BUCKET
+  # bucket:
+
+  # Set via SERVER__STORAGE__ENDPOINT_URL
+  # endpoint_url:
+
   force-path-style: true
 
 db:
-  # !!! REPLACE THIS !!!. Postgres db url
-  postgres-url: postgres://user:password@localhost:5432/filebin
+# Set via SERVER__DB__POSTGRES_URL
+# postgres_url:

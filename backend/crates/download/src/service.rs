@@ -9,12 +9,12 @@ use service::service;
 pub trait DownloadService: 'static {
     type Error;
 
-    type DownloadFileStreamByPublicIdsStream: Stream<Item = Result<Bytes, Self::Error>>;
+    type DownloadFileByPublicIdsStream: Stream<Item = Result<Bytes, Self::Error>>;
 
     #[result]
     async fn download_file_stream_by_public_ids(
         &self,
         folder_id: folders::PublicId,
         file_id: files::PublicId,
-    ) -> Option<Self::DownloadFileStreamByPublicIdsStream>;
+    ) -> Option<Self::DownloadFileByPublicIdsStream>;
 }

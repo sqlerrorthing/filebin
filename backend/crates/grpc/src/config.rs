@@ -101,7 +101,7 @@ macro_rules! config {
 
 config! {
     #[derive(Deserialize)]
-    #[serde(rename_all = "kebab-case")]
+    #[serde(rename_all = "snake_case")]
     pub Config {
         pub jwt: {
             #[serde(with = "humantime_serde")]

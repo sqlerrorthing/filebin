@@ -6,42 +6,60 @@ services:
       args:
         - CARGO_FLAGS=
     environment:
-      SERVER__JWT__SECRET: 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+      RUST_LOG: debug
 
-      SERVER__STORAGE_ACCESS_KEY: admin
-      SERVER__STORAGE_SECRET_KEY: admin
-      SERVER__STORAGE_BUCKET: filebin
-      SERVER__ENDPOINT_URL: http://minio:9000
+      SERVER__CONFIG: /etc/config
+      SERVER__JWT__SECRET: b35d6f77ffd07203115eb045a754c6cd40a0af0bfd39d69e2aefc284956fa2b5e18f9e7469186c4335912414d02184210a72543ce9932a400692e40558fa1412
 
-      SERVER_DB: postgres://user:password@postgres:5432/filebin
+      SERVER__STORAGE__ACCESS_KEY: admin
+      SERVER__STORAGE__SECRET_KEY: adminadmin
+      SERVER__STORAGE__BUCKET: filebin
+      SERVER__STORAGE__ENDPOINT_URL: http://minio:9000
+
+      SERVER__REDIS__URL: redis://valkey:6379
+
+      SERVER__DB__POSTGRES_URL: postgres://user:password@postgres:5432/filebin
     container_name: filebin-backend
     restart: always
     ports:
-      - 50051:50051
+      - "50051:50051"
+    volumes:
+      - ./config.yaml.sample:/etc/config
+    networks:
+      - filebin-network
     depends_on:
-      - minio
-      - minio-init
-      - postgres
+      minio:
+        condition: service_started
+      minio-init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_started
 
   minio:
     image: minio/minio:latest
     container_name: minio-filebin-backend
     environment:
       MINIO_ROOT_USER: "admin"
-      MINIO_ROOT_PASSWORD: "admin"
+      MINIO_ROOT_PASSWORD: "adminadmin"
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
     restart: unless-stopped
+    networks:
+      - filebin-network
 
   minio-init:
     image: minio/mc:latest
     container_name: mc-filebin-backend
     depends_on:
       - minio
+    networks:
+      - filebin-network
     entrypoint: >
       /bin/sh -c "
-      until (/usr/bin/mc alias set myminio http://minio:9000 admin admin) do echo 'Waiting for MinIO...' && sleep 1; done;
+      until (/usr/bin/mc alias set myminio http://minio:9000 admin adminadmin) do echo 'Waiting for MinIO...' && sleep 1; done;
       /usr/bin/mc mb --ignore-existing myminio/filebin;
       /usr/bin/mc anonymous set download myminio/filebin;
       exit 0;
@@ -59,7 +77,30 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
+    networks:
+      - filebin-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user -d filebin" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  valkey:
+    image: valkey/valkey:8.0-alpine
+    container_name: valkey-filebin-backend
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - valkey_data:/data
+    networks:
+      - filebin-network
 
 volumes:
   minio_data:
   postgres_data:
+  valkey_data:
+
+networks:
+  filebin-network:
+    driver: bridge

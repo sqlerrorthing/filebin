@@ -1,5 +1,5 @@
-use glob::{glob, PatternError};
-use tonic_prost_build;
+use glob::{PatternError, glob};
+use std::env;
 
 fn find_protos(pat: &str) -> Result<Vec<String>, PatternError> {
     Ok(glob(pat)?
@@ -9,12 +9,16 @@ fn find_protos(pat: &str) -> Result<Vec<String>, PatternError> {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut protos: Vec<String> = find_protos("../../../proto/proto/**/*.proto")?;
-    protos.extend(find_protos("../../../proto/vendor/**/*.proto")?);
+    let proto_root = env::var("CARGO_FEATURE_PROTO_IN_ROOT")
+        .map(|_| "../../proto")
+        .unwrap_or("../../../proto");
+
+    let mut protos: Vec<String> = find_protos(&format!("{proto_root}/proto/**/*.proto"))?;
+    protos.extend(find_protos(&format!("{proto_root}/vendor/**/*.proto"))?);
 
     let includes = [
-        "../../../proto/proto".to_string(),
-        "../../../proto/vendor".to_string()
+        format!("{proto_root}/proto"),
+        format!("{proto_root}/vendor"),
     ];
 
     tonic_prost_build::configure()

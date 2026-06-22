@@ -1,6 +1,0 @@
-target
-.git
-.gitignore
-Dockerfile
-.idea
-/crates/grpc/src/v1/folder.rs

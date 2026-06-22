@@ -3,7 +3,6 @@ pub mod basic;
 use bytes::Bytes;
 use domain::entity::{files, folders};
 use futures_core::Stream;
-use service::error::ServiceError;
 use service::service;
 use thiserror::Error;
 
