@@ -6,9 +6,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     protobuf-compiler \
     libprotobuf-dev \
+    musl-tools \
     && rm -rf /var/lib/apt/lists/*
 
-RUN rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
+RUN rustup set profile minimal && \
+    rustup toolchain install nightly-x86_64-unknown-linux-gnu && \
+    rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu && \
+    rustup target add x86_64-unknown-linux-musl --toolchain nightly-x86_64-unknown-linux-gnu
 
 WORKDIR /app
 
@@ -16,26 +20,24 @@ COPY backend .
 COPY proto proto
 
 ARG CARGO_FLAGS="--release"
+ENV CC_x86_64_unknown_linux_musl=musl-gcc
+ENV RUSTFLAGS="-C target-cpu=x86-64"
 
 RUN --mount=type=cache,target=/app/target \
     --mount=type=cache,target=/usr/local/cargo/registry \
-    cargo build --bin grpc --features proto-in-root ${CARGO_FLAGS} && \
-    if echo "${CARGO_FLAGS}" | grep -q "\-\-release"; then \
-        PROFILE="release"; \
-    else \
-        PROFILE="debug"; \
-    fi && \
-    cp /app/target/${PROFILE}/grpc /app/grpc
+    cargo build --bin grpc --features proto-in-root --target x86_64-unknown-linux-musl ${CARGO_FLAGS} && \
+    PROFILE=$(echo "${CARGO_FLAGS}" | grep -q "\-\-release" && echo "release" || echo "debug") && \
+    cp /app/target/x86_64-unknown-linux-musl/${PROFILE}/grpc /app/grpc
 
-FROM debian:stable-slim AS runtime
-RUN groupadd -g 1001 backendgroup && \
-    useradd -u 1001 -g backendgroup -m -d /home/backenduser -s /bin/bash backenduser
+FROM alpine:latest AS runtime
 
-RUN apt-get update && \
-    apt-get install -y ca-certificates && \
-    rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache \
+    gcompat \
+    ca-certificates
 
-ARG CARGO_FLAGS="--release"
+RUN addgroup -g 1001 backendgroup && \
+    adduser -u 1001 -G backendgroup -D -s /sbin/nologin backenduser
+
 COPY --from=build --chown=backenduser:backendgroup \
     /app/grpc \
     /usr/local/bin/backend
