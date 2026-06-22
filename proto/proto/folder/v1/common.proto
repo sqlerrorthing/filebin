@@ -1,0 +1,16 @@
+syntax = "proto2";
+
+package folder.v1;
+
+message FolderId {
+  required string value = 1;
+}
+
+message FileId {
+  required string value = 1;
+}
+
+// A token to edit files in the folder
+message FolderToken {
+  required string value = 2;
+}

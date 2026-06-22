@@ -1,0 +1,6 @@
+backend/target
+.git
+.gitignore
+Dockerfile
+.idea
+

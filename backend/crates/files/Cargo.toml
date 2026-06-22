@@ -1,0 +1,23 @@
+[package]
+name = "files"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+service.path = "../service"
+domain.path = "../domain"
+tokio.workspace = true
+bytes.workspace = true
+aws-sdk-s3.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+id_generator.path = "../id_generator"
+sea-orm.workspace = true
+derive-new.workspace = true
+tokio-util = { workspace = true, features = ["futures-io"] }
+aws-smithy-types = "1.5.0"
+aws-smithy-async = "1.2.14"
+cache.path = "../cache"
+storage.path = "../storage"
+futures-core.workspace = true
+futures-util.workspace = true

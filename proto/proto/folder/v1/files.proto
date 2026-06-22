@@ -1,23 +1,40 @@
 syntax = "proto2";
 
-import "folder/v1/folder.proto";
-
 package folder.v1;
 
+import "folder/v1/common.proto";
+
+
 service FilesService {
-  rpc InitiateUpload(InitiateUploadRequest) returns (InitiateUploadResponse);
+  rpc ListFiles(ListFilesRequest) returns (ListFilesResponse);
+  rpc Download(DownloadRequest) returns (stream Blob);
 }
 
-message FileId {
-  required string value = 1;
-}
-
-message InitiateUploadResponse {
+message DownloadRequest {
+  required FolderId folder = 2;
   required FileId file = 1;
-  required string upload_url = 2;
 }
 
-message InitiateUploadRequest {
-  required FileView view = 1;
-  required FolderToken token = 2;
+message Blob {
+  required bytes part = 1;
+}
+
+message ListFilesRequest {
+  required FolderId folder = 1;
+}
+
+message ListFilesResponse {
+  repeated FileView files = 1;
+}
+
+message FileView {
+  required FileId id = 3;
+  required EncryptedFileMetadata metadata = 1;
+  required sint64 size = 2;
+}
+
+message EncryptedFileMetadata {
+  required string encrypted_path = 2;
+  required string encrypted_mime = 1;
+  required string encrypted_hash = 4;
 }

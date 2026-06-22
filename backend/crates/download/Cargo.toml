@@ -1,0 +1,15 @@
+[package]
+name = "download"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+service.path = "../service"
+domain.path = "../domain"
+futures-core.workspace = true
+bytes.workspace = true
+derive-new.workspace = true
+thiserror.workspace = true
+files.path = "../files"
+folders.path = "../folders"
+futures-util.workspace = true
