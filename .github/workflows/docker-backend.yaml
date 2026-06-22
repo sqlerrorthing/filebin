@@ -31,7 +31,7 @@ jobs:
         uses: docker/build-push-action@v7.2.0
         with:
           context: .
-          file: backend/Dockerimage
+          file: backend/Dockerfile
           push: true
           tags: ghcr.io/sqlerrorthing/filebin:backend
           cache-from: type=registry,ref=ghcr.io/sqlerrorthing/filebin:backend-buildcache
