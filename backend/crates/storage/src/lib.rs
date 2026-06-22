@@ -38,5 +38,5 @@ pub trait Storage: 'static {
     where
         K: Into<String> + Send,
         I: IntoIterator<Item = K> + Send,
-        I::IntoIter: ExactSizeIterator + Send;
+        I::IntoIter: Send;
 }

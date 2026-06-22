@@ -2,20 +2,25 @@ use crate::storage::{FILES_PREFIX, FilesStorage};
 use aws_sdk_s3::error::SdkError;
 use aws_sdk_s3::operation::complete_multipart_upload::CompleteMultipartUploadError;
 use aws_sdk_s3::operation::create_multipart_upload::CreateMultipartUploadError;
+use aws_sdk_s3::operation::delete_objects::DeleteObjectsError;
+use aws_sdk_s3::operation::get_object::GetObjectError;
 use aws_sdk_s3::operation::upload_part::UploadPartError;
 use aws_sdk_s3::types::{CompletedMultipartUpload, CompletedPart, Delete, ObjectIdentifier};
 use aws_sdk_s3::{Client as S3Client, Client};
+use aws_smithy_types::byte_stream;
 use aws_smithy_types::error::operation::BuildError;
 use bytes::Bytes;
 use derive_new::new;
 use domain::entity::files;
 use domain::sync::shared_string::SharedString;
+use futures_core::Stream;
+use futures_util::{TryStreamExt, stream};
+use std::fmt::Debug;
 use std::hint::cold_path;
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicI32, Ordering};
-use aws_sdk_s3::operation::delete_objects::DeleteObjectsError;
 use thiserror::Error;
-use tokio::spawn;
+use tokio::{pin, spawn};
 use tracing::error;
 
 const AWS_BULK_DELETE_CHUNKS: usize = 1000;
@@ -46,15 +51,21 @@ pub enum Error {
     #[error("delete objects error: {0}")]
     DeleteObjects(#[from] SdkError<DeleteObjectsError>),
 
+    #[error("get object error: {0}")]
+    GetObject(#[from] SdkError<GetObjectError>),
+
     #[error("the multipart handler dropped")]
     MultipartHandlerDropped,
+
+    #[error("steram error: {0}")]
+    Stream(#[from] byte_stream::error::Error),
 }
 
 #[derive(Debug)]
-pub struct S3MultipartUpload {
+pub struct S3MultipartFileUpload {
     client: Client,
     bucket: SharedString,
-    key: SharedString,
+    key: files::StoragePath,
     upload_id: SharedString,
     next_part_number: AtomicI32,
     completed_parts: Mutex<Vec<CompletedPart>>,
@@ -62,7 +73,7 @@ pub struct S3MultipartUpload {
 
 #[derive(Debug)]
 pub struct S3MultipartUploadHandle {
-    inner: Option<S3MultipartUpload>,
+    inner: Option<S3MultipartFileUpload>,
 }
 
 impl Drop for S3MultipartUploadHandle {
@@ -74,7 +85,7 @@ impl Drop for S3MultipartUploadHandle {
                     .client
                     .abort_multipart_upload()
                     .bucket(inner.bucket)
-                    .key(inner.key)
+                    .key(format!("{FILES_PREFIX}/{}", inner.key))
                     .upload_id(inner.upload_id)
                     .send()
                     .await
@@ -89,26 +100,27 @@ impl Drop for S3MultipartUploadHandle {
 impl FilesStorage for S3FilesStorage {
     type Error = Error;
     type MultipartUploadHandle = S3MultipartUploadHandle;
+    type GetFileStream = impl Stream<Item = Result<Bytes, Self::Error>> + Debug;
 
     async fn create_multipart_upload(
         &self,
-        key: String,
+        key: files::StoragePath,
     ) -> Result<Self::MultipartUploadHandle, Self::Error> {
         let res = self
             .client
             .create_multipart_upload()
             .bucket(self.bucket.clone())
-            .key(&key)
+            .key(format!("{FILES_PREFIX}/{key}"))
             .send()
             .await?;
 
         let upload_id = res.upload_id.ok_or(Error::MissingUploadId)?;
 
         Ok(S3MultipartUploadHandle {
-            inner: Some(S3MultipartUpload {
+            inner: Some(S3MultipartFileUpload {
                 client: self.client.clone(),
                 bucket: self.bucket.clone(),
-                key: key.into(),
+                key,
                 upload_id: upload_id.into(),
                 next_part_number: AtomicI32::new(1),
                 completed_parts: Default::default(),
@@ -132,7 +144,7 @@ impl FilesStorage for S3FilesStorage {
             .client
             .upload_part()
             .bucket(handle.bucket.clone())
-            .key(handle.key.clone())
+            .key(format!("{FILES_PREFIX}/{}", handle.key))
             .upload_id(handle.upload_id.clone())
             .part_number(part_number)
             .body(part.into())
@@ -153,7 +165,7 @@ impl FilesStorage for S3FilesStorage {
     async fn complete_multipart_upload(
         &self,
         mut handle: Self::MultipartUploadHandle,
-    ) -> Result<String, Self::Error> {
+    ) -> Result<files::StoragePath, Self::Error> {
         let handle_inner = handle.inner.take().ok_or(Error::MultipartHandlerDropped)?;
         let mut parts = handle_inner.completed_parts.lock().unwrap().clone();
         parts.sort_by_key(|p| p.part_number);
@@ -162,7 +174,7 @@ impl FilesStorage for S3FilesStorage {
             .client
             .complete_multipart_upload()
             .bucket(handle_inner.bucket.clone())
-            .key(handle_inner.key.clone())
+            .key(format!("{FILES_PREFIX}/{}", handle_inner.key))
             .upload_id(handle_inner.upload_id.clone())
             .multipart_upload(
                 CompletedMultipartUpload::builder()
@@ -177,7 +189,7 @@ impl FilesStorage for S3FilesStorage {
             return Err(e.into());
         }
 
-        Ok(handle_inner.key.into())
+        Ok(handle_inner.key)
     }
 
     async fn bulk_delete(&self, ids: Vec<files::StoragePath>) -> Result<(), Self::Error> {
@@ -198,14 +210,37 @@ impl FilesStorage for S3FilesStorage {
             self.client
                 .delete_objects()
                 .bucket(self.bucket.clone())
-                .delete(Delete::builder()
-                    .set_objects(Some(object_ids))
-                    .build()?
-                )
+                .delete(Delete::builder().set_objects(Some(object_ids)).build()?)
                 .send()
                 .await?;
         }
 
         Ok(())
+    }
+
+    async fn get_file(
+        &self,
+        path: files::StoragePath,
+    ) -> Result<Option<Self::GetFileStream>, Self::Error> {
+        let object = self
+            .client
+            .get_object()
+            .bucket(self.bucket.clone())
+            .key(format!("{FILES_PREFIX}/{path}"))
+            .send()
+            .await;
+
+        let object = match object {
+            Err(SdkError::ServiceError(e)) if e.err().is_no_such_key() => {
+                return Ok(None);
+            }
+            x => x?,
+        };
+
+        let mut stream = Box::pin(object.body);
+
+        Ok(Some(
+            stream::poll_fn(move |cx| stream.as_mut().poll_next(cx)).map_err(Into::into),
+        ))
     }
 }

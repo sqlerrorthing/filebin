@@ -15,7 +15,20 @@ impl FilesRepository for DatabaseConnection {
             .await
     }
 
-    async fn list_folder_files(&self, folder_id: folders::Id) -> Result<Vec<files::Model>, Self::Error> {
+    async fn find_file_by_public_id(
+        &self,
+        public_id: files::PublicId,
+    ) -> Result<Option<files::Model>, Self::Error> {
+        files::Entity::find()
+            .filter(files::Column::PublicId.eq(public_id))
+            .one(self)
+            .await
+    }
+
+    async fn list_folder_files(
+        &self,
+        folder_id: folders::Id,
+    ) -> Result<Vec<files::Model>, Self::Error> {
         files::Entity::find()
             .filter(files::Column::FolderId.eq(folder_id))
             .all(self)

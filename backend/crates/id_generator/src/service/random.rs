@@ -26,6 +26,6 @@ impl IdGeneratorService for RandomIdGeneratorService {
 
 fn fill_tinystr<const N: usize>() -> TinyAsciiStr<N> {
     let mut buf = [0u8; N];
-    rng().sample_iter(Alphanumeric).sample_fill(&mut rng(), &mut buf);
+    rng().sample_iter(Alphanumeric).take(N).sample_fill(&mut rng(), &mut buf);
     unsafe { TinyAsciiStr::<N>::try_from_raw(buf).unwrap_unchecked() }
 }

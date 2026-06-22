@@ -1,4 +1,4 @@
-#![feature(min_specialization)]
+#![feature(min_specialization, impl_trait_in_assoc_type)]
 
 use crate::config::{CONFIG, Db, Redis, Storage};
 use crate::schema::api::folder::v1::files_service_server::FilesServiceServer;
@@ -10,6 +10,7 @@ use aws_config::{BehaviorVersion, Region};
 use aws_sdk_s3::config::Credentials;
 use cache::Cache;
 use deadpool_redis::{CreatePoolError, Runtime};
+use download::service::basic::BasicDownloadService;
 use files::service::basic::BasicFilesService;
 use files::storage::s3::S3FilesStorage;
 use folders::service::basic::BasicFoldersService;
@@ -97,10 +98,7 @@ async fn main() -> color_eyre::Result<()> {
     let db = up_db(&CONFIG.db).await?;
     let redis = up_redis(&CONFIG.redis).await?;
 
-    let token_service = JwtTokenService::new(
-        CONFIG.jwt.expires,
-        CONFIG.jwt.secret.expose_secret(),
-    );
+    let token_service = JwtTokenService::new(CONFIG.jwt.expires, CONFIG.jwt.secret.expose_secret());
 
     let files_storage = S3FilesStorage::new(
         up_s3_client(&CONFIG.storage).await,
@@ -128,6 +126,9 @@ async fn main() -> color_eyre::Result<()> {
         RandomIdGeneratorService,
     );
 
+    let download_service =
+        BasicDownloadService::new(files_service.clone(), folders_service.clone());
+
     Server::builder()
         .add_service(FolderServiceServer::new(BasicGrpcFolderService::new(
             files_service.clone(),
@@ -137,6 +138,7 @@ async fn main() -> color_eyre::Result<()> {
         .add_service(FilesServiceServer::new(BasicGrpcFilesService::new(
             files_service,
             folders_service,
+            download_service,
         )))
         .serve("[::1]:50051".parse()?)
         .await?;

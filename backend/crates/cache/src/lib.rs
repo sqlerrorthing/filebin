@@ -42,13 +42,13 @@ impl Drop for InflightGuard<'_> {
 impl<S: Storage, R> Cache<S, R> {
     pub async fn load_or_cache<T: Serialize + DeserializeOwned + Sync, E>(
         &self,
-        key: impl Into<String>,
+        key: impl AsRef<str>,
         load: impl AsyncFnOnce(&R) -> Result<T, E>,
     ) -> Result<T, E> {
-        let key = key.into();
+        let key = key.as_ref();
 
         loop {
-            if let Some(cached) = self.fetch_cache(&key).await {
+            if let Some(cached) = self.fetch_cache(key).await {
                 return Ok(cached);
             }
 
@@ -56,11 +56,11 @@ impl<S: Storage, R> Cache<S, R> {
 
             let (is_leader, notify) = {
                 let mut in_flight = self.inflight.lock();
-                if let Some(notify) = in_flight.get(&key) {
+                if let Some(notify) = in_flight.get(key) {
                     (false, notify.clone())
                 } else {
                     let notify = Arc::new(Notify::new());
-                    in_flight.insert(key.clone(), notify.clone());
+                    in_flight.insert(key.to_owned() , notify.clone());
                     (true, notify)
                 }
             };
@@ -71,13 +71,13 @@ impl<S: Storage, R> Cache<S, R> {
             }
 
             let _guard = InflightGuard {
-                key: &key,
+                key,
                 inflight: &self.inflight,
                 notify
             };
 
             let result = load(&self.repository).await?;
-            self.cache(&key, &result).await;
+            self.cache(key, &result).await;
             drop(_guard);
 
             return Ok(result)
@@ -105,7 +105,7 @@ impl<S: Storage, R> Cache<S, R> {
     where
         K: Into<String> + Send,
         I: IntoIterator<Item = K> + Send,
-        I::IntoIter: ExactSizeIterator + Send
+        I::IntoIter: Send
     {
         _ = self.storage.bulk_delete(keys).await
             .inspect_err(|e| error!("Failed to bulk delete keys: {e}"));

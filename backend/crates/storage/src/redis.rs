@@ -66,16 +66,15 @@ impl Storage for Pool {
     where
         K: Into<String> + Send,
         I: IntoIterator<Item = K>,
-        I::IntoIter: ExactSizeIterator + Send,
     {
-        let iter = keys.into_iter();
-        if iter.len() == 0 {
-            return Ok(());
+        let keys = keys.into_iter().map(Into::into).collect::<Vec<_>>();
+        if keys.is_empty() {
+            return Ok(())
         }
-
+        
         let mut conn = self.get().await?;
         let _: usize = conn
-            .unlink(iter.map(Into::into).collect::<Vec<_>>())
+            .unlink(keys)
             .await
             .map_err(PoolError::Backend)?;
         Ok(())

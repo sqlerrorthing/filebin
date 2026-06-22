@@ -1,7 +1,8 @@
+use domain::into_string::IntoOptionalString;
+use service::error::ServiceError;
 use std::error::Error;
 use tonic::Status;
 use tracing::error;
-use domain::into_string::IntoOptionalString;
 
 pub mod api {
     pub mod folder {
@@ -49,7 +50,10 @@ impl<T> ServiceErrorExt<T> for Option<T> {
     }
 }
 
-fn ok_or_invalid_argument<T, E: Error>(result: Result<T, E>, msg: impl IntoOptionalString) -> Result<T, Status> {
+fn ok_or_invalid_argument<T, E: Error>(
+    result: Result<T, E>,
+    msg: impl IntoOptionalString,
+) -> Result<T, Status> {
     result.map_err(|e| {
         let mut base = "invalid argument".to_string();
 
@@ -65,7 +69,10 @@ fn ok_or_invalid_argument<T, E: Error>(result: Result<T, E>, msg: impl IntoOptio
     })
 }
 
-fn ok_or_not_found<T, E: Error>(result: Result<T, E>, msg: impl IntoOptionalString) -> Result<T, Status> {
+fn ok_or_not_found<T, E: Error>(
+    result: Result<T, E>,
+    msg: impl IntoOptionalString,
+) -> Result<T, Status> {
     result.map_err(|e| {
         let mut base = "not found".to_string();
 
@@ -93,13 +100,11 @@ impl<T, E: Error> ServiceErrorExt<T> for Result<T, E> {
 
 impl<T, E: Error> ServiceErrorExt<T> for Result<Option<T>, E> {
     fn ok_or_invalid_argument(self, msg: impl IntoOptionalString) -> Result<T, Status> {
-        ok_or_invalid_argument(self, &msg)?
-            .ok_or_invalid_argument(&msg)
+        ok_or_invalid_argument(self, &msg)?.ok_or_invalid_argument(&msg)
     }
 
     fn ok_or_not_found(self, msg: impl IntoOptionalString) -> Result<T, Status> {
-        ok_or_not_found(self, &msg)?
-            .ok_or_not_found(msg)
+        ok_or_not_found(self, &msg)?.ok_or_not_found(msg)
     }
 }
 
@@ -107,17 +112,37 @@ pub trait ServiceResultExt<T> {
     fn ok_or_internal(self) -> Result<T, Status>;
 }
 
+pub trait IntoInternal: Error {
+    fn into_internal(self) -> Status;
+}
+
+impl<E: Error> IntoInternal for E {
+    fn into_internal(self) -> Status {
+        error!("Server internal error: {self}");
+
+        Status::internal(if cfg!(debug_assertions) {
+            format!("server error: {self}")
+        } else {
+            "server error".to_string()
+        })
+    }
+}
+
 impl<T, E: Error> ServiceResultExt<T> for Result<T, E> {
     #[inline(always)]
-    fn ok_or_internal(self) -> Result<T, Status> {
-        self.map_err(|e| {
-            error!("Server internal error: {e}");
+    default fn ok_or_internal(self) -> Result<T, Status> {
+        self.map_err(IntoInternal::into_internal)
+    }
+}
 
-            Status::internal(if cfg!(debug_assertions) {
-                format!("server error: {e}")
-            } else {
-                "server error".to_string()
-            })
-        })
+impl<T, B: Error + 'static, I: Error + 'static> ServiceResultExt<Result<T, B>>
+    for Result<T, ServiceError<B, I>>
+{
+    fn ok_or_internal(self) -> Result<Result<T, B>, Status> {
+        match self {
+            Ok(data) => Ok(Ok(data)),
+            Err(ServiceError::Business(b)) => Ok(Err(b)),
+            Err(ServiceError::Internal(i)) => Err(i.into_internal()),
+        }
     }
 }

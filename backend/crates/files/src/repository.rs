@@ -13,6 +13,9 @@ pub trait FilesRepository: 'static {
     async fn delete_files_from_folder(&self, folder_id: folders::Id) -> Vec<files::Model>;
 
     #[result]
+    async fn find_file_by_public_id(&self, public_id: files::PublicId) -> Option<files::Model>;
+    
+    #[result]
     async fn list_folder_files(&self, folder_id: folders::Id) -> Vec<files::Model>;
     
     #[result]

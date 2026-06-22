@@ -6,7 +6,7 @@ use domain::entity;
 use sea_orm::prelude::DateTimeUtc;
 use std::time::Duration;
 use thiserror::Error;
-use tinystr::TinyStr8;
+use tinystr::{TinyStr16, TinyStr8};
 use tonic::Status;
 
 impl From<entity::folders::PublicId> for FolderId {
@@ -30,7 +30,17 @@ impl TryFrom<FolderId> for entity::folders::PublicId {
 
     fn try_from(value: FolderId) -> Result<Self, Self::Error> {
         Ok(entity::folders::PublicId::new(
-            TinyStr8::try_from_str(&value.value).ok_or_invalid_argument("invalid public id")?,
+            TinyStr8::try_from_str(&value.value).ok_or_invalid_argument("invalid id")?,
+        ))
+    }
+}
+
+impl TryFrom<FileId> for entity::files::PublicId {
+    type Error = Status;
+
+    fn try_from(value: FileId) -> Result<Self, Self::Error> {
+        Ok(entity::files::PublicId::new(
+            TinyStr16::try_from_str(&value.value).ok_or_invalid_argument("invalid id")?,
         ))
     }
 }
@@ -46,7 +56,7 @@ impl From<DateTimeUtc> for google::r#type::DateTime {
             seconds: value.second() as i32,
             nanos: value.nanosecond() as i32,
             time_offset: Some(google::r#type::date_time::TimeOffset::UtcOffset(
-                prost_types::Duration {
+                pbjson_types::Duration {
                     seconds: 0,
                     nanos: 0,
                 },
@@ -101,7 +111,7 @@ pub enum ConvertDurationError {
 }
 
 pub fn prost_duration_to_std_duration(
-    duration: prost_types::Duration,
+    duration: pbjson_types::Duration,
 ) -> Result<Duration, ConvertDurationError> {
     if duration.seconds < 0 || duration.nanos < 0 {
         return Err(ConvertDurationError::Negative);

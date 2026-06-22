@@ -6,7 +6,11 @@ use storage::Storage;
 const PREFIX: &str = "cache:files";
 
 fn key_by_id(files_id: files::Id) -> String {
-    format!("{PREFIX}:f:{files_id}")
+    format!("{PREFIX}:file:{files_id}")
+}
+
+fn key_by_public_id(files_id: &files::PublicId) -> String {
+    format!("{PREFIX}:file:pub:{files_id}")
 }
 
 fn folder_files_key(folder_id: folders::Id) -> String {
@@ -29,10 +33,24 @@ where
             .delete_files_from_folder(folder_id)
             .await?;
 
-        self.clear_cache_keys(result.iter().map(|f| key_by_id(f.id)))
-            .await;
+        self.clear_cache_keys(
+            result
+                .iter()
+                .flat_map(|f| [key_by_id(f.id), key_by_public_id(&f.public_id)]),
+        )
+        .await;
 
         Ok(result)
+    }
+
+    async fn find_file_by_public_id(
+        &self,
+        public_id: files::PublicId,
+    ) -> Result<Option<files::Model>, Self::Error> {
+        self.load_or_cache(key_by_public_id(&public_id), async |repo| {
+            repo.find_file_by_public_id(public_id).await
+        })
+        .await
     }
 
     async fn list_folder_files(
@@ -41,18 +59,25 @@ where
     ) -> Result<Vec<files::Model>, Self::Error> {
         self.load_or_cache(folder_files_key(folder_id), async |repo| {
             repo.list_folder_files(folder_id).await
-        }).await
+        })
+        .await
     }
 
     async fn insert(&self, file: files::ActiveModel) -> Result<files::Model, Self::Error> {
         let file = self.repository().insert(file).await?;
-        self.clear_cache_keys([key_by_id(file.id)]).await;
+        self.clear_cache_keys([
+            key_by_id(file.id),
+            folder_files_key(file.folder_id),
+            key_by_public_id(&file.public_id),
+        ])
+        .await;
         Ok(file)
     }
 
     async fn update(&self, file: files::ActiveModel) -> Result<files::Model, Self::Error> {
         let file = self.repository().update(file).await?;
-        self.clear_cache_keys([key_by_id(file.id)]).await;
+        self.clear_cache_keys([key_by_id(file.id), key_by_public_id(&file.public_id)])
+            .await;
         Ok(file)
     }
 }

@@ -12,14 +12,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut protos: Vec<String> = find_protos("../../../proto/proto/**/*.proto")?;
     protos.extend(find_protos("../../../proto/vendor/**/*.proto")?);
 
-    let includes = vec![
+    let includes = [
         "../../../proto/proto".to_string(),
-        "../../../proto/vendor".to_string(),
+        "../../../proto/vendor".to_string()
     ];
 
     tonic_prost_build::configure()
         .build_server(true)
         .build_client(false)
+        .bytes(".folder.v1")
+        .extern_path(".google.protobuf", "::pbjson_types")
+        .compile_well_known_types(true)
         .compile_protos(
             &protos.iter().map(String::as_str).collect::<Vec<&str>>(),
             &includes.iter().map(String::as_str).collect::<Vec<&str>>(),

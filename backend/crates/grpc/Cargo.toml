@@ -38,6 +38,11 @@ tokio-util.workspace = true
 deadpool-redis = { workspace = true, features = ["rt_tokio_1"] }
 storage.path = "../storage"
 cache.path = "../cache"
+futures.workspace = true
+futures-util.workspace = true
+pbjson-types = "0.9.0"
+service.path = "../service"
+download.path = "../download"
 
 [build-dependencies]
 tonic-prost-build = "0.14.6"

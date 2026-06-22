@@ -1,21 +1,16 @@
 use crate::schema::api::folder::v1::folder_service_server::FolderService;
 use crate::schema::api::folder::v1::{
-    CreateFolderRequest, OwnedFolder, UploadFileRequest, UploadFileResponse,
-    upload_file_request,
+    CreateFolderRequest, OwnedFolder, UploadFileRequest, UploadFileResponse, upload_file_request,
 };
 use crate::schema::{ServiceErrorExt, ServiceResultExt};
-use crate::v1::dto::{prost_duration_to_std_duration};
+use crate::v1::dto::prost_duration_to_std_duration;
 use async_trait::async_trait;
 use auth::service::TokenService;
-use bytes::Bytes;
 use derive_new::new;
 use domain::entity;
-use tokio::spawn;
-use tokio::sync::mpsc;
-use tokio_util::sync::CancellationToken;
+use files::service::UploadFileError;
 use tonic::codegen::tokio_stream::StreamExt;
 use tonic::{Request, Response, Status, Streaming};
-use tracing::error;
 
 #[derive(new)]
 pub struct BasicGrpcFolderService<FilesS, FolderS, TS> {
@@ -93,52 +88,32 @@ where
             .ok_or_internal()?
             .ok_or_not_found("folder not found")?;
 
-        let (tx, rx) = mpsc::channel::<Bytes>(10);
-        let cancellation = CancellationToken::new();
-
-        let result_rx = self.files_service.upload_file(
-            folder.id,
-            initiate.metadata.encrypted_path,
-            initiate.metadata.encrypted_mime,
-            initiate.metadata.encrypted_hash,
-            rx,
-            cancellation.clone()
-        );
-
-        spawn(async move {
-            let mut stream_broken = false;
-
-            while let Some(res) = stream.next().await {
-                match res {
-                    Ok(UploadFileRequest {
-                           data: Some(upload_file_request::Data::ChunkData(bytes)),
-                       }) => {
-                        if tx.send(Bytes::from(bytes)).await.is_err() {
-                            break;
-                        }
-                    }
-                    _ => {
-                        stream_broken = true;
-                        break;
-                    }
-                }
-            }
-
-            if stream_broken {
-                cancellation.cancel();
-            }
+        let chunks = stream.map(|item| match item {
+            Ok(UploadFileRequest {
+                data: Some(upload_file_request::Data::ChunkData(bytes)),
+            }) => Ok(bytes),
+            _ => Err(Status::aborted("aborted")),
         });
 
-        match result_rx.await.ok_or_internal()? {
-            Ok(file) => {
-                Ok(Response::new(UploadFileResponse {
-                    id: file.public_id.into(),
-                }))
-            }
-            Err(e) => {
-                error!("Upload dropped: {e}");
-                Err(Status::aborted("upload droppped"))
-            }
-        }
+        let upload: Result<_, _> = self
+            .files_service
+            .upload_file(
+                folder.id,
+                initiate.metadata.encrypted_path,
+                initiate.metadata.encrypted_mime,
+                initiate.metadata.encrypted_hash,
+                chunks,
+            )
+            .await
+            .ok_or_internal()?;
+
+        let file = upload.map_err(|err| match err {
+            UploadFileError::FileTooLarge => Status::aborted("file too large"),
+            UploadFileError::Stream(_) => Status::aborted("aborted due to stream interrupt"),
+        })?;
+
+        Ok(Response::new(UploadFileResponse {
+            id: file.public_id.into(),
+        }))
     }
 }
