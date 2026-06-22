@@ -1,0 +1,72 @@
+x-env: &env
+  env_file: .env
+
+x-common: &common:
+  networks:
+    - filebin-network
+
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 100m
+      max-file: 5
+
+services:
+  filebin-backend:
+    image: ghcr.io/sqlerrorthing/filebin:backend
+    container_name: filebin-backend
+    <<: [*common, *logging, *env]
+    environment:
+      RUST_LOG: debug
+    volumes:
+      - valkey-socket:/var/run/valkey
+    ports:
+      - "50051:50051"
+    depends_on:
+      filebin-db:
+        condition: service_healthy
+      filebin-redis:
+        condition: service_healthy
+
+  filebin-redis:
+    image: valkey/valkey:9-alpine
+    container_name: filebin-redis
+    hostname: filebin-redis
+    <<: [*common, *logging]
+    volumes:
+      - valkey-socket:/var/run/valkey
+    command: >
+      valkey-server
+      --save ""
+      --appendonly no
+      --maxmemory-policy noeviction
+      --loglevel warning
+      --unixsocket /var/run/valkey/valkey.sock
+      --unixsocketperm 777
+      --port 0
+    healthcheck:
+      test: ['CMD', 'valkey-cli', '-s', '/var/run/valkey/valkey.sock', 'ping']
+      interval: 3s
+      timeout: 3s
+      retries: 3
+
+  filebin-db:
+    image: postgres:17.6
+    container_name: filebin-db
+    hostname: filebin-db
+    <<: [*common, *logging, *env]
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - TZ=UTC
+    ports:
+      - 127.0.0.1:6767:5432
+    volumes:
+      - filebin-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 3s
+      timeout: 10s
+      retries: 3
