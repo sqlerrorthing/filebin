@@ -20,7 +20,12 @@ ARG CARGO_FLAGS="--release"
 RUN --mount=type=cache,target=/app/target \
     --mount=type=cache,target=/usr/local/cargo/registry \
     cargo build --bin grpc --features proto-in-root ${CARGO_FLAGS} && \
-    cp /app/target/${CARGO_FLAGS:+release}${CARGO_FLAGS:-debug}/grpc /app/grpc
+    if echo "${CARGO_FLAGS}" | grep -q "\-\-release"; then \
+        PROFILE="release"; \
+    else \
+        PROFILE="debug"; \
+    fi && \
+    cp /app/target/${PROFILE}/grpc /app/grpc
 
 FROM debian:stable-slim AS runtime
 RUN groupadd -g 1001 backendgroup && \
