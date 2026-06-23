@@ -23,7 +23,7 @@ use thiserror::Error;
 use tokio::spawn;
 use tracing::error;
 
-const AWS_BULK_DELETE_CHUNKS: usize = 1000;
+const AWS_BULK_DELETE_CHUNKS: usize = 150;
 
 #[derive(Debug, Clone, new)]
 pub struct S3FilesStorage {
