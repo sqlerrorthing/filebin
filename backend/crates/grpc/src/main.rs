@@ -23,6 +23,7 @@ use tracing::info;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{EnvFilter, fmt};
+use crate::sealed::Leaked;
 
 pub mod config;
 pub mod schema;
@@ -76,55 +77,63 @@ fn tracing() {
         .init()
 }
 
+mod sealed {
+    /// Leaking self due to this will alive all runtime time
+    pub trait Leaked {
+        fn leaked(self) -> &'static Self;
+    }
+
+    impl<T> Leaked for T {
+        fn leaked(self) -> &'static Self {
+            Box::leak(Box::new(self))
+        }
+    }
+}
+
 #[tokio::main]
 async fn main() -> color_eyre::Result<()> {
     color_eyre::install()?;
     tracing();
 
-    let db = up_db(&CONFIG.db).await?;
-    let redis = up_redis(&CONFIG.redis).await?;
+    let db = up_db(&CONFIG.db).await?.leaked();
+    let redis = up_redis(&CONFIG.redis).await?.leaked();
 
-    let token_service = JwtTokenService::new(CONFIG.jwt.expires, CONFIG.jwt.secret.expose_secret());
+    let token_service =
+        JwtTokenService::new(CONFIG.jwt.expires, CONFIG.jwt.secret.expose_secret()).leaked();
 
     let files_storage = S3FilesStorage::new(
         up_s3_client(&CONFIG.storage).await,
         CONFIG.storage.bucket.clone().into(),
-    );
+    )
+    .leaked();
 
     let files_service = BasicFilesService::new(
         files_storage,
-        Cache::new(
-            redis.clone(),
-            db.clone(),
-            CONFIG.caches.files.as_secs() as _,
-        ),
+        Cache::new(redis, db, CONFIG.caches.files.as_secs() as _),
         RandomIdGeneratorService,
         CONFIG.limits.max_filesize.as_u64(),
-    );
+    )
+    .leaked();
 
     let folders_service = BasicFoldersService::new(
-        Cache::new(
-            redis.clone(),
-            db.clone(),
-            CONFIG.caches.folders.as_secs() as _,
-        ),
-        files_service.clone(),
+        Cache::new(redis, db, CONFIG.caches.folders.as_secs() as _),
+        files_service,
         RandomIdGeneratorService,
-    );
+    )
+    .leaked();
 
-    let download_service =
-        BasicDownloadService::new(files_service.clone(), folders_service.clone());
+    let download_service = BasicDownloadService::new(files_service, folders_service);
 
     Server::builder()
         .add_service(FolderServiceServer::new(BasicGrpcFolderService::new(
-            files_service.clone(),
-            folders_service.clone(),
+            folders_service,
             token_service,
         )))
         .add_service(FilesServiceServer::new(BasicGrpcFilesService::new(
             files_service,
             folders_service,
             download_service,
+            token_service,
         )))
         .serve("0.0.0.0:50051".parse()?)
         .await?;

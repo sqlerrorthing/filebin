@@ -1,5 +1,6 @@
 use glob::{PatternError, glob};
 use std::env;
+use std::path::Path;
 
 fn find_protos(pat: &str) -> Result<Vec<String>, PatternError> {
     Ok(glob(pat)?
@@ -13,13 +14,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .map(|_| "../../proto")
         .unwrap_or("../../../proto");
 
-    let mut protos: Vec<String> = find_protos(&format!("{proto_root}/proto/**/*.proto"))?;
-    protos.extend(find_protos(&format!("{proto_root}/vendor/**/*.proto"))?);
+    let mut protos = find_protos(&format!("{proto_root}/proto/**/*.proto"))?;
+    protos.extend({
+        let mut vendor = find_protos(&format!("{proto_root}/vendor/**/*.proto"))?;
+        vendor.retain(|p| !p.contains("google/"));
+        vendor
+    });
 
-    let includes = [
+    let mut includes = vec![
         format!("{proto_root}/proto"),
         format!("{proto_root}/vendor"),
     ];
+
+    if Path::new("/usr/include/google/protobuf").exists() {
+        includes.push("/usr/include/".to_string());
+    }
 
     tonic_prost_build::configure()
         .build_server(true)
