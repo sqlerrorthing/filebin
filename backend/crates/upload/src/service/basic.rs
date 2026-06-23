@@ -11,7 +11,7 @@ use futures::{Stream, StreamExt, TryStreamExt};
 use service::error::{OptionExt, ResultExt, ServiceError};
 use thiserror::Error;
 use files::storage::s3::Error::UploadPart;
-use crate::lmited_stream::{LimitStreamError, LimitedStream};
+use crate::limited_stream::{LimitStreamError, LimitedStream};
 
 #[derive(Builder, Debug, Clone)]
 pub struct Limits {

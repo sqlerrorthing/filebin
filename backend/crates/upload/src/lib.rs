@@ -1,2 +1,2 @@
 pub mod service;
-pub mod lmited_stream;
+pub mod limited_stream;
