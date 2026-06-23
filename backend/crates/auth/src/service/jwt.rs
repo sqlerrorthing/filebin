@@ -17,7 +17,7 @@ struct ModifyFolderToken {
     folder: PublicId,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct JwtTokenService {
     expires: Duration,
     encoding_key: EncodingKey,

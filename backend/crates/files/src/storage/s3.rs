@@ -20,10 +20,10 @@ use std::hint::cold_path;
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicI32, Ordering};
 use thiserror::Error;
-use tokio::{pin, spawn};
+use tokio::spawn;
 use tracing::error;
 
-const AWS_BULK_DELETE_CHUNKS: usize = 1000;
+const AWS_BULK_DELETE_CHUNKS: usize = 150;
 
 #[derive(Debug, Clone, new)]
 pub struct S3FilesStorage {

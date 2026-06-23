@@ -1,5 +1,3 @@
-cargo-features = ["codegen-backend", "panic-immediate-abort"]
-
 [workspace.package]
 version = "0.1.0"
 edition = "2024"
@@ -9,7 +7,7 @@ strip = true
 lto = true
 codegen-units = 1
 incremental = true
-panic = "immediate-abort"
+panic = "abort"
 
 [workspace]
 members = ["crates/*"]

@@ -16,7 +16,7 @@ use crate::expand::expand;
 ///
 /// * Use `#[result]` to wrap return value into `Result<..., Self::Error>`
 /// * Use `#[result(Err)` where `Err` is your business error,
-/// and it will wrap it in `Result<..., ServiceError<Err, Self::Error>>`
+///   and it will wrap it in `Result<..., ServiceError<Err, Self::Error>>`
 #[proc_macro_attribute]
 pub fn service(attr: TokenStream, item: TokenStream) -> TokenStream {
     let args = parse_macro_input!(attr as Args);

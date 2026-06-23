@@ -6,7 +6,6 @@ use files::service::FilesService;
 use id_generator::service::IdGeneratorService;
 use sea_orm::sea_query::prelude::Utc;
 use sea_orm::{NotSet, Set};
-use std::any::{type_name, type_name_of_val};
 use std::hint::cold_path;
 use std::time::Duration;
 use thiserror::Error;
@@ -37,7 +36,7 @@ where
 {
     type Error = Error<FR, FS>;
 
-    async fn remove_entire_folder(&self, folder_id: folders::Id) -> Result<bool, Self::Error> {
+    async fn delete_folder(&self, folder_id: folders::Id) -> Result<bool, Self::Error> {
         self.files_service
             .delete_files_from_folder(folder_id)
             .await
@@ -68,7 +67,7 @@ where
             let folder_id = folder.id;
             let this = self.clone();
             spawn(async move {
-                if let Err(err) = this.remove_entire_folder(folder_id).await {
+                if let Err(err) = this.delete_folder(folder_id).await {
                     error!(folder = %folder_id, error = %err, "Failed to remove expired folder");
                 }
             });

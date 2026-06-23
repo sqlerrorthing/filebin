@@ -9,7 +9,7 @@ pub trait FoldersService: 'static {
     type Error;
 
     #[result]
-    async fn remove_entire_folder(&self, folder_id: folders::Id) -> bool;
+    async fn delete_folder(&self, folder_id: folders::Id) -> bool;
     
     #[result]
     async fn find_folder_by_public_id(&self, public_id: folders::PublicId) -> Option<folders::Model>;
