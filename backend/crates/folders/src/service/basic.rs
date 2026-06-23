@@ -6,7 +6,6 @@ use files::service::FilesService;
 use id_generator::service::IdGeneratorService;
 use sea_orm::sea_query::prelude::Utc;
 use sea_orm::{NotSet, Set};
-use std::any::{type_name, type_name_of_val};
 use std::hint::cold_path;
 use std::time::Duration;
 use thiserror::Error;

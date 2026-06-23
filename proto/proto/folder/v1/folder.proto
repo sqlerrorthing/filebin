@@ -11,29 +11,12 @@ package folder.v1;
 service FolderService {
   rpc CreateFolder(CreateFolderRequest) returns (OwnedFolder);
 
-  rpc UploadFile(stream UploadFileRequest) returns (UploadFileResponse);
+  rpc DeleteFolder(DeleteFolderRequest) returns (DeleteFolderResponse);
 }
 
 message CreateFolderRequest {
   required string encrypted_name = 1;
   optional google.protobuf.Duration expires = 2;
-}
-
-message UploadFileRequest {
-  oneof data {
-    InitiateUpload initiate = 1;
-    bytes chunk_data = 2;
-  }
-}
-
-message InitiateUpload {
-  required EncryptedFileMetadata metadata = 1;
-  required FolderId id = 3;
-  required FolderToken token = 2;
-}
-
-message UploadFileResponse {
-  required FileId id = 1;
 }
 
 message Folder {

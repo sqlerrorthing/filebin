@@ -7,7 +7,33 @@ import "folder/v1/common.proto";
 
 service FilesService {
   rpc ListFiles(ListFilesRequest) returns (ListFilesResponse);
+  rpc UploadFile(stream UploadFileRequest) returns (UploadFileResponse);
   rpc Download(DownloadRequest) returns (stream Blob);
+}
+
+message UploadFileRequest {
+  oneof data {
+    InitiateUpload initiate = 1;
+    bytes chunk_data = 2;
+  }
+}
+
+message InitiateUpload {
+  required EncryptedFileMetadata metadata = 1;
+  required FolderId id = 3;
+  required FolderToken token = 2;
+}
+
+message UploadFileResponse {
+  required FileId id = 1;
+}
+
+message DeleteFolderRequest {
+  required FolderId id = 3;
+  required FolderToken token = 2;
+}
+
+message DeleteFolderResponse {
 }
 
 message DownloadRequest {
