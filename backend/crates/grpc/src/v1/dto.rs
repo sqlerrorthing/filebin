@@ -8,6 +8,7 @@ use std::time::Duration;
 use thiserror::Error;
 use tinystr::{TinyStr16, TinyStr8};
 use tonic::Status;
+use upload::service::UploadFileError;
 
 impl From<entity::folders::PublicId> for FolderId {
     fn from(value: entity::folders::PublicId) -> Self {

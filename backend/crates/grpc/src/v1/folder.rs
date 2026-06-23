@@ -1,15 +1,14 @@
 use async_trait::async_trait;
 use derive_new::new;
+use pbjson_types::Empty;
 use crate::schema::api::folder::v1::folder_service_server::FolderService;
-use crate::schema::api::folder::v1::{
-    CreateFolderRequest, DeleteFolderRequest, DeleteFolderResponse, OwnedFolder, UploadFileRequest,
-    UploadFileResponse, upload_file_request,
-};
+use crate::schema::api::folder::v1::{CreateFolderRequest, DeleteFolderRequest, DeleteFolderResponse, OwnedFolder, UploadFileRequest, UploadFileResponse, upload_file_request, LimitsResponse};
 use crate::schema::{ServiceErrorExt, ServiceResultExt};
 use crate::v1::dto::prost_duration_to_std_duration;
 use auth::service::TokenService;
 use tonic::{Request, Response, Status};
 use domain::entity;
+use crate::config::CONFIG;
 
 #[derive(new)]
 pub struct BasicGrpcFolderService<FS, TS> {
@@ -76,5 +75,14 @@ where
         } else {
             Err(Status::not_found("folder not found"))
         }
+    }
+
+    async fn limits(&self, _: Request<Empty>) -> Result<Response<LimitsResponse>, Status> {
+        Ok(Response::new(
+            LimitsResponse {
+                max_files_per_folder: CONFIG.limits.max_files_per_folder,
+                max_file_size: CONFIG.limits.max_filesize.as_u64()
+            }
+        ))
     }
 }

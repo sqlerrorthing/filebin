@@ -7,7 +7,7 @@ use service::service;
 #[service]
 pub trait FoldersService: 'static {
     type Error;
-
+    
     #[result]
     async fn delete_folder(&self, folder_id: folders::Id) -> bool;
     

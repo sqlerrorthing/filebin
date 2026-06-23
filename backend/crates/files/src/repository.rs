@@ -8,6 +8,9 @@ use service::service;
 pub trait FilesRepository: 'static {
     type Error;
 
+    #[result]
+    async fn files_count(&self, folder_id: folders::Id) -> u64;
+    
     /// Deletes all files from the folder, returning deleted files
     #[result]
     async fn delete_files_from_folder(&self, folder_id: folders::Id) -> Vec<files::Model>;

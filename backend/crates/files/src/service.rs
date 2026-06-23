@@ -6,20 +6,15 @@ use futures_core::Stream;
 use service::service;
 use thiserror::Error;
 
-#[derive(Debug, Error)]
-pub enum UploadFileError<E> {
-    #[error("the file is too large")]
-    FileTooLarge,
-    #[error("stream error: {0}")]
-    Stream(#[source] E),
-}
-
 #[service]
 pub trait FilesService: 'static {
     type Error;
     type GetFileStream: Stream<Item = Result<Bytes, Self::Error>>;
 
     fn min_upload_chunk_size(&self) -> i64;
+
+    #[result]
+    async fn files_count(&self, folder_id: folders::Id) -> u64;
 
     #[result]
     async fn delete_files_from_folder(&self, folder_id: folders::Id);
@@ -36,7 +31,7 @@ pub trait FilesService: 'static {
 
     /// Uploads the file to folder.
     /// To cancel the upload, just drop the future or send [`Err`] through the chunks stream
-    #[result(UploadFileError<E>)]
+    #[result(E)]
     async fn upload_file<E>(
         &self,
         folder_id: folders::Id,

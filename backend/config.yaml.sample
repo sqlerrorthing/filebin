@@ -2,8 +2,8 @@
 # Use SERVER__<VAR> with separator __ to override config variable
 
 limits:
-  max-filesize: 10 MB
-  max-files-per-folder: 100
+  max_filesize: 10 MB
+  max_files_per_folder: 100
 
 caches:
   folders: "30m"

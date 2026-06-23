@@ -1,5 +1,5 @@
 use crate::repository::FilesRepository;
-use crate::service::{FilesService, UploadFileError};
+use crate::service::FilesService;
 use crate::storage::FilesStorage;
 use bytes::Bytes;
 use derive_new::new;
@@ -18,7 +18,6 @@ pub struct BasicFilesService<FS, FR, IGS> {
     files_storage: FS,
     files_repository: FR,
     id_generator_service: IGS,
-    max_filesize: u64,
 }
 
 #[derive(Debug, Error)]
@@ -40,6 +39,10 @@ where
 
     fn min_upload_chunk_size(&self) -> i64 {
         5 * 1024 * 1024
+    }
+
+    async fn files_count(&self, folder_id: folders::Id) -> Result<u64, Self::Error> {
+        self.files_repository.files_count(folder_id).await.map_err(Error::Repository)
     }
 
     async fn delete_files_from_folder(&self, folder_id: folders::Id) -> Result<(), Self::Error> {
@@ -89,7 +92,7 @@ where
         encrypted_mime_type: String,
         encrypted_file_hash: String,
         chunks: impl Stream<Item = Result<Bytes, E>> + Send + 'static,
-    ) -> Result<files::Model, ServiceError<UploadFileError<E>, Self::Error>>
+    ) -> Result<files::Model, ServiceError<E, Self::Error>>
     where
         E: Send + 'static,
     {
@@ -107,16 +110,11 @@ where
         loop {
             let chunk = match chunks.next().await {
                 Some(Ok(c)) => c,
-                Some(Err(e)) => return Err(business!(UploadFileError::Stream(e))),
+                Some(Err(e)) => return Err(business!(e)),
                 None => break,
             };
 
-            let chunk_len = chunk.len() as u64;
-            if total_bytes_received + chunk_len > self.max_filesize {
-                return Err(business!(UploadFileError::FileTooLarge));
-            }
-
-            total_bytes_received += chunk_len;
+            total_bytes_received += chunk.len() as u64;
 
             self.files_storage
                 .upload_part(&handle, chunk)

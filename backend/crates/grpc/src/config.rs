@@ -119,6 +119,7 @@ config! {
         },
         pub limits: {
             pub max_filesize: Byte,
+            pub max_files_per_folder: u32
         },
         pub storage: {
             pub access_key: SecretString,

@@ -1,9 +1,16 @@
 use crate::repository::FilesRepository;
 use domain::entity::{files, folders};
-use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
+use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait, QueryFilter};
 
 impl FilesRepository for DatabaseConnection {
     type Error = sea_orm::DbErr;
+
+    async fn files_count(&self, folder_id: folders::Id) -> Result<u64, Self::Error> {
+        files::Entity::find()
+            .filter(files::Column::FolderId.eq(folder_id))
+            .count(self)
+            .await
+    }
 
     async fn delete_files_from_folder(
         &self,

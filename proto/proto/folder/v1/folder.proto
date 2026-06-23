@@ -12,6 +12,13 @@ service FolderService {
   rpc CreateFolder(CreateFolderRequest) returns (OwnedFolder);
 
   rpc DeleteFolder(DeleteFolderRequest) returns (DeleteFolderResponse);
+
+  rpc Limits(google.protobuf.Empty) returns (LimitsResponse);
+}
+
+message LimitsResponse {
+  required uint32 max_files_per_folder = 1;
+  required uint64 max_file_size = 2;
 }
 
 message CreateFolderRequest {

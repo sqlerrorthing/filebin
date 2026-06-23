@@ -3,6 +3,7 @@
 use crate::config::{CONFIG, Db, Redis, Storage};
 use crate::schema::api::folder::v1::files_service_server::FilesServiceServer;
 use crate::schema::api::folder::v1::folder_service_server::FolderServiceServer;
+use crate::sealed::Leaked;
 use crate::v1::files::BasicGrpcFilesService;
 use crate::v1::folder::BasicGrpcFolderService;
 use auth::service::jwt::JwtTokenService;
@@ -23,7 +24,7 @@ use tracing::info;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{EnvFilter, fmt};
-use crate::sealed::Leaked;
+use upload::service::basic::{BasicUploadService, Limits, LimitsBuilder};
 
 pub mod config;
 pub mod schema;
@@ -111,7 +112,6 @@ async fn main() -> color_eyre::Result<()> {
         files_storage,
         Cache::new(redis, db, CONFIG.caches.files.as_secs() as _),
         RandomIdGeneratorService,
-        CONFIG.limits.max_filesize.as_u64(),
     )
     .leaked();
 
@@ -124,6 +124,16 @@ async fn main() -> color_eyre::Result<()> {
 
     let download_service = BasicDownloadService::new(files_service, folders_service);
 
+    let upload_service = BasicUploadService::new(
+        files_service,
+        folders_service,
+        token_service,
+        LimitsBuilder::default()
+            .max_filesize(CONFIG.limits.max_filesize.as_u64())
+            .max_files_per_folder(CONFIG.limits.max_files_per_folder)
+            .build()?,
+    );
+
     Server::builder()
         .add_service(FolderServiceServer::new(BasicGrpcFolderService::new(
             folders_service,
@@ -133,7 +143,7 @@ async fn main() -> color_eyre::Result<()> {
             files_service,
             folders_service,
             download_service,
-            token_service,
+            upload_service,
         )))
         .serve("0.0.0.0:50051".parse()?)
         .await?;

@@ -1,0 +1,17 @@
+[package]
+name = "upload"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+service.path = "../service"
+folders.path = "../folders"
+files.path = "../files"
+domain.path = "../domain"
+futures.workspace = true
+bytes.workspace = true
+thiserror.workspace = true
+derive-new.workspace = true
+derive_builder.workspace = true
+auth.path = "../auth"
+pin-project.workspace = true
