@@ -1,15 +1,19 @@
-FROM rustlang/rust:nightly-slim AS build
+FROM debian:bookworm-slim AS build
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     pkg-config \
     libssl-dev \
+    ca-certificates \
     build-essential \
     protobuf-compiler \
     libprotobuf-dev \
     musl-tools \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-RUN rustup set profile minimal && \
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain none && \
+    export PATH="/root/.cargo/bin:${PATH}" && \
+    rustup set profile minimal && \
     rustup toolchain install nightly-x86_64-unknown-linux-gnu && \
     rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu && \
     rustup target add x86_64-unknown-linux-musl --toolchain nightly-x86_64-unknown-linux-gnu
