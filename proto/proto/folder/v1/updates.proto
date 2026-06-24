@@ -1,0 +1,20 @@
+syntax = "proto2";
+
+import "folder/v1/files.proto";
+
+package folder.v1;
+
+message FolderUpdate {
+  oneof update {
+    NewFile new_file = 1;
+    FolderNameChanged folder_name_changed = 2;
+  }
+}
+
+message FolderNameChanged {
+  required string name = 1;
+}
+
+message NewFile {
+  required FileView file = 1;
+}
