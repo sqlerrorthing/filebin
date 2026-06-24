@@ -15,3 +15,4 @@ derive-new.workspace = true
 derive_builder.workspace = true
 auth.path = "../auth"
 pin-project.workspace = true
+updates.path = "../updates"

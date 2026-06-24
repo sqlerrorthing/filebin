@@ -1,19 +1,38 @@
 use crate::schema::ServiceErrorExt;
-use crate::schema::api::folder::v1::{EncryptedFileMetadata, FileId, FileView, Folder, FolderId, FolderToken};
+use crate::schema::api::folder::v1::folder_update::Update;
+use crate::schema::api::folder::v1::{
+    EncryptedFileMetadata, FileId, FileView, Folder, FolderDeleted, FolderId, FolderNameChanged,
+    FolderToken, NewFile,
+};
 use crate::schema::api::google;
 use chrono::{Datelike, Timelike};
 use domain::entity;
 use sea_orm::prelude::DateTimeUtc;
 use std::time::Duration;
 use thiserror::Error;
-use tinystr::{TinyStr16, TinyStr8};
+use tinystr::{TinyStr8, TinyStr16};
 use tonic::Status;
-use upload::service::UploadFileError;
 
 impl From<entity::folders::PublicId> for FolderId {
     fn from(value: entity::folders::PublicId) -> Self {
         FolderId {
             value: value.into_inner().to_string(),
+        }
+    }
+}
+
+impl From<&updates::service::FolderUpdate> for Update {
+    fn from(update: &updates::service::FolderUpdate) -> Self {
+        use updates::service::FolderUpdate;
+
+        match update {
+            FolderUpdate::FileUploaded(file) => Update::NewFile(NewFile {
+                file: file.clone().into(),
+            }),
+            FolderUpdate::FolderRenamed((_, name)) => {
+                Update::FolderNameChanged(FolderNameChanged { name: name.clone() })
+            }
+            FolderUpdate::FolderDeleted(_) => Update::FolderDeleted(FolderDeleted {}),
         }
     }
 }
@@ -68,9 +87,7 @@ impl From<DateTimeUtc> for google::r#type::DateTime {
 
 impl From<String> for FolderToken {
     fn from(value: String) -> Self {
-        FolderToken {
-            value,
-        }
+        FolderToken { value }
     }
 }
 

@@ -1929,6 +1929,7 @@ dependencies = [
  "thiserror",
  "tokio",
  "tracing",
+ "updates",
 ]
 
 [[package]]
@@ -2179,6 +2180,7 @@ dependencies = [
  "tonic-prost-build",
  "tracing",
  "tracing-subscriber",
+ "updates",
  "upload",
 ]
 
@@ -4888,6 +4890,7 @@ dependencies = [
  "futures-core",
  "pin-project-lite",
  "tokio",
+ "tokio-util",
 ]
 
 [[package]]
@@ -5178,10 +5181,14 @@ checksum = "8ecb6da28b8a351d773b68d5825ac39017e680750f980f3a1a85cd8dd28a47c1"
 name = "updates"
 version = "0.1.0"
 dependencies = [
+ "derive-new",
  "domain",
  "futures",
+ "parking_lot",
+ "pin-project",
  "service",
  "tokio",
+ "tokio-stream",
 ]
 
 [[package]]
@@ -5199,6 +5206,7 @@ dependencies = [
  "pin-project",
  "service",
  "thiserror",
+ "updates",
 ]
 
 [[package]]

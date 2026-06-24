@@ -11,12 +11,14 @@ use std::time::Duration;
 use thiserror::Error;
 use tokio::spawn;
 use tracing::{error, info};
+use updates::service::UpdatesService;
 
 #[derive(Debug, Clone, new)]
-pub struct BasicFoldersService<FR, FS, IGS> {
+pub struct BasicFoldersService<FR, FS, IGS, US> {
     folder_repository: FR,
     files_service: FS,
     id_generator_service: IGS,
+    updates_service: US
 }
 
 #[derive(Debug, Error)]
@@ -27,11 +29,12 @@ pub enum Error<FR: FoldersRepository, FS: FilesService> {
     Files(#[source] FS::Error),
 }
 
-impl<FR, FS, IGS> FoldersService for BasicFoldersService<FR, FS, IGS>
+impl<FR, FS, IGS, US> FoldersService for BasicFoldersService<FR, FS, IGS, US>
 where
     FR: FoldersRepository,
     FS: FilesService,
     IGS: IdGeneratorService,
+    US: UpdatesService,
     Self: Clone,
 {
     type Error = Error<FR, FS>;
@@ -46,7 +49,14 @@ where
             .delete(folder_id)
             .await
             .map_err(Error::Repository)
-            .map(|f| f.is_some())
+            .map(|res| {
+                if let Some(model) = res {
+                    self.updates_service.folder_deleted(model);
+                    return true
+                }
+
+                false
+            })
     }
 
     async fn find_folder_by_public_id(

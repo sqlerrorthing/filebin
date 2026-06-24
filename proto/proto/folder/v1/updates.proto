@@ -8,7 +8,12 @@ message FolderUpdate {
   oneof update {
     NewFile new_file = 1;
     FolderNameChanged folder_name_changed = 2;
+    FolderDeleted folder_deleted = 3;
   }
+}
+
+message FolderDeleted {
+
 }
 
 message FolderNameChanged {

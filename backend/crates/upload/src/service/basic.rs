@@ -10,7 +10,7 @@ use folders::service::FoldersService;
 use futures::{Stream, StreamExt, TryStreamExt};
 use service::error::{OptionExt, ResultExt, ServiceError};
 use thiserror::Error;
-use files::storage::s3::Error::UploadPart;
+use updates::service::UpdatesService;
 use crate::limited_stream::{LimitStreamError, LimitedStream};
 
 #[derive(Builder, Debug, Clone)]
@@ -20,10 +20,11 @@ pub struct Limits {
 }
 
 #[derive(Debug, Clone, new)]
-pub struct BasicUploadService<FilesS, FoldersS, TS> {
+pub struct BasicUploadService<FilesS, FoldersS, TS, US> {
     files_service: FilesS,
     folders_service: FoldersS,
     token_service: TS,
+    updates_service: US,
     limits: Limits,
 }
 
@@ -37,11 +38,12 @@ pub enum Error<FilesS: FilesService, FoldersS: FoldersService, TS: TokenService>
     Token(#[source] TS::Error),
 }
 
-impl<FilesS, FoldersS, TS> UploadService for BasicUploadService<FilesS, FoldersS, TS>
+impl<FilesS, FoldersS, TS, US> UploadService for BasicUploadService<FilesS, FoldersS, TS, US>
 where
     FilesS: FilesService,
     FoldersS: FoldersService,
     TS: TokenService,
+    US: UpdatesService
 {
     type Error = Error<FilesS, FoldersS, TS>;
 
@@ -73,7 +75,7 @@ where
             .lt(&(self.limits.max_files_per_folder as u64))
             .ok_or_business(UploadFileError::FolderIsFull)?;
 
-        self.files_service.upload_file(
+        let res = self.files_service.upload_file(
             folder.id,
             encrypted_path,
             encrypted_mime_type,
@@ -85,6 +87,9 @@ where
                         LimitStreamError::Stream(s) => UploadFileError::Stream(s)
                     }
                 })
-        ).await.map_internal(Error::Files)
+        ).await.map_internal(Error::Files)?;
+        
+        self.updates_service.file_uploaded(res.clone());
+        Ok(res)
     }
 }
