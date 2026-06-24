@@ -5,6 +5,7 @@ import "google/type/datetime.proto";
 import "google/protobuf/duration.proto";
 import "folder/v1/files.proto";
 import "folder/v1/common.proto";
+import "folder/v1/updates.proto";
 
 package folder.v1;
 
@@ -14,6 +15,12 @@ service FolderService {
   rpc DeleteFolder(DeleteFolderRequest) returns (DeleteFolderResponse);
 
   rpc Limits(google.protobuf.Empty) returns (LimitsResponse);
+
+  rpc Updates(UpdatesRequest) returns (stream FolderUpdate);
+}
+
+message UpdatesRequest {
+  required FolderId id = 1;
 }
 
 message LimitsResponse {

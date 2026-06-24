@@ -24,6 +24,7 @@ use tracing::info;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{EnvFilter, fmt};
+use updates::service::basic::BasicUpdatesService;
 use upload::service::basic::{BasicUploadService, Limits, LimitsBuilder};
 
 pub mod config;
@@ -99,6 +100,8 @@ async fn main() -> color_eyre::Result<()> {
     let db = up_db(&CONFIG.db).await?.leaked();
     let redis = up_redis(&CONFIG.redis).await?.leaked();
 
+    let updates_service = BasicUpdatesService::new(100).leaked();
+    
     let token_service =
         JwtTokenService::new(CONFIG.jwt.expires, CONFIG.jwt.secret.expose_secret()).leaked();
 
@@ -119,6 +122,7 @@ async fn main() -> color_eyre::Result<()> {
         Cache::new(redis, db, CONFIG.caches.folders.as_secs() as _),
         files_service,
         RandomIdGeneratorService,
+        updates_service,
     )
     .leaked();
 
@@ -128,6 +132,7 @@ async fn main() -> color_eyre::Result<()> {
         files_service,
         folders_service,
         token_service,
+        updates_service,
         LimitsBuilder::default()
             .max_filesize(CONFIG.limits.max_filesize.as_u64())
             .max_files_per_folder(CONFIG.limits.max_files_per_folder)
@@ -138,6 +143,7 @@ async fn main() -> color_eyre::Result<()> {
         .add_service(FolderServiceServer::new(BasicGrpcFolderService::new(
             folders_service,
             token_service,
+            updates_service
         )))
         .add_service(FilesServiceServer::new(BasicGrpcFilesService::new(
             files_service,

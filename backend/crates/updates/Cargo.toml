@@ -1,0 +1,14 @@
+[package]
+name = "updates"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+domain.path = "../domain"
+service.path = "../service"
+tokio.workspace = true
+futures.workspace = true
+parking_lot.workspace = true
+derive-new.workspace = true
+tokio-stream.workspace = true
+pin-project.workspace = true
