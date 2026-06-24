@@ -7,10 +7,9 @@ use domain::entity;
 use domain::entity::files::Model;
 use files::service::FilesService;
 use folders::service::FoldersService;
-use futures::{Stream, StreamExt, TryStreamExt};
+use futures::{Stream, TryStreamExt};
 use service::error::{OptionExt, ResultExt, ServiceError};
 use thiserror::Error;
-use files::storage::s3::Error::UploadPart;
 use crate::limited_stream::{LimitStreamError, LimitedStream};
 
 #[derive(Builder, Debug, Clone)]

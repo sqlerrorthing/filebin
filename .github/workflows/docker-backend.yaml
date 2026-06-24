@@ -1,5 +1,5 @@
 on:
-  push:
+  pull_request:
     branches:
       - master
     paths:
@@ -27,15 +27,26 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Cache Cargo registry and target
-        uses: actions/cache@v5.0.5
+      - name: Cache Cargo Registry & sccache
+        uses: actions/cache@v3
+        id: cache
         with:
           path: |
-            ~/.cargo/registry/index
-            ~/.cargo/registry/cache
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+            cargo-registry-cache
+            sccache-cache
+          key: rust-cache-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            rust-cache-${{ runner.os }}-
+
+      - name: Buildkit Cache Dance
+        uses: reproducible-containers/buildkit-cache-dance@v3.1.0
+        with:
+          cache-map: |
+            {
+              "cargo-registry": "cargo-registry-cache",
+              "sccache": "sccache-cache"
+            }
+          skip-extraction: ${{ steps.cache.outputs.cache-hit }}
 
       - name: Build
         uses: docker/build-push-action@v7.2.0

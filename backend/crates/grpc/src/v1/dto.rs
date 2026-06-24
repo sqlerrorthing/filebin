@@ -66,14 +66,6 @@ impl From<DateTimeUtc> for google::r#type::DateTime {
     }
 }
 
-impl From<String> for FolderToken {
-    fn from(value: String) -> Self {
-        FolderToken {
-            value,
-        }
-    }
-}
-
 impl From<entity::folders::Model> for Folder {
     fn from(value: entity::folders::Model) -> Self {
         Folder {
@@ -81,6 +73,14 @@ impl From<entity::folders::Model> for Folder {
             encrypted_name: value.encrypted_name,
             created_at: value.created_at.to_utc().into(),
             expired_at: value.expired_at.map(|exp| exp.to_utc().into()),
+        }
+    }
+}
+
+impl From<String> for FolderToken {
+    fn from(value: String) -> Self {
+        FolderToken {
+            value,
         }
     }
 }

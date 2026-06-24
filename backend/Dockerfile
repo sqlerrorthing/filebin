@@ -19,8 +19,14 @@ COPY proto proto
 ARG CARGO_FLAGS="--release"
 ENV RUSTFLAGS="-C target-cpu=x86-64"
 
+ENV RUSTC_WRAPPER=/usr/local/bin/sccache
+ENV SCCACHE_DIR=/root/sccache
+ENV SCCACHE_CACHE_SIZE="5G"
+ENV CARGO_INCREMENTAL=0
+
 RUN --mount=type=cache,target=/app/target \
-    --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,id=cargo-registry,target=/usr/local/cargo/registry \
+    --mount=type=cache,id=sccache,target=/root/sccache \
     cargo build --bin grpc --features proto-in-root ${CARGO_FLAGS} && \
     PROFILE=$(echo "${CARGO_FLAGS}" | grep -q "\-\-release" && echo "release" || echo "debug") && \
     cp /app/target/x86_64-unknown-linux-musl/${PROFILE}/grpc /app/grpc
