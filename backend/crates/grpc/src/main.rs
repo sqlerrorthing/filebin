@@ -24,7 +24,7 @@ use tracing::info;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{EnvFilter, fmt};
-use updates::service::basic::BasicUpdatesService;
+use updates::service::basic::LocalUpdatesService;
 use upload::service::basic::{BasicUploadService, Limits, LimitsBuilder};
 
 pub mod config;
@@ -100,7 +100,7 @@ async fn main() -> color_eyre::Result<()> {
     let db = up_db(&CONFIG.db).await?.leaked();
     let redis = up_redis(&CONFIG.redis).await?.leaked();
 
-    let updates_service = BasicUpdatesService::new(100).leaked();
+    let updates_service = LocalUpdatesService::new(100).leaked();
     
     let token_service =
         JwtTokenService::new(CONFIG.jwt.expires, CONFIG.jwt.secret.expose_secret()).leaked();

@@ -9,14 +9,18 @@ caches:
   folders: "30m"
   files: "1h"
 
-redis:
-  # Set via SERVER__REDIS__URL
-  # url: redis://localhost:6379
-
 jwt:
   expires: 16h
   # Set via SERVER__JWT__SECRET
   # secret:
+
+# Use this if running more than one instance.
+# rabbitmq:
+#   url:
+
+redis:
+  # Set via SERVER__REDIS__URL
+  # url: redis://localhost:6379
 
 storage:
   # S3 Region

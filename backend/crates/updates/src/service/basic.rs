@@ -35,13 +35,13 @@ impl<S: Stream> Stream for DebugStream<S> {
 }
 
 #[derive(Debug, new)]
-pub struct BasicUpdatesService {
+pub struct LocalUpdatesService {
     #[new(default)]
     folders_channels: Mutex<HashMap<folders::Id, broadcast::Sender<Arc<FolderUpdate>>>>,
     channel_capacity: usize,
 }
 
-impl BasicUpdatesService {
+impl LocalUpdatesService {
     fn get_or_create_folders_channel(
         &self,
         folder_id: folders::Id,
@@ -73,7 +73,7 @@ impl BasicUpdatesService {
     }
 }
 
-impl UpdatesService for BasicUpdatesService {
+impl UpdatesService for LocalUpdatesService {
     type FoldersUpdateStream = impl Stream<Item = Arc<FolderUpdate>> + Debug;
 
     fn subscribe_folder(&self, folder_id: folders::Id) -> Self::FoldersUpdateStream {
