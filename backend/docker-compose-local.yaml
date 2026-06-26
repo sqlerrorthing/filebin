@@ -3,8 +3,8 @@ services:
     build:
       context: ..
       dockerfile: backend/Dockerfile
-#      args:
-#        - CARGO_FLAGS=
+      args:
+        - CARGO_FLAGS=
     environment:
       RUST_LOG: debug
 

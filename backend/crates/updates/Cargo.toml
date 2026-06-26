@@ -15,3 +15,5 @@ pin-project.workspace = true
 thiserror.workspace = true
 amqprs.workspace = true
 derivative.workspace = true
+serde.workspace = true
+postcard.workspace = true

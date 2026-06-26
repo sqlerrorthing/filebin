@@ -118,7 +118,8 @@ config! {
             pub url: String
         },
         pub rabbitmq: {
-            pub url: Option<String>
+            pub url: Option<String>,
+            pub exchange: String,
         },
         pub limits: {
             pub max_filesize: Byte,

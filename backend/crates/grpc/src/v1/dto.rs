@@ -21,18 +21,18 @@ impl From<entity::folders::PublicId> for FolderId {
     }
 }
 
-impl From<&updates::service::FolderUpdate> for Update {
-    fn from(update: &updates::service::FolderUpdate) -> Self {
-        use updates::service::FolderUpdate;
+impl From<&updates::service::FolderUpdateKind> for Update {
+    fn from(update: &updates::service::FolderUpdateKind) -> Self {
+        use updates::service::FolderUpdateKind;
 
         match update {
-            FolderUpdate::FileUploaded(file) => Update::NewFile(NewFile {
+            FolderUpdateKind::FileUploaded(file) => Update::NewFile(NewFile {
                 file: file.clone().into(),
             }),
-            FolderUpdate::FolderRenamed((_, name)) => {
+            FolderUpdateKind::FolderRenamed(name) => {
                 Update::FolderNameChanged(FolderNameChanged { name: name.clone() })
             }
-            FolderUpdate::FolderDeleted(_) => Update::FolderDeleted(FolderDeleted {}),
+            FolderUpdateKind::FolderDeleted(_) => Update::FolderDeleted(FolderDeleted {}),
         }
     }
 }
