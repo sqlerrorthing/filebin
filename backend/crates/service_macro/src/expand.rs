@@ -1,11 +1,15 @@
 use crate::args::{Args, Requires};
 use proc_macro2::TokenStream;
-use syn::{parse_quote, Attribute, ItemTrait, Meta, ReturnType, Token, TraitItem, TraitItemFn, TraitItemType, Type, TypeParamBound};
 use syn::punctuated::Punctuated;
+use syn::{
+    Attribute, ItemTrait, Meta, ReturnType, Token, TraitItem, TraitItemFn, TraitItemType, Type,
+    TypeParamBound, parse_quote,
+};
 
 pub fn expand(input: &mut ItemTrait, args: &Args) {
+    // todo: uncomment
     push_auto_impls(&args.service_crate_root, input);
-    modify_associated_type(input, args.requires);
+    modify_associated_type(args.dynamic_dispatch, input, args.requires);
     expand_supertraits(args.requires, &mut input.supertraits);
     for item in &mut input.items {
         if let TraitItem::Fn(method) = item {
@@ -15,17 +19,15 @@ pub fn expand(input: &mut ItemTrait, args: &Args) {
 }
 
 fn push_auto_impls(root: &TokenStream, input: &mut ItemTrait) {
-    input.attrs.push(
-        parse_quote! {
-            #[#root::auto_impl::auto_impl(&, Box, Arc)]
-        }
-    )
+    input.attrs.push(parse_quote! {
+        #[#root::auto_impl::auto_impl(&, Box, Arc)]
+    })
 }
 
 fn process_method(method: &mut TraitItemFn, requires: Requires) {
     let mut ret = match &method.sig.output {
         ReturnType::Default => parse_quote!(()),
-        ReturnType::Type(_, ty) => ty.clone()
+        ReturnType::Type(_, ty) => ty.clone(),
     };
 
     wrap_ret(method, &mut ret, requires)
@@ -37,9 +39,13 @@ fn wrap_ret(method: &mut TraitItemFn, out: &mut Type, requires: Requires) {
     method.sig.output = parse_quote! { -> #out };
 }
 
-fn wrap_ret_with_async_impl(is_async: &mut Option<Token![async]>, current_output: &mut Type, mut requires: Requires) {
+fn wrap_ret_with_async_impl(
+    is_async: &mut Option<Token![async]>,
+    current_output: &mut Type,
+    mut requires: Requires,
+) {
     if is_async.take().is_none() {
-        return
+        return;
     }
 
     let mut future_bounds: Punctuated<TypeParamBound, Token![+]> = Punctuated::new();
@@ -66,7 +72,7 @@ fn expand_supertraits<P: Default>(requires: Requires, bounds: &mut Punctuated<Ty
     }
 
     if requires.contains(Requires::STATIC) {
-        bounds.push(parse_quote!('static))
+        bounds.push(parse_quote!('static));
     }
 }
 
@@ -86,9 +92,7 @@ fn wrap_ret_with_error(attrs: &mut Vec<Attribute>, current_output: &mut Type) {
     }
 }
 
-fn extract_and_remove_result_attr(
-    attrs: &mut Vec<Attribute>,
-) -> Option<Option<TokenStream>> {
+fn extract_and_remove_result_attr(attrs: &mut Vec<Attribute>) -> Option<Option<TokenStream>> {
     let index = attrs
         .iter()
         .position(|attr| attr.path().is_ident("result"))?;
@@ -104,11 +108,14 @@ fn extract_and_remove_result_attr(
     }
 }
 
-fn modify_associated_type(input: &mut ItemTrait, mut requires: Requires) {
+fn modify_associated_type(dynamic_dispatch: bool, input: &mut ItemTrait, mut requires: Requires) {
     for item in &mut input.items {
         if let TraitItem::Type(assoc_type) = item {
-            requires -= Requires::STATIC | Requires::DEBUG;
-            modify_error_associated_type(assoc_type);
+            requires -= Requires::STATIC;
+            if modify_error_associated_type(assoc_type) {
+                requires -= Requires::DEBUG;
+            }
+            
             expand_supertraits(requires, &mut assoc_type.bounds);
         }
     }
@@ -121,5 +128,7 @@ fn modify_error_associated_type(input: &mut TraitItemType) -> bool {
             parse_quote!('static),
         ]);
         true
-    } else { false }
+    } else {
+        false
+    }
 }

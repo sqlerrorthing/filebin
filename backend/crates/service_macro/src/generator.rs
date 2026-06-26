@@ -3,10 +3,11 @@ use derive_new::new;
 use proc_macro2::{Ident, TokenStream};
 use quote::{ToTokens, format_ident, quote};
 use std::collections::{BTreeMap, HashMap};
+use std::ops::ControlFlow;
 use syn::visit_mut::VisitMut;
-use syn::{GenericArgument, ItemTrait, PathArguments, Result, ReturnType,
-    Token, TraitBound, TraitItem, TraitItemFn, Type, TypeImplTrait, TypeParamBound, TypePath,
-    parse_quote,
+use syn::{
+    GenericArgument, ItemTrait, PathArguments, PathSegment, Result, ReturnType, Token, TraitBound,
+    TraitItem, TraitItemFn, Type, TypeImplTrait, TypeParamBound, TypePath, parse_quote,
 };
 
 #[derive(Default, Clone, Copy, Debug)]
@@ -50,6 +51,7 @@ struct ParsedAssocType {
     erased_ty: Type,
     into_box: Option<Boxing>,
     map_err_into: bool,
+    alias_def: Option<TokenStream>
 }
 
 #[derive(Debug)]
@@ -82,6 +84,11 @@ impl DynGeneratorContext {
         let assoc_types = self.parse_assoc_types()?;
         let methods = self.parse_methods(&assoc_types)?;
 
+        let trait_aliases: Vec<_> = assoc_types
+            .values()
+            .filter_map(|assoc| assoc.alias_def.clone())
+            .collect();
+
         let module = format_ident!("__dyn_{}", self.trait_def.ident);
         let vis = self.trait_def.vis.clone();
         let trait_name = format_ident!("Dyn{}", self.trait_def.ident);
@@ -101,6 +108,8 @@ impl DynGeneratorContext {
             #[allow(non_snake_case, reason = "we keep original structure name which is probably CamelCase")]
             mod #module {
                 use super::*;
+
+                #(#trait_aliases)*
 
                 #dispatch_trait
                 #impl_dynamic_for_service
@@ -125,6 +134,8 @@ impl DynGeneratorContext {
 
         for item in &self.trait_def.items {
             if let TraitItem::Type(decl) = item {
+                let mut alias_def = None;
+
                 let ident = decl.ident.clone();
                 let bounds = &decl.bounds;
 
@@ -162,15 +173,22 @@ impl DynGeneratorContext {
                         }
                     });
 
+                    let alias_ident = format_ident!("__{}", ident);
+
+                    alias_def = Some(quote! {
+                        pub trait #alias_ident: #bounds {}
+                        impl<__T: ?Sized + #bounds> #alias_ident for __T {}
+                    });
+
                     if pinned {
                         into_box = Some(Boxing::Pin);
                         erased_ty = parse_quote! {
-                            ::core::pin::Pin<::std::boxed::Box<dyn #bounds>>
+                            ::core::pin::Pin<::std::boxed::Box<dyn #alias_ident>>
                         };
                     } else {
                         into_box = Some(Boxing::Normal);
                         erased_ty = parse_quote! {
-                            ::std::boxed::Box<dyn #bounds>
+                            ::std::boxed::Box<dyn #alias_ident>
                         };
                     }
                 }
@@ -182,9 +200,24 @@ impl DynGeneratorContext {
                         erased_ty,
                         into_box,
                         map_err_into,
+                        alias_def
                     },
                 );
             }
+        }
+
+        // todo: this works but call conversations isn't satisfied
+        let type_map = result
+            .iter()
+            .map(|(i, parsed)| (i.clone(), parsed.erased_ty.clone()))
+            .collect();
+
+        let mut eraser = AssocTypeEraser {
+            type_map: &type_map,
+        };
+
+        for parsed in result.values_mut() {
+            eraser.visit_type_mut(&mut parsed.erased_ty);
         }
 
         Ok(result)
@@ -516,6 +549,33 @@ impl ParsedGeneratorContext {
     }
 }
 
+macro_rules! erase {
+    ($i:ident, |$x:ident| => $block:block) => {
+        if let Type::Path(TypePath { qself, path }) = $i
+            && qself.is_none()
+            && path.segments.first().is_some_and(|s| s.ident == "Self")
+            && let Some($x) = path.segments.get(1)
+        $block
+    };
+}
+
+struct AssocTypeEraser<'a> {
+    type_map: &'a HashMap<Ident, Type>,
+}
+
+impl VisitMut for AssocTypeEraser<'_> {
+    fn visit_type_mut(&mut self, i: &mut Type) {
+        erase!(i, |assoc_segment| => {
+            if let Some(erased_ty) = self.type_map.get(&assoc_segment.ident) {
+                *i = erased_ty.clone();
+                return;
+            }
+        });
+
+        syn::visit_mut::visit_type_mut(self, i);
+    }
+}
+
 struct RetTypeDynSignatureEraser<'a> {
     meta: &'a mut TransformMeta,
     assoc_types: &'a HashMap<Ident, ParsedAssocType>,
@@ -523,11 +583,7 @@ struct RetTypeDynSignatureEraser<'a> {
 
 impl VisitMut for RetTypeDynSignatureEraser<'_> {
     fn visit_type_mut(&mut self, i: &mut Type) {
-        if let Type::Path(TypePath { qself, path }) = i
-            && qself.is_none()
-            && path.segments.first().is_some_and(|s| s.ident == "Self")
-            && let Some(assoc_segment) = path.segments.get(1)
-        {
+        erase!(i, |assoc_segment| => {
             let assoc_ident = &assoc_segment.ident;
 
             if let Some(parsed) = self.assoc_types.get(assoc_ident) {
@@ -538,7 +594,7 @@ impl VisitMut for RetTypeDynSignatureEraser<'_> {
                 *i = parsed.erased_ty.clone();
                 return;
             }
-        }
+        });
 
         syn::visit_mut::visit_type_mut(self, i);
     }

@@ -96,7 +96,7 @@ impl Parse for AttrArgs {
                 let _: Token![,] = input.parse()?;
             }
         }
-
+        
         Ok(AttrArgs {
             requires,
             dynamic_dispatch,

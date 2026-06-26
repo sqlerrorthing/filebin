@@ -1,5 +1,6 @@
 pub mod basic;
 
+use std::fmt::Debug;
 use domain::entity::{files, folders};
 use futures::Stream;
 use service::service;
@@ -17,7 +18,6 @@ pub trait UpdatesService {
     /// The stream will close when the folder is deleted.
     /// This stream can be dropped to unsubscribe
     type FoldersUpdateStream: Stream<Item = Arc<FolderUpdate>>;
-
     fn subscribe_folder(&self, folder_id: folders::Id) -> Self::FoldersUpdateStream;
 
     fn file_uploaded(&self, file: files::Model);
