@@ -15,6 +15,7 @@ use parking_lot::Mutex;
 use tokio::spawn;
 use tokio::sync::mpsc;
 use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
+use tracing::{debug, span, Level};
 use service::async_trait::async_trait;
 use crate::service::basic::LocalUpdatesService;
 use crate::service::rabbitmq::stream::SubscriptionGuardStream;
@@ -158,15 +159,18 @@ impl UpdatesService for RabbitMQUpdatesService {
     type FoldersUpdateStream = impl Stream<Item = Arc<FolderUpdate>>;
 
     fn subscribe_folder(&self, folder_id: folders::Id) -> Self::FoldersUpdateStream {
+        let _span = span!(Level::DEBUG, "subscribing folder", %folder_id).entered();
         let mut counts = self.counts.lock();
 
         let count = counts.entry(folder_id).or_insert(0);
         if *count == 0 {
+            debug!("binding folder");
             let _ = self.binding_tx.send(BindingCmd::Bind(folder_id));
+        } else {
+            debug!(count = count, "this folder are already bound");
         }
         *count += 1;
         drop(counts);
-
         let inner_stream = self.local_service.subscribe_folder(folder_id);
 
         SubscriptionGuardStream {

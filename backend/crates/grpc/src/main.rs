@@ -164,8 +164,6 @@ async fn main() -> color_eyre::Result<()> {
             .build()?,
     );
 
-    dbg!(type_name_of_val(&upload_service));
-
     Server::builder()
         .add_service(FolderServiceServer::new(BasicGrpcFolderService::new(
             folders_service,

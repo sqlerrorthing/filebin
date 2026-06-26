@@ -12,7 +12,7 @@ caches:
 rabbitmq:
   # Set this if using more than one instance
   url:
-  exchange: amp.folders
+  exchange: ampq.folders
 
 redis:
   # Set via SERVER__REDIS__URL
