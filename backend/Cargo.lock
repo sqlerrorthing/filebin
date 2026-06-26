@@ -5193,6 +5193,7 @@ dependencies = [
  "parking_lot",
  "pin-project",
  "service",
+ "thiserror",
  "tokio",
  "tokio-stream",
 ]

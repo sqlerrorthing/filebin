@@ -20,6 +20,16 @@ macro_rules! dynamic_error {
                 Self(Box::new(error) as Box<_>)
             }
         }
+
+        impl<B, E> FromError<ServiceError<B, E>> for ServiceError<B, $ident>
+        where
+            B: Error,
+            E: Error $(+ $supertrait)* + 'static,
+        {
+            fn from_error(error: ServiceError<B, E>) -> Self {
+                error.map_internal(FromError::from_error)
+            }
+        }
     };
 }
 
@@ -50,6 +60,15 @@ macro_rules! internal {
     ($($tt:tt)*) => {
         $crate::error::ServiceError::Internal($($tt)*)
     };
+}
+
+impl<B, I> ServiceError<B, I> {
+    fn map_internal<IN>(self, f: impl FnOnce(I) -> IN) -> ServiceError<B, IN> {
+        match self {
+            ServiceError::Business(b) => business!(b),
+            ServiceError::Internal(i) => internal!(f(i))
+        }
+    }
 }
 
 mod sealed {

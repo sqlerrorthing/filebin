@@ -1,5 +1,6 @@
 pub mod basic;
 
+use std::fmt::Debug;
 use bytes::Bytes;
 use domain::entity::{files, folders};
 use futures_core::Stream;
@@ -9,7 +10,7 @@ use thiserror::Error;
 #[service]
 pub trait FilesService {
     type Error;
-    type GetFileStream: Stream<Item = Result<Bytes, Self::Error>>;
+    type GetFileStream: Stream<Item = Result<Bytes, Self::Error>> + Debug;
 
     fn min_upload_chunk_size(&self) -> i64;
 
