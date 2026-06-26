@@ -4274,7 +4274,9 @@ dependencies = [
 name = "service"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "auto_impl",
+ "futures",
  "service_macro",
  "thiserror",
 ]
@@ -4284,6 +4286,9 @@ name = "service_macro"
 version = "0.1.0"
 dependencies = [
  "bitflags",
+ "derive-new",
+ "heck 0.5.0",
+ "proc-macro-crate",
  "proc-macro2",
  "quote",
  "syn 2.0.117",

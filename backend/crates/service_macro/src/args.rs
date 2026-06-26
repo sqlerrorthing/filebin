@@ -1,9 +1,9 @@
+use proc_macro2::TokenStream;
 use std::fmt::Display;
 use bitflags::bitflags;
-use proc_macro2::Span;
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
-use syn::{Error, Ident, Path, Result, Token, parenthesized, Lifetime};
+use syn::{Ident, Result, Token, parenthesized, Lifetime};
 
 bitflags! {
     #[derive(Debug, Copy, Clone)]
@@ -15,10 +15,17 @@ bitflags! {
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+pub struct AttrArgs {
+    pub requires: Requires,
+    pub dynamic_dispatch: bool
+}
+
 #[derive(Debug, Clone)]
 pub struct Args {
     pub requires: Requires,
-    pub dispatch_to: Option<Punctuated<Path, Token![,]>>,
+    pub dynamic_dispatch: bool,
+    pub service_crate_root: TokenStream
 }
 
 enum RequiredItem {
@@ -64,10 +71,10 @@ fn try_parse_required(input: Punctuated<RequiredItem, Token![,]>, requires: &mut
     Ok(())
 }
 
-impl Parse for Args {
+impl Parse for AttrArgs {
     fn parse(input: ParseStream) -> Result<Self> {
         let mut requires = Requires::all();
-        let mut dispatch_to: Option<Punctuated<Path, Token![,]>> = None;
+        let mut dynamic_dispatch = false;
 
         while !input.is_empty() {
             if input.peek(Token![?]) {
@@ -80,10 +87,8 @@ impl Parse for Args {
                 )?;
             } else if input.peek(Ident) {
                 let ident: Ident = input.parse()?;
-                if ident == "dispatch_to" {
-                    let content;
-                    parenthesized!(content in input);
-                    dispatch_to = Some(Punctuated::parse_terminated(&content)?);
+                if ident == "dynamic" {
+                    dynamic_dispatch = true
                 }
             }
 
@@ -92,9 +97,9 @@ impl Parse for Args {
             }
         }
 
-        Ok(Args {
+        Ok(AttrArgs {
             requires,
-            dispatch_to,
+            dynamic_dispatch,
         })
     }
 }
