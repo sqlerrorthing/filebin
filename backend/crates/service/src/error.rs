@@ -7,36 +7,40 @@ pub trait FromError<E> {
 }
 
 macro_rules! dynamic_error {
-    ($ident:ident: $($supertrait:tt),* $(,)?) => {
-        #[derive(Debug, Error)]
-        #[error(transparent)]
-        pub struct $ident(pub Box<dyn Error + 'static $(+ $supertrait)*>);
+    ($($ident:ident: ($($supertrait:tt),* $(,)?);)* $(;)?) => {
+        $(
+            #[derive(Debug, Error)]
+            #[error(transparent)]
+            pub struct $ident(pub Box<dyn Error + 'static $(+ $supertrait)*>);
 
-        impl<E> FromError<E> for $ident
-        where
-            E: Error $(+ $supertrait)* + 'static
-        {
-            fn from_error(error: E) -> Self {
-                Self(Box::new(error) as Box<_>)
+            impl<E> FromError<E> for $ident
+            where
+                E: Error $(+ $supertrait)* + 'static
+            {
+                fn from_error(error: E) -> Self {
+                    Self(Box::new(error) as Box<_>)
+                }
             }
-        }
 
-        impl<B, E> FromError<ServiceError<B, E>> for ServiceError<B, $ident>
-        where
-            B: Error,
-            E: Error $(+ $supertrait)* + 'static,
-        {
-            fn from_error(error: ServiceError<B, E>) -> Self {
-                error.map_internal(FromError::from_error)
+            impl<B, E> FromError<ServiceError<B, E>> for ServiceError<B, $ident>
+            where
+                B: Error,
+                E: Error $(+ $supertrait)* + 'static,
+            {
+                fn from_error(error: ServiceError<B, E>) -> Self {
+                    error.map_internal(FromError::from_error)
+                }
             }
-        }
+        )*
     };
 }
 
-dynamic_error!(DynamicError: );
-dynamic_error!(DynamicSendError: Send);
-dynamic_error!(DynamicSyncError: Send);
-dynamic_error!(DynamicSendSyncError: Send, Sync);
+dynamic_error!(
+    DynamicSendError: (Send);
+    DynamicSyncError: (Send);
+    DynamicSendSyncError: (Send, Sync);
+    DynamicError: ();
+);
 
 /// The error can be either business or internal
 #[derive(Debug, Error)]
