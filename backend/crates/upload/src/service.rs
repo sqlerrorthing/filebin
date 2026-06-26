@@ -22,7 +22,7 @@ pub enum UploadFileError<E> {
 }
 
 #[service]
-pub trait UploadService: 'static {
+pub trait UploadService {
     type Error;
 
     #[result(UploadFileError<E>)]

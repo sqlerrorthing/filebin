@@ -44,3 +44,4 @@ futures-util = "0.3.32"
 futures-core = "0.3.32"
 pin-project = "1.1.13"
 tokio-stream = { version = "0.1.18", features = ["sync"] }
+bitflags = "2.13.0"

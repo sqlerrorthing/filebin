@@ -59,12 +59,11 @@ impl BasicUpdatesService {
     fn get_channel(&self, folder_id: folders::Id) -> Option<broadcast::Sender<Arc<FolderUpdate>>> {
         self.folders_channels.lock().get(&folder_id).cloned()
     }
-    
+
     fn send_update(&self, folder_id: folders::Id, update: FolderUpdate) {
-        self.get_channel(folder_id)
-            .map(|sender| {
-                _ = sender.send(Arc::new(update))
-            });
+        if let Some(sender) = self.get_channel(folder_id) {
+            _ = sender.send(Arc::new(update))
+        }
     }
 
     fn folder_deleted(&self, folder_id: folders::Id) {
@@ -88,10 +87,13 @@ impl UpdatesService for BasicUpdatesService {
     }
 
     fn folder_renamed(&self, folder_id: folders::Id, new_folder_name: String) {
-        self.send_update(folder_id, FolderUpdate::FolderRenamed((folder_id, new_folder_name)))
+        self.send_update(
+            folder_id,
+            FolderUpdate::FolderRenamed((folder_id, new_folder_name)),
+        )
     }
 
-    fn folder_deleted(&self, folder: folders::Model) -> () {
+    fn folder_deleted(&self, folder: folders::Model) {
         let id = folder.id;
         self.send_update(id, FolderUpdate::FolderDeleted(folder));
         self.folder_deleted(id);

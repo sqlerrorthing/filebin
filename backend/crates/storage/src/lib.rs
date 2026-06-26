@@ -5,7 +5,7 @@ use serde::Serialize;
 use service::service;
 
 #[service]
-pub trait Storage: 'static {
+pub trait Storage {
     type Error;
 
     #[result]

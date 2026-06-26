@@ -6,7 +6,7 @@ use futures_core::Stream;
 use service::service;
 
 #[service]
-pub trait DownloadService: 'static {
+pub trait DownloadService {
     type Error;
 
     type DownloadFileByPublicIdsStream: Stream<Item = Result<Bytes, Self::Error>>;

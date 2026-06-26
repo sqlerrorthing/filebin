@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use bytes::Bytes;
 use futures_core::Stream;
 use domain::entity::files;
@@ -10,12 +11,12 @@ pub mod s3;
 pub const FILES_PREFIX: &str = "files";
 
 #[service]
-pub trait FilesStorage: 'static {
+pub trait FilesStorage {
     type Error;
 
     type MultipartUploadHandle;
 
-    type GetFileStream: Stream<Item = Result<Bytes, Self::Error>>;
+    type GetFileStream: Stream<Item = Result<Bytes, Self::Error>> + Debug;
     
     /// Creates new mulipart upload stream
     ///

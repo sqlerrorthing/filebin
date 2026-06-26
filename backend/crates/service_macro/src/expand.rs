@@ -1,39 +1,43 @@
-use crate::args::Args;
+use crate::args::{Args, Requires};
 use proc_macro2::TokenStream;
 use syn::{parse_quote, Attribute, ItemTrait, Meta, ReturnType, Token, TraitItem, TraitItemFn, TraitItemType, Type, TypeParamBound};
 use syn::punctuated::Punctuated;
 
-pub fn expand(input: &mut ItemTrait, args: Args) {
-    push_auto_impls(input);
-    modify_associated_type(input, args);
-    expand_supertraits(args, &mut input.supertraits);
+pub fn expand(input: &mut ItemTrait, args: &Args) {
+    push_auto_impls(&args.service_crate_root, input);
+    modify_associated_type(input, args.requires);
+    expand_supertraits(args.requires, &mut input.supertraits);
     for item in &mut input.items {
         if let TraitItem::Fn(method) = item {
-            process_method(method, args)
+            process_method(method, args.requires)
         }
     }
 }
 
-fn push_auto_impls(input: &mut ItemTrait) {
+fn push_auto_impls(root: &TokenStream, input: &mut ItemTrait) {
     input.attrs.push(
         parse_quote! {
-            #[service::auto_impl::auto_impl(&, Box, Arc)]
+            #[#root::auto_impl::auto_impl(&, Box, Arc)]
         }
     )
 }
 
-fn process_method(method: &mut TraitItemFn, args: Args) {
-    let mut current_output: Type = match &method.sig.output {
+fn process_method(method: &mut TraitItemFn, requires: Requires) {
+    let mut ret = match &method.sig.output {
         ReturnType::Default => parse_quote!(()),
-        ReturnType::Type(_, ty) => *ty.clone(),
+        ReturnType::Type(_, ty) => ty.clone()
     };
 
-    wrap_ret_with_error(&mut method.attrs, &mut current_output);
-    wrap_ret_with_async_impl(&mut method.sig.asyncness, &mut current_output, args);
-    method.sig.output = parse_quote! { -> #current_output };
+    wrap_ret(method, &mut ret, requires)
 }
 
-fn wrap_ret_with_async_impl(is_async: &mut Option<Token![async]>, current_output: &mut Type, mut args: Args) {
+fn wrap_ret(method: &mut TraitItemFn, out: &mut Type, requires: Requires) {
+    wrap_ret_with_error(&mut method.attrs, out);
+    wrap_ret_with_async_impl(&mut method.sig.asyncness, out, requires);
+    method.sig.output = parse_quote! { -> #out };
+}
+
+fn wrap_ret_with_async_impl(is_async: &mut Option<Token![async]>, current_output: &mut Type, mut requires: Requires) {
     if is_async.take().is_none() {
         return
     }
@@ -43,23 +47,26 @@ fn wrap_ret_with_async_impl(is_async: &mut Option<Token![async]>, current_output
         ::core::future::Future<Output = #current_output>
     });
 
-    args.require_debug = false;
-    args.require_sync = false;
-    expand_supertraits(args, &mut future_bounds);
+    requires -= Requires::DEBUG | Requires::SYNC | Requires::STATIC;
+    expand_supertraits(requires, &mut future_bounds);
     *current_output = parse_quote! { impl #future_bounds };
 }
 
-fn expand_supertraits<P: Default>(args: Args, bounds: &mut Punctuated<TypeParamBound, P>) {
-    if args.require_send {
+fn expand_supertraits<P: Default>(requires: Requires, bounds: &mut Punctuated<TypeParamBound, P>) {
+    if requires.contains(Requires::SEND) {
         bounds.push(parse_quote!(Send));
     }
 
-    if args.require_sync {
+    if requires.contains(Requires::SYNC) {
         bounds.push(parse_quote!(Sync));
     }
 
-    if args.require_debug {
+    if requires.contains(Requires::DEBUG) {
         bounds.push(parse_quote!(std::fmt::Debug));
+    }
+
+    if requires.contains(Requires::STATIC) {
+        bounds.push(parse_quote!('static))
     }
 }
 
@@ -97,20 +104,22 @@ fn extract_and_remove_result_attr(
     }
 }
 
-fn modify_associated_type(input: &mut ItemTrait, args: Args) {
+fn modify_associated_type(input: &mut ItemTrait, mut requires: Requires) {
     for item in &mut input.items {
         if let TraitItem::Type(assoc_type) = item {
-            expand_supertraits(args, &mut assoc_type.bounds);
+            requires -= Requires::STATIC | Requires::DEBUG;
             modify_error_associated_type(assoc_type);
+            expand_supertraits(requires, &mut assoc_type.bounds);
         }
     }
 }
 
-fn modify_error_associated_type(input: &mut TraitItemType) {
+fn modify_error_associated_type(input: &mut TraitItemType) -> bool {
     if input.ident == "Error" {
         input.bounds.extend::<[TypeParamBound; 2]>([
             parse_quote!(::core::error::Error),
             parse_quote!('static),
         ]);
-    }
+        true
+    } else { false }
 }
