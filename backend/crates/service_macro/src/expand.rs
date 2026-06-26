@@ -23,9 +23,12 @@ fn push_auto_impls(root: &TokenStream, input: &mut ItemTrait) {
 }
 
 fn process_method(method: &mut TraitItemFn, requires: Requires) {
-    if let ReturnType::Type(_, ty) = &method.sig.output {
-        wrap_ret(method, &mut *ty.clone(), requires)
+    let mut ret = match &method.sig.output {
+        ReturnType::Default => parse_quote!(()),
+        ReturnType::Type(_, ty) => ty.clone()
     };
+
+    wrap_ret(method, &mut ret, requires)
 }
 
 fn wrap_ret(method: &mut TraitItemFn, out: &mut Type, requires: Requires) {
