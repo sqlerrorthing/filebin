@@ -1,4 +1,5 @@
 pub mod basic;
+pub mod rabbitmq;
 
 use domain::entity::{files, folders};
 use futures::Stream;

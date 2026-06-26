@@ -1,5 +1,7 @@
 #![feature(min_specialization, impl_trait_in_assoc_type)]
 
+use std::any::type_name_of_val;
+use amqprs::connection::Connection;
 use crate::config::{CONFIG, Db, Redis, Storage};
 use crate::schema::api::folder::v1::files_service_server::FilesServiceServer;
 use crate::schema::api::folder::v1::folder_service_server::FolderServiceServer;
@@ -24,7 +26,9 @@ use tracing::info;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{EnvFilter, fmt};
-use updates::service::basic::BasicUpdatesService;
+use updates::service::basic::LocalUpdatesService;
+use updates::service::DynUpdatesService;
+use updates::service::rabbitmq::RabbitMQUpdatesService;
 use upload::service::basic::{BasicUploadService, Limits, LimitsBuilder};
 
 pub mod config;
@@ -72,6 +76,14 @@ async fn up_s3_client(config: &Storage) -> aws_sdk_s3::Client {
     aws_sdk_s3::Client::from_conf(s3_config_builder.build())
 }
 
+async fn up_rabbitmq() -> color_eyre::Result<Option<Connection>> {
+    let Some(url) = &CONFIG.rabbitmq.url else {
+        return Ok(None)
+    };
+
+    Ok(Some(Connection::open(&url.as_str().try_into()?).await?))
+}
+
 fn tracing() {
     tracing_subscriber::registry()
         .with(fmt::layer())
@@ -99,8 +111,15 @@ async fn main() -> color_eyre::Result<()> {
 
     let db = up_db(&CONFIG.db).await?.leaked();
     let redis = up_redis(&CONFIG.redis).await?.leaked();
+    info!("Redis connected");
+    let rabbitmq = up_rabbitmq().await?
+        .inspect(|_| info!("RabbitMQ connected"));
 
-    let updates_service = BasicUpdatesService::new(100).leaked();
+    let updates_service: &dyn DynUpdatesService = if let Some(conn) = rabbitmq {
+        RabbitMQUpdatesService::new(conn).leaked()
+    } else {
+        LocalUpdatesService::new(100).leaked()
+    };
     
     let token_service =
         JwtTokenService::new(CONFIG.jwt.expires, CONFIG.jwt.secret.expose_secret()).leaked();
@@ -138,6 +157,8 @@ async fn main() -> color_eyre::Result<()> {
             .max_files_per_folder(CONFIG.limits.max_files_per_folder)
             .build()?,
     );
+
+    dbg!(type_name_of_val(&upload_service));
 
     Server::builder()
         .add_service(FolderServiceServer::new(BasicGrpcFolderService::new(
