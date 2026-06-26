@@ -4283,6 +4283,7 @@ dependencies = [
 name = "service_macro"
 version = "0.1.0"
 dependencies = [
+ "bitflags",
  "proc-macro2",
  "quote",
  "syn 2.0.117",

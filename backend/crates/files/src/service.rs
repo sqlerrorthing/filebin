@@ -7,7 +7,7 @@ use service::service;
 use thiserror::Error;
 
 #[service]
-pub trait FilesService: 'static {
+pub trait FilesService {
     type Error;
     type GetFileStream: Stream<Item = Result<Bytes, Self::Error>>;
 

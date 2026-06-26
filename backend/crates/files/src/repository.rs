@@ -5,7 +5,7 @@ use domain::entity::{files, folders};
 use service::service;
 
 #[service]
-pub trait FilesRepository: 'static {
+pub trait FilesRepository {
     type Error;
 
     #[result]

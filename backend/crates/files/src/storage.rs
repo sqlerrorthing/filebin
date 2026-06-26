@@ -10,7 +10,7 @@ pub mod s3;
 pub const FILES_PREFIX: &str = "files";
 
 #[service]
-pub trait FilesStorage: 'static {
+pub trait FilesStorage {
     type Error;
 
     type MultipartUploadHandle;

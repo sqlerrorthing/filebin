@@ -5,7 +5,7 @@ use domain::entity::folders;
 use service::service;
 
 #[service]
-pub trait FoldersService: 'static {
+pub trait FoldersService {
     type Error;
     
     #[result]

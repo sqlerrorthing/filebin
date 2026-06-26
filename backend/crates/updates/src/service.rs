@@ -13,7 +13,7 @@ pub enum FolderUpdate {
 }
 
 #[service]
-pub trait UpdatesService: 'static {
+pub trait UpdatesService {
     /// The stream will close when the folder is deleted.
     /// This stream can be dropped to unsubscribe
     type FoldersUpdateStream: Stream<Item = Arc<FolderUpdate>>;

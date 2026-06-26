@@ -5,7 +5,7 @@ pub mod db;
 pub mod cache;
 
 #[service]
-pub trait FoldersRepository: 'static {
+pub trait FoldersRepository {
     type Error;
 
     #[result]

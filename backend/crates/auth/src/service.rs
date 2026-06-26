@@ -5,7 +5,7 @@ use service::service;
 pub mod jwt;
 
 #[service]
-pub trait TokenService: 'static {
+pub trait TokenService {
     type Error: Error;
 
     #[result]
