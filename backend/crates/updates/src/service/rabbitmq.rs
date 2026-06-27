@@ -1,34 +1,46 @@
 pub mod stream;
 pub mod subscription;
 
-use std::collections::HashMap;
-use amqprs::consumer::AsyncConsumer;
-use crate::service::{FolderUpdate, FolderUpdateKind, UpdatesService};
-use amqprs::connection::Connection;
-use derivative::Derivative;
-use domain::entity::{files, folders};
-use futures::Stream;
-use std::sync::Arc;
-use amqprs::{BasicProperties, Deliver};
-use amqprs::channel::{BasicConsumeArguments, BasicPublishArguments, Channel, QueueBindArguments, QueueDeclareArguments, QueueUnbindArguments};
-use parking_lot::Mutex;
-use tokio::spawn;
-use tokio::sync::mpsc;
-use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
-use tracing::{debug, span, Level};
-use service::async_trait::async_trait;
 use crate::service::basic::LocalUpdatesService;
 use crate::service::rabbitmq::stream::SubscriptionGuardStream;
 use crate::service::rabbitmq::subscription::SubscriptionGuard;
+use crate::service::{FolderUpdate, FolderUpdateKind, UpdatesService};
+use amqprs::channel::{
+    BasicConsumeArguments, BasicPublishArguments, Channel, ExchangeDeclareArguments,
+    QueueBindArguments, QueueDeclareArguments, QueueUnbindArguments,
+};
+use amqprs::connection::Connection;
+use amqprs::consumer::AsyncConsumer;
+use amqprs::{BasicProperties, Deliver};
+use derivative::Derivative;
+use domain::entity::{files, folders};
+use futures::Stream;
+use parking_lot::Mutex;
+use service::async_trait::async_trait;
+use std::collections::HashMap;
+use std::sync::Arc;
+use derive_new::new;
+use tokio::spawn;
+use tokio::sync::mpsc;
+use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
+use tracing::log::log;
+use tracing::{Level, debug, error, span};
 
 struct PublishCmd {
     routing_key: String,
     payload: Vec<u8>,
 }
 
-enum BindingCmd {
-    Bind(folders::Id),
-    Unbind(folders::Id),
+#[derive(Debug, new)]
+struct BindingCmd {
+    folder_id: folders::Id,
+    kind: BindingCmdKind
+}
+
+#[derive(Debug)]
+enum BindingCmdKind {
+    Bind,
+    Unbind
 }
 
 struct InstanceRabbitMQConsumer {
@@ -54,7 +66,7 @@ impl AsyncConsumer for InstanceRabbitMQConsumer {
             if is_delete {
                 let mut counts = self.counts.lock();
                 if counts.remove(&folder_id).is_some() {
-                    let _ = self.binding_tx.send(BindingCmd::Unbind(folder_id));
+                    let _ = self.binding_tx.send(BindingCmd::new(folder_id, BindingCmdKind::Unbind));
                 }
             }
         }
@@ -80,8 +92,25 @@ fn get_routing_key(folder_id: folders::Id) -> String {
     format!("folder.{}", folder_id)
 }
 
+async fn declare_exchange(channel: &Channel, exchange: &str) {
+    if let Err(err) = channel
+        .exchange_declare(
+            ExchangeDeclareArguments::new(&exchange, "topic")
+                .durable(true)
+                .finish(),
+        )
+        .await
+    {
+        error!(err = %err, "fail to declare exchange (publish)");
+    }
+}
+
 impl RabbitMQUpdatesService {
-    pub fn new(exchange: String, connection: Connection, local_updates_service: LocalUpdatesService) -> Self {
+    pub fn new(
+        exchange: String,
+        connection: Connection,
+        local_updates_service: LocalUpdatesService,
+    ) -> Self {
         let local_updates_service = Arc::new(local_updates_service);
         let connection = Arc::new(connection);
         let (publish_tx, mut publish_rx) = mpsc::unbounded_channel::<PublishCmd>();
@@ -92,9 +121,16 @@ impl RabbitMQUpdatesService {
         let exchange_publish = exchange.clone();
         spawn(async move {
             if let Ok(channel) = conn_publish.open_channel(None).await {
+                declare_exchange(&channel, &exchange_publish).await;
+
                 while let Some(cmd) = publish_rx.recv().await {
-                    let args = BasicPublishArguments::new(&exchange_publish, &cmd.routing_key);
-                    let _ = channel.basic_publish(BasicProperties::default(), cmd.payload, args).await;
+                    let _ = channel
+                        .basic_publish(
+                            BasicProperties::default(),
+                            cmd.payload,
+                            BasicPublishArguments::new(&exchange_publish, &cmd.routing_key),
+                        )
+                        .await;
                 }
             }
         });
@@ -107,6 +143,8 @@ impl RabbitMQUpdatesService {
         let counts_clone = counts.clone();
         spawn(async move {
             if let Ok(channel) = conn_consume.open_channel(None).await {
+                declare_exchange(&channel, &exchange_consume).await;
+
                 let queue_args = QueueDeclareArguments::default()
                     .exclusive(true)
                     .auto_delete(true)
@@ -117,20 +155,39 @@ impl RabbitMQUpdatesService {
                         .manual_ack(false)
                         .finish();
 
-                    let consumer = InstanceRabbitMQConsumer { local_service: local_service_cloned, binding_tx: binding_tx_clone, counts: counts_clone };
+                    let consumer = InstanceRabbitMQConsumer {
+                        local_service: local_service_cloned,
+                        binding_tx: binding_tx_clone,
+                        counts: counts_clone,
+                    };
 
                     if channel.basic_consume(consumer, consume_args).await.is_ok() {
                         while let Some(cmd) = binding_rx.recv().await {
-                            match cmd {
-                                BindingCmd::Bind(id) => {
-                                    let routing_key = get_routing_key(id);
-                                    let args = QueueBindArguments::new(&queue_name, &exchange_consume, &routing_key);
-                                    let _ = channel.queue_bind(args).await;
+                            let folder_id = cmd.folder_id;
+                            let routing_key = get_routing_key(folder_id);
+                            let _span = span!(Level::DEBUG, "queue bind/unbind queue", folder_id = %folder_id, action = ?cmd.kind, routing_key = %routing_key);
+
+                            match cmd.kind {
+                                BindingCmdKind::Bind => {
+                                    let args = QueueBindArguments::new(
+                                        &queue_name,
+                                        &exchange_consume,
+                                        &routing_key,
+                                    );
+                                    if let Err(err) = channel.queue_bind(args).await {
+                                        error!(err = %err, "failed to bound queue");
+                                    }
                                 }
-                                BindingCmd::Unbind(id) => {
-                                    let routing_key = get_routing_key(id);
-                                    let args = QueueUnbindArguments::new(&queue_name, &exchange_consume, &routing_key);
-                                    let _ = channel.queue_unbind(args).await;
+                                BindingCmdKind::Unbind => {
+                                    let args = QueueUnbindArguments::new(
+                                        &queue_name,
+                                        &exchange_consume,
+                                        &routing_key,
+                                    );
+
+                                    if let Err(err) = channel.queue_unbind(args).await {
+                                        error!(err = %err, "failed to unbound queue");
+                                    }
                                 }
                             }
                         }
@@ -139,18 +196,24 @@ impl RabbitMQUpdatesService {
             }
         });
 
-        Self { publish_tx, binding_tx, counts, exchange, local_service: local_updates_service }
+        Self {
+            publish_tx,
+            binding_tx,
+            counts,
+            exchange,
+            local_service: local_updates_service,
+        }
     }
 
     fn send_update(&self, folder_id: folders::Id, kind: FolderUpdateKind) {
         let routing_key = get_routing_key(folder_id);
-        let update = FolderUpdate {
-            folder_id,
-            kind
-        };
+        let update = FolderUpdate { folder_id, kind };
 
         if let Ok(payload) = postcard::to_allocvec(&update) {
-            _ = self.publish_tx.send(PublishCmd { routing_key, payload })
+            _ = self.publish_tx.send(PublishCmd {
+                routing_key,
+                payload,
+            })
         }
     }
 }
@@ -165,7 +228,7 @@ impl UpdatesService for RabbitMQUpdatesService {
         let count = counts.entry(folder_id).or_insert(0);
         if *count == 0 {
             debug!("binding folder");
-            let _ = self.binding_tx.send(BindingCmd::Bind(folder_id));
+            let _ = self.binding_tx.send(BindingCmd::new(folder_id, BindingCmdKind::Bind));
         } else {
             debug!(count = count, "this folder are already bound");
         }
@@ -179,7 +242,7 @@ impl UpdatesService for RabbitMQUpdatesService {
                 folder_id,
                 binding_tx: self.binding_tx.clone(),
                 counts: self.counts.clone(),
-            }
+            },
         }
     }
 
@@ -187,7 +250,7 @@ impl UpdatesService for RabbitMQUpdatesService {
         self.send_update(file.folder_id, FolderUpdateKind::FileUploaded(file));
     }
 
-    fn folder_renamed(&self, folder_id: folders::Id, new_folder_name: String)  {
+    fn folder_renamed(&self, folder_id: folders::Id, new_folder_name: String) {
         self.send_update(folder_id, FolderUpdateKind::FolderRenamed(new_folder_name))
     }
 
