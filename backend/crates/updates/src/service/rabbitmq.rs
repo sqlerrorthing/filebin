@@ -18,13 +18,14 @@ use futures::Stream;
 use parking_lot::Mutex;
 use service::async_trait::async_trait;
 use std::collections::HashMap;
+use std::fmt::Debug;
 use std::sync::Arc;
 use derive_new::new;
 use tokio::spawn;
 use tokio::sync::mpsc;
 use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 use tracing::log::log;
-use tracing::{Level, debug, error, span};
+use tracing::{Level, debug, error, span, info};
 
 struct PublishCmd {
     routing_key: String,
@@ -95,7 +96,7 @@ fn get_routing_key(folder_id: folders::Id) -> String {
 async fn declare_exchange(channel: &Channel, exchange: &str) {
     if let Err(err) = channel
         .exchange_declare(
-            ExchangeDeclareArguments::new(&exchange, "topic")
+            ExchangeDeclareArguments::new(exchange, "topic")
                 .durable(true)
                 .finish(),
         )
@@ -176,6 +177,8 @@ impl RabbitMQUpdatesService {
                                     );
                                     if let Err(err) = channel.queue_bind(args).await {
                                         error!(err = %err, "failed to bound queue");
+                                    } else {
+                                        info!("bound folder successfully");
                                     }
                                 }
                                 BindingCmdKind::Unbind => {
@@ -187,6 +190,8 @@ impl RabbitMQUpdatesService {
 
                                     if let Err(err) = channel.queue_unbind(args).await {
                                         error!(err = %err, "failed to unbound queue");
+                                    } else {
+                                        info!("unbound folder successfully");
                                     }
                                 }
                             }
@@ -219,7 +224,7 @@ impl RabbitMQUpdatesService {
 }
 
 impl UpdatesService for RabbitMQUpdatesService {
-    type FoldersUpdateStream = impl Stream<Item = Arc<FolderUpdate>>;
+    type FoldersUpdateStream = impl Stream<Item = Arc<FolderUpdate>> + Debug;
 
     fn subscribe_folder(&self, folder_id: folders::Id) -> Self::FoldersUpdateStream {
         let _span = span!(Level::DEBUG, "subscribing folder", %folder_id).entered();

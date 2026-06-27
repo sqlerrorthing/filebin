@@ -1,7 +1,6 @@
 use crate::repository::FoldersRepository;
 use domain::entity::folders;
-use domain::entity::folders::ActiveModel;
-use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
+use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set};
 
 impl FoldersRepository for DatabaseConnection {
     type Error = sea_orm::DbErr;
@@ -16,11 +15,11 @@ impl FoldersRepository for DatabaseConnection {
             .await
     }
 
-    async fn insert(&self, folder: ActiveModel) -> Result<folders::Model, Self::Error> {
+    async fn insert(&self, folder: folders::ActiveModel) -> Result<folders::Model, Self::Error> {
         folder.insert(self).await
     }
 
-    async fn update(&self, folder: ActiveModel) -> Result<folders::Model, Self::Error> {
+    async fn update(&self, folder: folders::ActiveModel) -> Result<folders::Model, Self::Error> {
         folder.update(self).await
     }
 
@@ -28,5 +27,23 @@ impl FoldersRepository for DatabaseConnection {
         folders::Entity::delete_by_id(folder_id)
             .exec_with_returning(self)
             .await
+    }
+
+    async fn rename(
+        &self,
+        folder_id: folders::Id,
+        encrypted_name: String,
+    ) -> Result<Option<folders::Model>, Self::Error> {
+        let model = folders::ActiveModel {
+            id: Set(folder_id),
+            encrypted_name: Set(encrypted_name),
+            ..Default::default()
+        };
+
+        match folders::Entity::update(model).validate()?.exec(self).await {
+            Ok(x) => Ok(Some(x)),
+            Err(sea_orm::DbErr::RecordNotFound(_)) => Ok(None),
+            Err(err) => Err(err),
+        }
     }
 }

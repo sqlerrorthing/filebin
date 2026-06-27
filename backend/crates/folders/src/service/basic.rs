@@ -18,7 +18,7 @@ pub struct BasicFoldersService<FR, FS, IGS, US> {
     folder_repository: FR,
     files_service: FS,
     id_generator_service: IGS,
-    updates_service: US
+    updates_service: US,
 }
 
 #[derive(Debug, Error)]
@@ -27,6 +27,35 @@ pub enum Error<FR: FoldersRepository, FS: FilesService> {
     Repository(#[source] FR::Error),
     #[error("files service error: {0}")]
     Files(#[source] FS::Error),
+}
+
+impl<FR, FS, IGS, US> BasicFoldersService<FR, FS, IGS, US>
+where
+    FR: FoldersRepository,
+    FS: FilesService,
+    IGS: IdGeneratorService,
+    US: UpdatesService,
+    Self: Clone,
+{
+    /// Returns if expired
+    #[inline(always)]
+    fn delete_if_expired(&self, folder: &folders::Model) -> bool {
+        if folder.expired_at.is_some_and(|exp| Utc::now() > exp) {
+            cold_path();
+            
+            info!("expired folder found, deleting");
+            let folder_id = folder.id;
+            let this = self.clone();
+            spawn(async move {
+                if let Err(err) = this.delete_folder(folder_id).await {
+                    error!(fodler = %folder_id, error = %err, "failed to remove expired folder");
+                }
+            });
+            true
+        } else {
+            false
+        }
+    }
 }
 
 impl<FR, FS, IGS, US> FoldersService for BasicFoldersService<FR, FS, IGS, US>
@@ -52,11 +81,34 @@ where
             .map(|res| {
                 if let Some(model) = res {
                     self.updates_service.folder_deleted(model);
-                    return true
+                    return true;
                 }
 
                 false
             })
+    }
+
+    async fn rename_folder(
+        &self,
+        folder_id: folders::Id,
+        encrypted_name: String,
+    ) -> Result<Option<folders::Model>, Self::Error> {
+        let model = self
+            .folder_repository
+            .rename(folder_id, encrypted_name.clone())
+            .await
+            .map_err(Error::Repository)?;
+
+        if let Some(folder) = &model {
+            if self.delete_if_expired(folder) {
+                return Ok(None)
+            }
+
+            self.updates_service
+                .folder_renamed(folder_id, encrypted_name);
+        }
+
+        Ok(model)
     }
 
     async fn find_folder_by_public_id(
@@ -70,17 +122,8 @@ where
             .map_err(Error::Repository)?;
 
         if let Some(folder) = &folder
-            && folder.expired_at.is_some_and(|exp| Utc::now() > exp)
+            && self.delete_if_expired(folder)
         {
-            cold_path();
-            info!("Expired folder found, deleting");
-            let folder_id = folder.id;
-            let this = self.clone();
-            spawn(async move {
-                if let Err(err) = this.delete_folder(folder_id).await {
-                    error!(folder = %folder_id, error = %err, "Failed to remove expired folder");
-                }
-            });
             return Ok(None);
         }
 

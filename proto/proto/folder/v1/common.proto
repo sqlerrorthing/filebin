@@ -1,5 +1,7 @@
 syntax = "proto2";
 
+import "google/type/datetime.proto";
+
 package folder.v1;
 
 message FolderId {
@@ -13,4 +15,22 @@ message FileId {
 // A token to edit files in the folder
 message FolderToken {
   required string value = 2;
+}
+
+message Folder {
+  required FolderId id = 1;
+  required string encrypted_name = 2;
+  required google.type.DateTime created_at = 3;
+  optional google.type.DateTime expired_at = 4;
+}
+
+message OwnedFolder {
+  required Folder folder = 1;
+  // Token to modify folder's content
+  required FolderToken token = 2;
+}
+
+message OwnedFolderRef {
+  required FolderId folder_id = 1;
+  required FolderToken token = 2;
 }

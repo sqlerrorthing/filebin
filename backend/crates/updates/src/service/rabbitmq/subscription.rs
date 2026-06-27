@@ -6,6 +6,7 @@ use tracing::{debug, span, Level};
 use domain::entity::folders;
 use crate::service::rabbitmq::{BindingCmd, BindingCmdKind};
 
+#[derive(Debug)]
 pub struct SubscriptionGuard {
     pub(super) folder_id: folders::Id,
     pub(super) binding_tx: UnboundedSender<BindingCmd>,

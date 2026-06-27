@@ -28,14 +28,6 @@ message UploadFileResponse {
   required FileId id = 1;
 }
 
-message DeleteFolderRequest {
-  required FolderId id = 3;
-  required FolderToken token = 2;
-}
-
-message DeleteFolderResponse {
-}
-
 message DownloadRequest {
   required FolderId folder = 2;
   required FileId file = 1;

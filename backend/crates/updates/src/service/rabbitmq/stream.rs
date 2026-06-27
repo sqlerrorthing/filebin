@@ -4,6 +4,7 @@ use futures::Stream;
 use pin_project::pin_project;
 use crate::service::rabbitmq::subscription::SubscriptionGuard;
 
+#[derive(Debug)]
 #[pin_project]
 pub struct SubscriptionGuardStream<S> {
     #[pin]

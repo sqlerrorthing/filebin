@@ -53,4 +53,13 @@ where
         }
         Ok(folder)
     }
+
+    async fn rename(&self, folder_id: folders::Id, encrypted_name: String) -> Result<Option<folders::Model>, Self::Error> {
+        let folder = self.repository().rename(folder_id, encrypted_name).await?;
+        if let Some(folder) = &folder {
+            self.clear_cache_keys([key_by_id(folder.id), key_by_public_id(&folder.public_id)])
+                .await;
+        }
+        Ok(folder)
+    }
 }

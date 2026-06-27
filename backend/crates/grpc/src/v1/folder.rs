@@ -1,9 +1,9 @@
 use crate::config::CONFIG;
 use crate::schema::api::folder::v1::folder_service_server::FolderService;
 use crate::schema::api::folder::v1::{
-    CreateFolderRequest, DeleteFolderRequest, DeleteFolderResponse, FolderDeleted,
-    FolderNameChanged, FolderUpdate, LimitsResponse, NewFile, OwnedFolder, UpdatesRequest,
-    UploadFileRequest, UploadFileResponse, folder_update, upload_file_request,
+    CreateFolderRequest, DeleteFolderRequest, FolderDeleted, FolderNameChanged, FolderUpdate,
+    LimitsResponse, NewFile, OwnedFolder, RenameRequest, UpdatesRequest, UploadFileRequest,
+    UploadFileResponse, folder_update, upload_file_request,
 };
 use crate::schema::{ServiceErrorExt, ServiceResultExt};
 use crate::v1::dto::prost_duration_to_std_duration;
@@ -67,10 +67,10 @@ where
     async fn delete_folder(
         &self,
         request: Request<DeleteFolderRequest>,
-    ) -> Result<Response<DeleteFolderResponse>, Status> {
+    ) -> Result<Response<Empty>, Status> {
         let payload = request.into_inner();
-        let id: entity::folders::PublicId = payload.id.try_into()?;
-        let token = payload.token.value;
+        let id: entity::folders::PublicId = payload.owned_folder.folder_id.try_into()?;
+        let token = payload.owned_folder.token.value;
 
         if !self
             .token_service
@@ -94,7 +94,7 @@ where
             .await
             .ok_or_internal()?
         {
-            Ok(Response::new(DeleteFolderResponse {}))
+            Ok(Response::new(Empty {}))
         } else {
             Err(Status::not_found("folder not found"))
         }
@@ -105,6 +105,36 @@ where
             max_files_per_folder: CONFIG.limits.max_files_per_folder,
             max_file_size: CONFIG.limits.max_filesize.as_u64(),
         }))
+    }
+
+    async fn rename(&self, request: Request<RenameRequest>) -> Result<Response<Empty>, Status> {
+        let payload = request.into_inner();
+        let id: entity::folders::PublicId = payload.owned_folder.folder_id.try_into()?;
+        let token = payload.owned_folder.token.value;
+
+        if !self
+            .token_service
+            .is_token_valid_for_folder(&id, token)
+            .await
+            .ok_or_internal()?
+        {
+            return Err(Status::unauthenticated("invalid token"));
+        }
+
+        let folder = self
+            .folders_service
+            .find_folder_by_public_id(id)
+            .await
+            .ok_or_internal()?
+            .ok_or_not_found("folder not found")?;
+
+        self.folders_service
+            .rename_folder(folder.id, payload.encrypted_name)
+            .await
+            .ok_or_internal()?
+            .ok_or_not_found("folder not found")?;
+        
+        Ok(Response::new(Empty {}))
     }
 
     type UpdatesStream = impl Stream<Item = Result<FolderUpdate, Status>>;

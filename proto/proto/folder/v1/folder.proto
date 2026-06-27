@@ -1,7 +1,6 @@
 syntax = "proto2";
 
 import "google/protobuf/empty.proto";
-import "google/type/datetime.proto";
 import "google/protobuf/duration.proto";
 import "folder/v1/files.proto";
 import "folder/v1/common.proto";
@@ -12,11 +11,18 @@ package folder.v1;
 service FolderService {
   rpc CreateFolder(CreateFolderRequest) returns (OwnedFolder);
 
-  rpc DeleteFolder(DeleteFolderRequest) returns (DeleteFolderResponse);
+  rpc DeleteFolder(DeleteFolderRequest) returns (google.protobuf.Empty);
 
   rpc Limits(google.protobuf.Empty) returns (LimitsResponse);
 
+  rpc Rename(RenameRequest) returns (google.protobuf.Empty);
+
   rpc Updates(UpdatesRequest) returns (stream FolderUpdate);
+}
+
+message RenameRequest {
+  required OwnedFolderRef owned_folder = 1;
+  required string encrypted_name = 2;
 }
 
 message UpdatesRequest {
@@ -33,15 +39,6 @@ message CreateFolderRequest {
   optional google.protobuf.Duration expires = 2;
 }
 
-message Folder {
-  required FolderId id = 1;
-  required string encrypted_name = 2;
-  required google.type.DateTime created_at = 3;
-  optional google.type.DateTime expired_at = 4;
-}
-
-message OwnedFolder {
-  required Folder folder = 1;
-  // Token to modify folder's content
-  required FolderToken token = 2;
+message DeleteFolderRequest {
+  required OwnedFolderRef owned_folder = 1;
 }
