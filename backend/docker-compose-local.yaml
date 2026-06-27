@@ -3,8 +3,10 @@ services:
     build:
       context: ..
       dockerfile: backend/Dockerfile
-#      args:
-#        - CARGO_FLAGS=
+      args:
+        - CARGO_FLAGS=
+    deploy:
+      replicas: 2
     environment:
       RUST_LOG: debug
 
@@ -19,10 +21,9 @@ services:
       SERVER__REDIS__URL: redis://valkey:6379
 
       SERVER__DB__POSTGRES_URL: postgres://user:password@postgres:5432/filebin
-    container_name: filebin-backend
+
+      SERVER__RABBITMQ__URL: amqp://guest:guest@rabbitmq:5672//
     restart: always
-    ports:
-      - "50051:50051"
     volumes:
       - ./config.yaml.sample:/etc/config
     networks:
@@ -36,6 +37,50 @@ services:
         condition: service_healthy
       valkey:
         condition: service_started
+      rabbitmq:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend-grpc.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.backend-grpc.entrypoints=grpc"
+      - "traefik.http.services.backend-grpc.loadbalancer.server.scheme=h2c"
+      - "traefik.http.services.backend-grpc.loadbalancer.server.port=50051"
+
+  traefik:
+    image: traefik:v3.6.1
+    container_name: traefik-filebin
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.grpc.address=:50051"
+    ports:
+      - "50051:50051"
+      - "8081:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - filebin-network
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: rabbitmq-filebin-backend
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: "guest"
+      RABBITMQ_DEFAULT_PASS: "guest"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    restart: unless-stopped
+    networks:
+      - filebin-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   minio:
     image: minio/minio:latest
@@ -100,6 +145,7 @@ volumes:
   minio_data:
   postgres_data:
   valkey_data:
+  rabbitmq_data:
 
 networks:
   filebin-network:

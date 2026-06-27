@@ -45,6 +45,7 @@ service.path = "../service"
 download.path = "../download"
 upload.path = "../upload"
 updates.path = "../updates"
+amqprs.workspace = true
 
 [features]
 default = []

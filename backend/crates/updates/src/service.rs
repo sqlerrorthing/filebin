@@ -1,15 +1,24 @@
 pub mod basic;
+pub mod rabbitmq;
 
 use std::fmt::Debug;
 use domain::entity::{files, folders};
 use futures::Stream;
 use service::service;
 use std::sync::Arc;
+use derive_new::new;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone)]
-pub enum FolderUpdate {
+#[derive(Debug, Clone, Serialize, Deserialize, new)]
+pub struct FolderUpdate {
+    pub folder_id: folders::Id,
+    pub kind: FolderUpdateKind
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum FolderUpdateKind {
     FileUploaded(files::Model),
-    FolderRenamed((folders::Id, String)),
+    FolderRenamed(String),
     FolderDeleted(folders::Model)
 }
 

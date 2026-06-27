@@ -117,6 +117,10 @@ config! {
         pub redis: {
             pub url: String
         },
+        pub rabbitmq: {
+            pub url: Option<String>,
+            pub exchange: String,
+        },
         pub limits: {
             pub max_filesize: Byte,
             pub max_files_per_folder: u32

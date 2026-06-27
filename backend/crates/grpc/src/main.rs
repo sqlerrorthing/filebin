@@ -6,6 +6,7 @@ use crate::schema::api::folder::v1::folder_service_server::FolderServiceServer;
 use crate::sealed::Leaked;
 use crate::v1::files::BasicGrpcFilesService;
 use crate::v1::folder::BasicGrpcFolderService;
+use amqprs::connection::Connection;
 use auth::service::jwt::JwtTokenService;
 use aws_config::{BehaviorVersion, Region};
 use aws_sdk_s3::config::Credentials;
@@ -19,12 +20,15 @@ use id_generator::service::random::RandomIdGeneratorService;
 use sea_orm::{Database, DatabaseConnection, DbErr};
 use sea_orm_migration::migrator::MigratorTrait;
 use secrecy::ExposeSecret;
+use std::any::type_name_of_val;
 use tonic::transport::Server;
 use tracing::info;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{EnvFilter, fmt};
-use updates::service::basic::BasicUpdatesService;
+use updates::service::DynUpdatesService;
+use updates::service::basic::LocalUpdatesService;
+use updates::service::rabbitmq::RabbitMQUpdatesService;
 use upload::service::basic::{BasicUploadService, Limits, LimitsBuilder};
 
 pub mod config;
@@ -72,6 +76,14 @@ async fn up_s3_client(config: &Storage) -> aws_sdk_s3::Client {
     aws_sdk_s3::Client::from_conf(s3_config_builder.build())
 }
 
+async fn up_rabbitmq() -> color_eyre::Result<Option<Connection>> {
+    let Some(url) = &CONFIG.rabbitmq.url else {
+        return Ok(None);
+    };
+
+    Ok(Some(Connection::open(&url.as_str().try_into()?).await?))
+}
+
 fn tracing() {
     tracing_subscriber::registry()
         .with(fmt::layer())
@@ -99,9 +111,22 @@ async fn main() -> color_eyre::Result<()> {
 
     let db = up_db(&CONFIG.db).await?.leaked();
     let redis = up_redis(&CONFIG.redis).await?.leaked();
+    info!("Redis connected");
+    let rabbitmq = up_rabbitmq()
+        .await?
+        .inspect(|_| info!("RabbitMQ connected"));
 
-    let updates_service = BasicUpdatesService::new(100).leaked();
-    
+    let updates_service: &dyn DynUpdatesService = if let Some(conn) = rabbitmq {
+        RabbitMQUpdatesService::new(
+            CONFIG.rabbitmq.exchange.clone(),
+            conn,
+            LocalUpdatesService::new(100),
+        )
+        .leaked()
+    } else {
+        LocalUpdatesService::new(100).leaked()
+    };
+
     let token_service =
         JwtTokenService::new(CONFIG.jwt.expires, CONFIG.jwt.secret.expose_secret()).leaked();
 
@@ -143,7 +168,7 @@ async fn main() -> color_eyre::Result<()> {
         .add_service(FolderServiceServer::new(BasicGrpcFolderService::new(
             folders_service,
             token_service,
-            updates_service
+            updates_service,
         )))
         .add_service(FilesServiceServer::new(BasicGrpcFilesService::new(
             files_service,

@@ -1,4 +1,4 @@
-use crate::service::{FolderUpdate, UpdatesService};
+use crate::service::{FolderUpdate, FolderUpdateKind, UpdatesService};
 use derive_new::new;
 use domain::entity::{files, folders};
 use futures::Stream;
@@ -35,13 +35,13 @@ impl<S: Stream> Stream for DebugStream<S> {
 }
 
 #[derive(Debug, new)]
-pub struct BasicUpdatesService {
+pub struct LocalUpdatesService {
+    channel_capacity: usize,
     #[new(default)]
     folders_channels: Mutex<HashMap<folders::Id, broadcast::Sender<Arc<FolderUpdate>>>>,
-    channel_capacity: usize,
 }
 
-impl BasicUpdatesService {
+impl LocalUpdatesService {
     fn get_or_create_folders_channel(
         &self,
         folder_id: folders::Id,
@@ -60,9 +60,19 @@ impl BasicUpdatesService {
         self.folders_channels.lock().get(&folder_id).cloned()
     }
 
-    fn send_update(&self, folder_id: folders::Id, update: FolderUpdate) {
-        if let Some(sender) = self.get_channel(folder_id) {
+    pub(super) fn send_update(&self, folder_id: folders::Id, kind: FolderUpdateKind) {
+        let is_delete = matches!(kind, FolderUpdateKind::FolderDeleted(_));
+        let update = FolderUpdate {
+            folder_id,
+            kind
+        };
+
+        if let Some(sender) = self.get_channel(update.folder_id) {
             _ = sender.send(Arc::new(update))
+        }
+
+        if is_delete {
+            self.folder_deleted(folder_id);
         }
     }
 
@@ -72,7 +82,7 @@ impl BasicUpdatesService {
     }
 }
 
-impl UpdatesService for BasicUpdatesService {
+impl UpdatesService for LocalUpdatesService {
     type FoldersUpdateStream = impl Stream<Item = Arc<FolderUpdate>> + Debug;
 
     fn subscribe_folder(&self, folder_id: folders::Id) -> Self::FoldersUpdateStream {
@@ -83,19 +93,19 @@ impl UpdatesService for BasicUpdatesService {
     }
 
     fn file_uploaded(&self, file: files::Model) {
-        self.send_update(file.folder_id, FolderUpdate::FileUploaded(file))
+        self.send_update(file.folder_id, FolderUpdateKind::FileUploaded(file))
     }
 
     fn folder_renamed(&self, folder_id: folders::Id, new_folder_name: String) {
         self.send_update(
             folder_id,
-            FolderUpdate::FolderRenamed((folder_id, new_folder_name)),
+            FolderUpdateKind::FolderRenamed(new_folder_name),
         )
     }
 
     fn folder_deleted(&self, folder: folders::Model) {
         let id = folder.id;
-        self.send_update(id, FolderUpdate::FolderDeleted(folder));
+        self.send_update(id, FolderUpdateKind::FolderDeleted(folder));
         self.folder_deleted(id);
     }
 }

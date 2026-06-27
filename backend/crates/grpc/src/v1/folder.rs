@@ -126,7 +126,7 @@ where
             .subscribe_folder(folder.id)
             .map(|update| {
                 Ok(FolderUpdate {
-                    update: Some(update.deref().into()),
+                    update: Some((&update.kind).into()),
                 })
             });
 
