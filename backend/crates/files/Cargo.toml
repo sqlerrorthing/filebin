@@ -21,3 +21,4 @@ cache.path = "../cache"
 storage.path = "../storage"
 futures-core.workspace = true
 futures-util.workspace = true
+updates.path = "../updates"

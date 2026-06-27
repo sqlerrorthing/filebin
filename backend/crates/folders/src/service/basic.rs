@@ -80,7 +80,7 @@ where
             .map_err(Error::Repository)
             .map(|res| {
                 if let Some(model) = res {
-                    self.updates_service.folder_deleted(model);
+                    self.updates_service.fire_folder_deleted(model);
                     return true;
                 }
 
@@ -105,7 +105,7 @@ where
             }
 
             self.updates_service
-                .folder_renamed(folder_id, encrypted_name);
+                .fire_folder_renamed(folder_id, encrypted_name);
         }
 
         Ok(model)

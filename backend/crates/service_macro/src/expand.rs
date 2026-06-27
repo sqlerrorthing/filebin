@@ -9,7 +9,7 @@ use syn::{
 pub fn expand(input: &mut ItemTrait, args: &Args) {
     // todo: uncomment
     push_auto_impls(&args.service_crate_root, input);
-    modify_associated_type(args.dynamic_dispatch, input, args.requires);
+    modify_associated_type(input, args.requires);
     expand_supertraits(args.requires, &mut input.supertraits);
     for item in &mut input.items {
         if let TraitItem::Fn(method) = item {
@@ -108,7 +108,7 @@ fn extract_and_remove_result_attr(attrs: &mut Vec<Attribute>) -> Option<Option<T
     }
 }
 
-fn modify_associated_type(dynamic_dispatch: bool, input: &mut ItemTrait, mut requires: Requires) {
+fn modify_associated_type(input: &mut ItemTrait, mut requires: Requires) {
     for item in &mut input.items {
         if let TraitItem::Type(assoc_type) = item {
             requires -= Requires::STATIC;

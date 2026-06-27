@@ -57,6 +57,20 @@ where
         Ok(result)
     }
 
+    async fn delete_file(&self, file_id: files::Id) -> Result<Option<files::Model>, Self::Error> {
+        let file = self.repository().delete_file(file_id).await?;
+        if let Some(file) = &file {
+            self.clear_cache_keys([
+                key_by_id(file.id),
+                folder_files_key(file.folder_id),
+                key_by_public_id(&file.public_id),
+                folder_files_count_key(file.folder_id)
+            ]).await;
+        }
+
+        Ok(file)
+    }
+
     async fn find_file_by_public_id(
         &self,
         public_id: files::PublicId,

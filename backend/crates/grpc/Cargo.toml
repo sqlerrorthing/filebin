@@ -10,7 +10,7 @@ tracing-subscriber = "0.3.23"
 derive-new.workspace = true
 async-trait.workspace = true
 pastey = "0.2.3"
-config_impl = { package = "config", version = "0.15.23", default-features = false, features = ["yaml", "serde_json"] }
+config_impl = { package = "config", version = "0.15.25", default-features = false, features = ["yaml", "serde_json"] }
 secrecy = { workspace = true, features = ["serde"] }
 serde.workspace = true
 tokio.workspace = true

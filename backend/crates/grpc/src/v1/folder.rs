@@ -1,11 +1,11 @@
 use crate::config::CONFIG;
 use crate::schema::api::folder::v1::folder_service_server::FolderService;
 use crate::schema::api::folder::v1::{
-    CreateFolderRequest, DeleteFolderRequest, FolderDeleted, FolderNameChanged, FolderUpdate,
+    CreateFolderRequest, DeleteFolderRequest, FolderNameChanged, FolderUpdate,
     LimitsResponse, NewFile, OwnedFolder, RenameRequest, UpdatesRequest, UploadFileRequest,
     UploadFileResponse, folder_update, upload_file_request,
 };
-use crate::schema::{ServiceErrorExt, ServiceResultExt};
+use crate::schema::{BoolExt, ServiceErrorExt, ServiceResultExt};
 use crate::v1::dto::prost_duration_to_std_duration;
 use async_trait::async_trait;
 use auth::service::TokenService;
@@ -112,14 +112,12 @@ where
         let id: entity::folders::PublicId = payload.owned_folder.folder_id.try_into()?;
         let token = payload.owned_folder.token.value;
 
-        if !self
+        self
             .token_service
             .is_token_valid_for_folder(&id, token)
             .await
             .ok_or_internal()?
-        {
-            return Err(Status::unauthenticated("invalid token"));
-        }
+            .ok_or_unauthenticated()?;
 
         let folder = self
             .folders_service

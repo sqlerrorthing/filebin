@@ -89,7 +89,7 @@ where
                 })
         ).await.map_internal(Error::Files)?;
         
-        self.updates_service.file_uploaded(res.clone());
+        self.updates_service.fire_file_uploaded(res.clone());
         Ok(res)
     }
 }

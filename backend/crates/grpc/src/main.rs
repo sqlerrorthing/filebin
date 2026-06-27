@@ -140,6 +140,7 @@ async fn main() -> color_eyre::Result<()> {
         files_storage,
         Cache::new(redis, db, CONFIG.caches.files.as_secs() as _),
         RandomIdGeneratorService,
+        updates_service
     )
     .leaked();
 
@@ -175,6 +176,7 @@ async fn main() -> color_eyre::Result<()> {
             folders_service,
             download_service,
             upload_service,
+            token_service
         )))
         .serve("0.0.0.0:50051".parse()?)
         .await?;

@@ -1,6 +1,8 @@
 syntax = "proto2";
 
 import "folder/v1/files.proto";
+import "folder/v1/common.proto";
+import "google/protobuf/empty.proto";
 
 package folder.v1;
 
@@ -8,12 +10,13 @@ message FolderUpdate {
   oneof update {
     NewFile new_file = 1;
     FolderNameChanged folder_name_changed = 2;
-    FolderDeleted folder_deleted = 3;
+    google.protobuf.Empty folder_deleted = 3;
+    FileDeleted file_deleted = 4;
   }
 }
 
-message FolderDeleted {
-
+message FileDeleted {
+  required FileId file_id = 1;
 }
 
 message FolderNameChanged {

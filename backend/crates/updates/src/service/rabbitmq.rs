@@ -61,7 +61,7 @@ impl AsyncConsumer for InstanceRabbitMQConsumer {
     ) {
         if let Ok(update) = postcard::from_bytes::<FolderUpdate>(&content) {
             let folder_id = update.folder_id;
-            let is_delete = matches!(update.kind, FolderUpdateKind::FolderDeleted(_));
+            let is_delete = matches!(update.kind, FolderUpdateKind::FolderDeleted { .. });
             self.local_service.send_update(folder_id, update.kind);
 
             if is_delete {
@@ -251,15 +251,19 @@ impl UpdatesService for RabbitMQUpdatesService {
         }
     }
 
-    fn file_uploaded(&self, file: files::Model) {
-        self.send_update(file.folder_id, FolderUpdateKind::FileUploaded(file));
+    fn fire_file_uploaded(&self, file: files::Model) {
+        self.send_update(file.folder_id, FolderUpdateKind::FileUploaded { file });
     }
 
-    fn folder_renamed(&self, folder_id: folders::Id, new_folder_name: String) {
-        self.send_update(folder_id, FolderUpdateKind::FolderRenamed(new_folder_name))
+    fn fire_file_deleted(&self, file: files::Model) -> () {
+        self.send_update(file.folder_id, FolderUpdateKind::FileDeleted { file })
     }
 
-    fn folder_deleted(&self, folder: folders::Model) {
-        self.send_update(folder.id, FolderUpdateKind::FolderDeleted(folder))
+    fn fire_folder_renamed(&self, folder_id: folders::Id, new_folder_name: String) {
+        self.send_update(folder_id, FolderUpdateKind::FolderRenamed { new_folder_name })
+    }
+
+    fn fire_folder_deleted(&self, folder: folders::Model) {
+        self.send_update(folder.id, FolderUpdateKind::FolderDeleted { folder })
     }
 }

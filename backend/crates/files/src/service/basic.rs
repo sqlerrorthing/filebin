@@ -12,12 +12,15 @@ use service::business;
 use service::error::ServiceError;
 use std::fmt::Debug;
 use thiserror::Error;
+use tracing::{Level, error, span};
+use updates::service::UpdatesService;
 
 #[derive(Clone, Debug, new)]
-pub struct BasicFilesService<FS, FR, IGS> {
+pub struct BasicFilesService<FS, FR, IGS, US> {
     files_storage: FS,
     files_repository: FR,
     id_generator_service: IGS,
+    updates_service: US,
 }
 
 #[derive(Debug, Error)]
@@ -28,11 +31,12 @@ pub enum Error<FS: FilesStorage, FR: FilesRepository> {
     Repository(#[source] FR::Error),
 }
 
-impl<FS, FR, IGS> FilesService for BasicFilesService<FS, FR, IGS>
+impl<FS, FR, IGS, US> FilesService for BasicFilesService<FS, FR, IGS, US>
 where
     FS: FilesStorage,
     FR: FilesRepository,
     IGS: IdGeneratorService,
+    US: UpdatesService,
 {
     type Error = Error<FS, FR>;
     type GetFileStream = impl Stream<Item = Result<Bytes, Self::Error>> + Debug;
@@ -42,7 +46,10 @@ where
     }
 
     async fn files_count(&self, folder_id: folders::Id) -> Result<u64, Self::Error> {
-        self.files_repository.files_count(folder_id).await.map_err(Error::Repository)
+        self.files_repository
+            .files_count(folder_id)
+            .await
+            .map_err(Error::Repository)
     }
 
     async fn delete_files_from_folder(&self, folder_id: folders::Id) -> Result<(), Self::Error> {
@@ -156,5 +163,43 @@ where
             .await
             .map_err(Error::Storage)?
             .map(|stream| stream.map_err(Error::Storage)))
+    }
+
+    async fn delete_file(&self, file_id: files::Id) -> Result<Option<files::Model>, Self::Error> {
+        let _span = span!(Level::DEBUG, "delete file", file_id = %file_id);
+
+        let deleted = self
+            .files_repository
+            .delete_file(file_id)
+            .await
+            .map_err(Error::Repository)?;
+
+        if let Some(deleted) = &deleted {
+            if let Err(e) = self.files_storage.delete(deleted.storage_path).await {
+                error!(error = %e, "failed to delete file from storage!")
+            }
+
+            self.updates_service.fire_file_deleted(deleted.clone());
+        }
+
+        Ok(deleted)
+    }
+
+    async fn delete_file_from_folder_by_public_id(
+        &self,
+        folder_id: folders::Id,
+        public_id: files::PublicId,
+    ) -> Result<Option<files::Model>, Self::Error> {
+        if let Some(file) = self
+            .files_repository
+            .find_file_by_public_id(public_id)
+            .await
+            .map_err(Error::Repository)?
+            && file.folder_id == folder_id
+        {
+            self.delete_file(file.id).await
+        } else {
+            Ok(None)
+        }
     }
 }

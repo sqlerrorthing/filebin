@@ -9,3 +9,4 @@ thiserror.workspace = true
 auto_impl.workspace = true
 async-trait.workspace = true
 futures.workspace = true
+derive-new.workspace = true

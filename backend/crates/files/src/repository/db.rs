@@ -1,6 +1,6 @@
 use crate::repository::FilesRepository;
 use domain::entity::{files, folders};
-use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait, QueryFilter};
+use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait, QueryFilter, SelectExt};
 
 impl FilesRepository for DatabaseConnection {
     type Error = sea_orm::DbErr;
@@ -18,6 +18,12 @@ impl FilesRepository for DatabaseConnection {
     ) -> Result<Vec<files::Model>, Self::Error> {
         files::Entity::delete_many()
             .filter(files::Column::FolderId.eq(folder_id))
+            .exec_with_returning(self)
+            .await
+    }
+
+    async fn delete_file(&self, file_id: files::Id) -> Result<Option<files::Model>, Self::Error> {
+        files::Entity::delete_by_id(file_id)
             .exec_with_returning(self)
             .await
     }

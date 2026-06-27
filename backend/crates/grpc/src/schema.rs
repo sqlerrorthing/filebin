@@ -1,7 +1,7 @@
 use domain::into_string::IntoOptionalString;
 use service::error::ServiceError;
 use std::error::Error;
-use tonic::Status;
+use tonic::{Response, Status};
 use tracing::error;
 
 pub mod api {
@@ -110,6 +110,17 @@ impl<T, E: Error> ServiceErrorExt<T> for Result<Option<T>, E> {
 
 pub trait ServiceResultExt<T> {
     fn ok_or_internal(self) -> Result<T, Status>;
+}
+
+pub trait BoolExt {
+    fn ok_or_unauthenticated(self) -> Result<(), Status>;
+}
+
+impl BoolExt for bool {
+    #[inline(always)]
+    fn ok_or_unauthenticated(self) -> Result<(), Status> {
+        self.ok_or(Status::unauthenticated("unauthenticated"))
+    }
 }
 
 pub trait IntoInternal: Error {

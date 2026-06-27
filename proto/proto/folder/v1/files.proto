@@ -3,12 +3,19 @@ syntax = "proto2";
 package folder.v1;
 
 import "folder/v1/common.proto";
+import "google/protobuf/empty.proto";
 
 
 service FilesService {
   rpc ListFiles(ListFilesRequest) returns (ListFilesResponse);
   rpc UploadFile(stream UploadFileRequest) returns (UploadFileResponse);
   rpc Download(DownloadRequest) returns (stream Blob);
+  rpc Delete(DeleteRequest) returns (google.protobuf.Empty);
+}
+
+message DeleteRequest {
+  required OwnedFolderRef folder = 1;
+  required FileId file_id = 2;
 }
 
 message UploadFileRequest {
@@ -20,8 +27,7 @@ message UploadFileRequest {
 
 message InitiateUpload {
   required EncryptedFileMetadata metadata = 1;
-  required FolderId id = 3;
-  required FolderToken token = 2;
+  required OwnedFolderRef folder = 2;
 }
 
 message UploadFileResponse {

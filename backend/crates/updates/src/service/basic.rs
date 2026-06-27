@@ -61,7 +61,7 @@ impl LocalUpdatesService {
     }
 
     pub(super) fn send_update(&self, folder_id: folders::Id, kind: FolderUpdateKind) {
-        let is_delete = matches!(kind, FolderUpdateKind::FolderDeleted(_));
+        let is_delete = matches!(kind, FolderUpdateKind::FolderDeleted { .. });
         let update = FolderUpdate {
             folder_id,
             kind
@@ -92,20 +92,27 @@ impl UpdatesService for LocalUpdatesService {
         DebugStream::new(BroadcastStream::new(receiver).filter_map(|res| async move { res.ok() }))
     }
 
-    fn file_uploaded(&self, file: files::Model) {
-        self.send_update(file.folder_id, FolderUpdateKind::FileUploaded(file))
+    fn fire_file_uploaded(&self, file: files::Model) {
+        self.send_update(file.folder_id, FolderUpdateKind::FileUploaded { file })
     }
 
-    fn folder_renamed(&self, folder_id: folders::Id, new_folder_name: String) {
+    fn fire_file_deleted(&self, file: files::Model) -> () {
         self.send_update(
-            folder_id,
-            FolderUpdateKind::FolderRenamed(new_folder_name),
+            file.folder_id,
+            FolderUpdateKind::FileDeleted { file }
         )
     }
 
-    fn folder_deleted(&self, folder: folders::Model) {
+    fn fire_folder_renamed(&self, folder_id: folders::Id, new_folder_name: String) {
+        self.send_update(
+            folder_id,
+            FolderUpdateKind::FolderRenamed { new_folder_name },
+        )
+    }
+
+    fn fire_folder_deleted(&self, folder: folders::Model) {
         let id = folder.id;
-        self.send_update(id, FolderUpdateKind::FolderDeleted(folder));
+        self.send_update(id, FolderUpdateKind::FolderDeleted { folder });
         self.folder_deleted(id);
     }
 }

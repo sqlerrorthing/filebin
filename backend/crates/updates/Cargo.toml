@@ -18,3 +18,4 @@ derivative.workspace = true
 serde.workspace = true
 postcard.workspace = true
 tracing.workspace = true
+pastey.workspace = true

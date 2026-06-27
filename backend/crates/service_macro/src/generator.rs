@@ -10,15 +10,6 @@ use syn::{
     TraitItem, TraitItemFn, Type, TypeImplTrait, TypeParamBound, TypePath, parse_quote,
 };
 
-#[derive(Default, Clone, Copy, Debug)]
-enum Boxing {
-    /// Box::pin
-    Pin,
-    /// Box::new
-    #[default]
-    Normal,
-}
-
 impl Boxing {
     fn into_box<X: ToTokens>(self, x: &X) -> TokenStream {
         match self {
@@ -34,6 +25,15 @@ impl Boxing {
             }
         }
     }
+}
+
+#[derive(Default, Clone, Copy, Debug)]
+enum Boxing {
+    /// Box::pin
+    Pin,
+    /// Box::new
+    #[default]
+    Normal,
 }
 
 #[derive(Default, Debug)]

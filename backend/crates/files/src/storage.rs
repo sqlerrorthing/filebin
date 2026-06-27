@@ -37,6 +37,10 @@ pub trait FilesStorage {
     #[result]
     async fn bulk_delete(&self, ids: Vec<files::StoragePath>);
     
+    /// Deletes only one provided file
+    #[result]
+    async fn delete(&self, id: files::StoragePath);
+    
     #[result]
     async fn get_file(&self, path: files::StoragePath) -> Option<Self::GetFileStream>;
 }

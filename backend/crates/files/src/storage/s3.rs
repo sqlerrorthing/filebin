@@ -19,6 +19,7 @@ use std::fmt::Debug;
 use std::hint::cold_path;
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicI32, Ordering};
+use aws_sdk_s3::operation::delete_object::DeleteObjectError;
 use thiserror::Error;
 use tokio::spawn;
 use tracing::error;
@@ -50,6 +51,9 @@ pub enum Error {
 
     #[error("delete objects error: {0}")]
     DeleteObjects(#[from] SdkError<DeleteObjectsError>),
+
+    #[error("delete object error: {0}")]
+    DeleteObject(#[from] SdkError<DeleteObjectError>),
 
     #[error("get object error: {0}")]
     GetObject(#[from] SdkError<GetObjectError>),
@@ -215,6 +219,16 @@ impl FilesStorage for S3FilesStorage {
                 .await?;
         }
 
+        Ok(())
+    }
+
+    async fn delete(&self, id: files::StoragePath) -> Result<(), Self::Error> {
+        self.client.delete_object()
+            .key(format!("{FILES_PREFIX}/{id}"))
+            .bucket(self.bucket.clone())
+            .send()
+            .await?;
+        
         Ok(())
     }
 

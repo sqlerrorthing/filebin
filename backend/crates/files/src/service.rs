@@ -49,4 +49,10 @@ pub trait FilesService {
         &self,
         storage_path: files::StoragePath
     ) -> Option<Self::GetFileStream>;
+    
+    #[result]
+    async fn delete_file(&self, file_id: files::Id) -> Option<files::Model>;
+    
+    #[result]
+    async fn delete_file_from_folder_by_public_id(&self, folder_id: folders::Id, public_id: files::PublicId) -> Option<files::Model>;
 }

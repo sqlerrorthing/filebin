@@ -1,12 +1,13 @@
 use crate::schema::ServiceErrorExt;
 use crate::schema::api::folder::v1::folder_update::Update;
 use crate::schema::api::folder::v1::{
-    EncryptedFileMetadata, FileId, FileView, Folder, FolderDeleted, FolderId, FolderNameChanged,
+    EncryptedFileMetadata, FileDeleted, FileId, FileView, Folder, FolderId, FolderNameChanged,
     FolderToken, NewFile,
 };
 use crate::schema::api::google;
 use chrono::{Datelike, Timelike};
 use domain::entity;
+use pbjson_types::Empty;
 use sea_orm::prelude::DateTimeUtc;
 use std::time::Duration;
 use thiserror::Error;
@@ -26,13 +27,18 @@ impl From<&updates::service::FolderUpdateKind> for Update {
         use updates::service::FolderUpdateKind;
 
         match update {
-            FolderUpdateKind::FileUploaded(file) => Update::NewFile(NewFile {
+            FolderUpdateKind::FileUploaded { file } => Update::NewFile(NewFile {
                 file: file.clone().into(),
             }),
-            FolderUpdateKind::FolderRenamed(name) => {
-                Update::FolderNameChanged(FolderNameChanged { name: name.clone() })
+            FolderUpdateKind::FolderRenamed { new_folder_name } => {
+                Update::FolderNameChanged(FolderNameChanged {
+                    name: new_folder_name.clone(),
+                })
             }
-            FolderUpdateKind::FolderDeleted(_) => Update::FolderDeleted(FolderDeleted {}),
+            FolderUpdateKind::FolderDeleted { .. } => Update::FolderDeleted(Empty {}),
+            FolderUpdateKind::FileDeleted { file } => Update::FileDeleted(FileDeleted {
+                file_id: file.public_id.clone().into(),
+            }),
         }
     }
 }
