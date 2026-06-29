@@ -1,8 +1,8 @@
 pub mod db;
 pub mod cache;
 
-use service::service;
 use domain::models::{files, folders};
+use service::service;
 
 #[service]
 pub trait FilesRepository {

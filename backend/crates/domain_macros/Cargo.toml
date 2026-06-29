@@ -1,5 +1,5 @@
 [package]
-name = "models_macros"
+name = "domain_macros"
 version.workspace = true
 edition.workspace = true
 

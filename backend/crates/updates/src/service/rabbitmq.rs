@@ -13,7 +13,7 @@ use amqprs::connection::Connection;
 use amqprs::consumer::AsyncConsumer;
 use amqprs::{BasicProperties, Deliver};
 use derivative::Derivative;
-use domain::persistance::{files, folders};
+use domain::models::{files, folders};
 use futures::Stream;
 use parking_lot::Mutex;
 use service::async_trait::async_trait;

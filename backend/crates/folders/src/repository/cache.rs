@@ -1,6 +1,5 @@
 use crate::repository::FoldersRepository;
 use cache::{Cache, Cached};
-use domain::persistance::folders;
 use storage::Storage;
 
 const PREFIX: &str = "cache:folders";
@@ -31,8 +30,8 @@ where
         .map(|v| v.0)
     }
 
-    async fn insert(&self, folder: folders::ActiveModel) -> Result<folders::Model, Self::Error> {
-        let folder = self.repository().insert(folder).await?;
+    async fn new_folder(&self, folder: folders::ActiveModel) -> Result<folders::Model, Self::Error> {
+        let folder = self.repository().new_folder(folder).await?;
         self.clear_cache_keys([key_by_id(folder.id), key_by_public_id(&folder.public_id)])
             .await;
         Ok(folder)

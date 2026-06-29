@@ -35,3 +35,15 @@ impl Related<super::files::Entity> for Entity {
 }
 
 impl ActiveModelBehavior for ActiveModel {}
+
+impl From<Model> for models::encrypted_vault::Model {
+    fn from(model: Model) -> Self {
+        Self {
+            id: model.id,
+            iv: model.iv,
+            tag: model.tag,
+            ver: model.ver,
+            algo: model.algo.into(),
+        }
+    }
+}

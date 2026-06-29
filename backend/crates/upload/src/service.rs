@@ -4,7 +4,7 @@ use std::error::Error;
 use bytes::Bytes;
 use futures::Stream;
 use thiserror::Error;
-use domain::persistance;
+use domain::models::{files, folders};
 use service::service;
 
 #[derive(Debug, Error)]
@@ -28,13 +28,13 @@ pub trait UploadService {
     #[result(UploadFileError<E>)]
     async fn upload_file_by_public_folder_id<E: Error>(
         &self,
-        public_id: persistance::folders::PublicId,
+        public_id: folders::PublicId,
         token: String,
         encrypted_path: String,
         encrypted_mime_type: String,
         encrypted_file_hash: String,
         chunks: impl Stream<Item = Result<Bytes, E>> + Send + 'static,
-    ) -> persistance::files::Model
+    ) -> files::Model
     where
         E: Send + 'static;
 }

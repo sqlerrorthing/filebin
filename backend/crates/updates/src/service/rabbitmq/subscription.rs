@@ -3,7 +3,7 @@ use std::sync::Arc;
 use parking_lot::Mutex;
 use tokio::sync::mpsc::UnboundedSender;
 use tracing::{debug, span, Level};
-use domain::persistance::folders;
+use domain::models::folders;
 use crate::service::rabbitmq::{BindingCmd, BindingCmdKind};
 
 #[derive(Debug)]

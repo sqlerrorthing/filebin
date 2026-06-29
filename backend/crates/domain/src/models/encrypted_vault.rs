@@ -4,44 +4,7 @@ use nutype::nutype;
 use serde::{Deserialize, Serialize};
 use sea_orm::entity::prelude::DeriveValueType;
 use strum_macros::EnumIter;
-
-#[nutype(
-    const_fn,
-    derive(
-        Debug,
-        PartialEq,
-        Eq,
-        Copy,
-        Clone,
-        Serialize,
-        Deserialize,
-        Hash,
-        Deref,
-        Display,
-        FromStr
-    ),
-    derive_unchecked(DeriveValueType)
-)]
-pub struct Id(i32);
-
-#[nutype(
-    const_fn,
-    derive(
-        Debug,
-        PartialEq,
-        Eq,
-        Copy,
-        Clone,
-        Serialize,
-        Deserialize,
-        Hash,
-        Deref,
-        Display,
-        FromStr
-    ),
-    derive_unchecked(DeriveValueType)
-)]
-pub struct Version(i16);
+use domain_macros::Model;
 
 macro_rules! b64_encoded_exact_size {
     (
@@ -90,11 +53,14 @@ pub enum EncryptionAlgo {
     Aes256Gcm
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize, Model)]
+#[model(newtypes(
+    Id(i32), Version(i16)
+))]
 pub struct Model {
     pub id: Id,
     pub iv: IV,
     pub tag: Tag,
-    pub var: Version,
+    pub ver: Version,
     pub algo: EncryptionAlgo
 }

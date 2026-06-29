@@ -3,7 +3,7 @@ use crate::schema::api::folder::v1::folder_update::Update;
 use crate::schema::api::folder::v1::{EncryptedBlobs, EncryptedBytes, EncryptedFileMetadata, FileDeleted, FileId, FileView, Folder, FolderId, FolderNameChanged, FolderToken, NewFile};
 use crate::schema::api::google;
 use chrono::{Datelike, Timelike};
-use domain::persistance;
+use domain::persistence;
 use pbjson_types::Empty;
 use sea_orm::prelude::DateTimeUtc;
 use std::time::Duration;
@@ -11,8 +11,8 @@ use thiserror::Error;
 use tinystr::{TinyStr8, TinyStr16};
 use tonic::Status;
 
-impl From<persistance::folders::PublicId> for FolderId {
-    fn from(value: persistance::folders::PublicId) -> Self {
+impl From<persistence::folders::PublicId> for FolderId {
+    fn from(value: persistence::folders::PublicId) -> Self {
         FolderId {
             value: value.into_inner().to_string(),
         }
@@ -40,29 +40,29 @@ impl From<&updates::service::FolderUpdateKind> for Update {
     }
 }
 
-impl From<persistance::files::PublicId> for FileId {
-    fn from(value: persistance::files::PublicId) -> Self {
+impl From<persistence::files::PublicId> for FileId {
+    fn from(value: persistence::files::PublicId) -> Self {
         FileId {
             value: value.into_inner().to_string(),
         }
     }
 }
 
-impl TryFrom<FolderId> for persistance::folders::PublicId {
+impl TryFrom<FolderId> for persistence::folders::PublicId {
     type Error = Status;
 
     fn try_from(value: FolderId) -> Result<Self, Self::Error> {
-        Ok(persistance::folders::PublicId::new(
+        Ok(persistence::folders::PublicId::new(
             TinyStr8::try_from_str(&value.value).ok_or_invalid_argument("invalid id")?,
         ))
     }
 }
 
-impl TryFrom<FileId> for persistance::files::PublicId {
+impl TryFrom<FileId> for persistence::files::PublicId {
     type Error = Status;
 
     fn try_from(value: FileId) -> Result<Self, Self::Error> {
-        Ok(persistance::files::PublicId::new(
+        Ok(persistence::files::PublicId::new(
             TinyStr16::try_from_str(&value.value).ok_or_invalid_argument("invalid id")?,
         ))
     }
@@ -94,8 +94,8 @@ impl From<String> for FolderToken {
     }
 }
 
-impl From<persistance::folders::Model> for Folder {
-    fn from(value: persistance::folders::Model) -> Self {
+impl From<persistence::folders::Model> for Folder {
+    fn from(value: persistence::folders::Model) -> Self {
         Folder {
             id: value.public_id.into(),
             encrypted_name: value.encrypted_name,
@@ -105,14 +105,14 @@ impl From<persistance::folders::Model> for Folder {
     }
 }
 
-impl From<persistance::encrypted_blobs::Model> for EncryptedBlobs {
-    fn from(value: persistance::encrypted_blobs::Model) -> Self {
+impl From<persistence::encrypted_blobs::Model> for EncryptedBlobs {
+    fn from(value: persistence::encrypted_blobs::Model) -> Self {
 
     }
 }
 
-impl From<persistance::files::Model> for FileView {
-    fn from(value: persistance::files::Model) -> Self {
+impl From<persistence::files::Model> for FileView {
+    fn from(value: persistence::files::Model) -> Self {
         FileView {
             id: value.public_id.into(),
             metadata: EncryptedFileMetadata {

@@ -1,0 +1,7 @@
+[package]
+name = "encryption"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+service.path = "../service"

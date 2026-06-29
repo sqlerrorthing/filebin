@@ -2,7 +2,7 @@ use futures_util::TryStreamExt;
 use crate::service::DownloadService;
 use bytes::Bytes;
 use derive_new::new;
-use domain::persistance;
+use domain::models;
 use files::service::FilesService;
 use folders::service::FoldersService;
 use futures_core::Stream;
@@ -38,8 +38,8 @@ where
 
     async fn download_file_stream_by_public_ids(
         &self,
-        folder_id: persistance::folders::PublicId,
-        file_id: persistance::files::PublicId,
+        folder_id: persistence::folders::PublicId,
+        file_id: persistence::files::PublicId,
     ) -> Result<Option<Self::DownloadFileByPublicIdsStream>, Self::Error> {
         let Some(folder) = self
             .folders_service

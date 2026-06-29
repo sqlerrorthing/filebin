@@ -1728,6 +1728,7 @@ dependencies = [
  "bytes",
  "chrono",
  "derive_more",
+ "domain_macros",
  "nutype",
  "sea-orm",
  "serde",
@@ -1735,6 +1736,18 @@ dependencies = [
  "strum_macros",
  "tinystr",
  "uuid",
+]
+
+[[package]]
+name = "domain_macros"
+version = "0.1.0"
+dependencies = [
+ "bitflags",
+ "derive-new",
+ "proc-macro-crate",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -1832,6 +1845,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "75030f3c4f45dafd7586dd6780965a8c7e8e285a5ecb86713e63a79c5b2766f3"
 dependencies = [
  "cfg-if",
+]
+
+[[package]]
+name = "encryption"
+version = "0.1.0"
+dependencies = [
+ "service",
 ]
 
 [[package]]
@@ -3062,18 +3082,6 @@ dependencies = [
  "libc",
  "wasi",
  "windows-sys 0.61.2",
-]
-
-[[package]]
-name = "models_macros"
-version = "0.1.0"
-dependencies = [
- "bitflags",
- "derive-new",
- "proc-macro-crate",
- "proc-macro2",
- "quote",
- "syn 2.0.118",
 ]
 
 [[package]]
