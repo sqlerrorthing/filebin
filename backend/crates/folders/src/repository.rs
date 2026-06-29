@@ -1,4 +1,4 @@
-use domain::entity::folders;
+use domain::persistance::folders;
 use service::service;
 
 pub mod db;

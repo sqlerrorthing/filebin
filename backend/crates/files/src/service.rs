@@ -2,7 +2,7 @@ pub mod basic;
 
 use std::fmt::Debug;
 use bytes::Bytes;
-use domain::entity::{files, folders};
+use domain::persistance::{files, folders};
 use futures_core::Stream;
 use service::service;
 use thiserror::Error;

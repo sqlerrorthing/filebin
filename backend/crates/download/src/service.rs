@@ -1,7 +1,7 @@
 pub mod basic;
 
 use bytes::Bytes;
-use domain::entity::{files, folders};
+use domain::persistance::{files, folders};
 use futures_core::Stream;
 use service::service;
 

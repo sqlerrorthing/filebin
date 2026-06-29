@@ -3,7 +3,7 @@ use crate::service::FilesService;
 use crate::storage::FilesStorage;
 use bytes::Bytes;
 use derive_new::new;
-use domain::entity::{files, folders};
+use domain::persistance::{files, folders};
 use futures_core::Stream;
 use futures_util::{StreamExt, TryStreamExt};
 use id_generator::service::IdGeneratorService;

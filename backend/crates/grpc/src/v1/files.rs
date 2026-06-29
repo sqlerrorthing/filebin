@@ -7,7 +7,7 @@ use crate::schema::{BoolExt, IntoInternal, ServiceErrorExt, ServiceResultExt};
 use async_trait::async_trait;
 use auth::service::TokenService;
 use derive_new::new;
-use domain::entity;
+use domain::persistance;
 use download::service::DownloadService;
 use futures::Stream;
 use futures_util::TryStreamExt;
@@ -40,7 +40,7 @@ where
         request: Request<ListFilesRequest>,
     ) -> Result<Response<ListFilesResponse>, Status> {
         let payload = request.into_inner();
-        let folder: entity::folders::PublicId = payload.folder.try_into()?;
+        let folder: persistance::folders::PublicId = payload.folder.try_into()?;
 
         let folder = self
             .folders_service
@@ -73,7 +73,7 @@ where
             return Err(Status::invalid_argument("invalid initial request"));
         };
 
-        let public_id = entity::folders::PublicId::try_from(initiate.folder.folder_id)?;
+        let public_id = persistance::folders::PublicId::try_from(initiate.folder.folder_id)?;
         let result: Result<_, _> = self
             .upload_service
             .upload_file_by_public_folder_id(
@@ -112,8 +112,8 @@ where
         request: Request<DownloadRequest>,
     ) -> Result<Response<Self::DownloadStream>, Status> {
         let inner = request.into_inner();
-        let folder_id = entity::folders::PublicId::try_from(inner.folder)?;
-        let file_id = entity::files::PublicId::try_from(inner.file)?;
+        let folder_id = persistance::folders::PublicId::try_from(inner.folder)?;
+        let file_id = persistance::files::PublicId::try_from(inner.file)?;
 
         let stream = self
             .download_service
@@ -131,8 +131,8 @@ where
 
     async fn delete(&self, request: Request<DeleteRequest>) -> Result<Response<Empty>, Status> {
         let payload = request.into_inner();
-        let folder: entity::folders::PublicId = payload.folder.folder_id.try_into()?;
-        let file: entity::files::PublicId = payload.file_id.try_into()?;
+        let folder: persistance::folders::PublicId = payload.folder.folder_id.try_into()?;
+        let file: persistance::files::PublicId = payload.file_id.try_into()?;
         let token = payload.folder.token.value;
 
         self.token_service

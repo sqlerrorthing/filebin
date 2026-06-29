@@ -2,7 +2,7 @@ pub mod basic;
 pub mod rabbitmq;
 
 use std::fmt::Debug;
-use domain::entity::{files, folders};
+use domain::persistance::{files, folders};
 use futures::Stream;
 use service::service;
 use std::sync::Arc;

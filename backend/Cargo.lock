@@ -1129,6 +1129,9 @@ name = "bytes"
 version = "1.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8ae3f5d315924270530207e2a68396c3cc547f6dca3fbdca317cfb1a51edb593"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "bytes-utils"
@@ -1721,12 +1724,17 @@ dependencies = [
 name = "domain"
 version = "0.1.0"
 dependencies = [
+ "base64",
+ "bytes",
  "chrono",
  "derive_more",
  "nutype",
  "sea-orm",
  "serde",
+ "strum",
+ "strum_macros",
  "tinystr",
+ "uuid",
 ]
 
 [[package]]
@@ -3057,6 +3065,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "models_macros"
+version = "0.1.0"
+dependencies = [
+ "bitflags",
+ "derive-new",
+ "proc-macro-crate",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.118",
+]
+
+[[package]]
 name = "multimap"
 version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4311,12 +4331,12 @@ dependencies = [
  "auto_impl",
  "derive-new",
  "futures",
- "service_macro",
+ "service_macros",
  "thiserror",
 ]
 
 [[package]]
-name = "service_macro"
+name = "service_macros"
 version = "0.1.0"
 dependencies = [
  "bitflags",
@@ -4714,6 +4734,18 @@ name = "strum"
 version = "0.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9628de9b8791db39ceda2b119bbe13134770b56c138ec1d3af810d045c04f9bd"
+
+[[package]]
+name = "strum_macros"
+version = "0.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ab85eea0270ee17587ed4156089e10b9e6880ee688791d45a905f5b1ca36f664"
+dependencies = [
+ "heck 0.5.0",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.118",
+]
 
 [[package]]
 name = "subtle"

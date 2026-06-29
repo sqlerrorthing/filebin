@@ -1,5 +1,5 @@
 use crate::repository::FoldersRepository;
-use domain::entity::folders;
+use domain::persistance::folders;
 use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set};
 
 impl FoldersRepository for DatabaseConnection {

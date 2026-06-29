@@ -1,7 +1,7 @@
 use std::fmt::Debug;
 use bytes::Bytes;
 use futures_core::Stream;
-use domain::entity::files;
+use domain::persistance::files;
 use service::service;
 
 pub mod s3;

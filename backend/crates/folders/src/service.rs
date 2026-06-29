@@ -1,7 +1,7 @@
 pub mod basic;
 
 use std::time::Duration;
-use domain::entity::folders;
+use domain::persistance::folders;
 use service::service;
 
 #[service]

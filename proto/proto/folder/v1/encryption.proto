@@ -1,0 +1,28 @@
+syntax = "proto2";
+
+package folder.v1;
+
+message Version {
+  required uint32 value = 1;
+}
+
+message Algorithm {
+  required string value = 2;
+}
+
+message EncryptedVault {
+  // Base64 encoded 12 length IV
+  // Output string length is 16
+  required string iv  = 1;
+
+  // Base64 encoded 16 length tag
+  // Output string length is 24
+  required string tag = 2;
+  required Version version = 3;
+  required Algorithm algo = 4;
+}
+
+message EncryptedBlobs {
+  required EncryptedVault meta = 1;
+  required bytes data = 2;
+}

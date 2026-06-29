@@ -1,6 +1,6 @@
 pub mod random;
 
-use domain::entity::{files, folders};
+use domain::persistance::{files, folders};
 use service::service;
 
 #[service]

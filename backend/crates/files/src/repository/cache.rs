@@ -1,6 +1,6 @@
 use crate::repository::FilesRepository;
 use cache::Cache;
-use domain::entity::{files, folders};
+use domain::persistance::{files, folders};
 use storage::Storage;
 
 const PREFIX: &str = "cache:files";

@@ -1,5 +1,5 @@
 use crate::repository::FilesRepository;
-use domain::entity::{files, folders};
+use domain::persistance::{files, folders};
 use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait, QueryFilter, SelectExt};
 
 impl FilesRepository for DatabaseConnection {

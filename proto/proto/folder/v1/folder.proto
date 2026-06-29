@@ -5,6 +5,7 @@ import "google/protobuf/duration.proto";
 import "folder/v1/files.proto";
 import "folder/v1/common.proto";
 import "folder/v1/updates.proto";
+import "folder/v1/encryption.proto";
 
 package folder.v1;
 
@@ -22,7 +23,7 @@ service FolderService {
 
 message RenameRequest {
   required OwnedFolderRef owned_folder = 1;
-  required string encrypted_name = 2;
+  required EncryptedBlobs name = 2;
 }
 
 message UpdatesRequest {
@@ -35,7 +36,7 @@ message LimitsResponse {
 }
 
 message CreateFolderRequest {
-  required string encrypted_name = 1;
+  required EncryptedVault name = 1;
   optional google.protobuf.Duration expires = 2;
 }
 

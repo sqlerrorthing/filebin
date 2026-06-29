@@ -1,6 +1,6 @@
 use crate::service::{FolderUpdate, FolderUpdateKind, UpdatesService};
 use derive_new::new;
-use domain::entity::{files, folders};
+use domain::persistance::{files, folders};
 use futures::Stream;
 use futures::StreamExt;
 use parking_lot::Mutex;

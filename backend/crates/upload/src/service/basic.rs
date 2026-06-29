@@ -3,8 +3,8 @@ use auth::service::TokenService;
 use bytes::Bytes;
 use derive_builder::Builder;
 use derive_new::new;
-use domain::entity;
-use domain::entity::files::Model;
+use domain::persistance;
+use domain::persistance::files::Model;
 use files::service::FilesService;
 use folders::service::FoldersService;
 use futures::{Stream, StreamExt, TryStreamExt};
@@ -49,7 +49,7 @@ where
 
     async fn upload_file_by_public_folder_id<E: std::error::Error>(
         &self,
-        public_id: entity::folders::PublicId,
+        public_id: persistance::folders::PublicId,
         token: String,
         encrypted_path: String,
         encrypted_mime_type: String,

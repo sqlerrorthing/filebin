@@ -11,7 +11,7 @@ use aws_smithy_types::byte_stream;
 use aws_smithy_types::error::operation::BuildError;
 use bytes::Bytes;
 use derive_new::new;
-use domain::entity::files;
+use domain::persistance::files;
 use domain::sync::shared_string::SharedString;
 use futures_core::Stream;
 use futures_util::{TryStreamExt, stream};
