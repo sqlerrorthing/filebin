@@ -25,11 +25,14 @@ impl FoldersRepository for DatabaseConnection {
         &self,
         public_id: models::folders::PublicId,
     ) -> Result<Option<models::folders::Model>, Self::Error> {
-        let res = persistence::folders::Entity::load()
+        let Some(res) = persistence::folders::Entity::load()
             .filter(persistence::folders::Column::PublicId.eq(public_id))
-            .with
+            .with(persistence::encrypted_blobs::Entity)
             .one(self)
-            .await?;
+            .await?
+        else {
+            Ok(None)
+        };
 
         todo!()
     }

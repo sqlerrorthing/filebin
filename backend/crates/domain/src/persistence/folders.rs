@@ -2,14 +2,13 @@
 
 use tinystr::TinyAsciiStr;
 use sea_orm::entity::prelude::*;
-use serde::{Deserialize, Serialize};
 use crate::macros::tiny_str_sea_orm_derive;
 use crate::models;
 
-
 tiny_str_sea_orm_derive!(models::folders::PublicId as 8: |s| { Self::new(s) });
 
-#[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Deserialize, Serialize)]
+#[sea_orm::model]
+#[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel)]
 #[sea_orm(table_name = "folders")]
 pub struct Model {
     #[sea_orm(primary_key)]
@@ -19,32 +18,16 @@ pub struct Model {
     pub encrypted_name: super::encrypted_blobs::Id,
     pub expired_at: Option<DateTimeWithTimeZone>,
     pub created_at: DateTimeWithTimeZone,
-}
-
-#[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-pub enum Relation {
     #[sea_orm(
-        belongs_to = "super::encrypted_blobs::Entity",
-        from = "Column::EncryptedName",
-        to = "super::encrypted_blobs::Column::Id",
+        belongs_to,
+        from = "encrypted_name",
+        to = "id",
         on_update = "NoAction",
         on_delete = "Cascade"
     )]
-    EncryptedBlobs,
-    #[sea_orm(has_many = "super::files::Entity")]
-    Files,
-}
-
-impl Related<super::encrypted_blobs::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::EncryptedBlobs.def()
-    }
-}
-
-impl Related<super::files::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::Files.def()
-    }
+    pub encrypted_blobs: HasOne<super::encrypted_blobs::Entity>,
+    #[sea_orm(has_many)]
+    pub files: HasMany<super::files::Entity>,
 }
 
 impl ActiveModelBehavior for ActiveModel {}
