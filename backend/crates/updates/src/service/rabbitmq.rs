@@ -259,7 +259,7 @@ impl UpdatesService for RabbitMQUpdatesService {
         self.send_update(file.folder_id, FolderUpdateKind::FileDeleted { file })
     }
 
-    fn fire_folder_renamed(&self, folder_id: folders::Id, new_folder_name: String) {
+    fn fire_folder_renamed(&self, folder_id: folders::Id, new_folder_name: folders::FolderName) {
         self.send_update(folder_id, FolderUpdateKind::FolderRenamed { new_folder_name })
     }
 

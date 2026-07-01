@@ -39,6 +39,14 @@ impl NewtypeMeta {
         }
     }
 
+    fn other() -> Self {
+        Self {
+            const_fn: false,
+            derives: basic_idents(),
+            derive_value_type: false
+        }
+    }
+
     fn uuid() -> Self {
         // cuz this is the same
         Self::number()
@@ -48,15 +56,18 @@ impl NewtypeMeta {
         macro_rules! find {
             (
                 in $ident_str:expr;
-                $($($args:expr),* => $self:expr),*
+                $($($args:expr),* => $self:expr);*
+                $(, default => $other:expr)?
             ) => {
-                $(
-                    if [$($args),*].iter().any(|&t| $ident_str == t) {
-                        return Some($self)
-                    }
-                )*
+                {
+                    $(
+                        if [$($args),*].iter().any(|&t| $ident_str == t) {
+                            return Some($self)
+                        }
+                    )*
 
-                return None
+                    $($other)?
+                }
             };
         }
 
@@ -64,17 +75,19 @@ impl NewtypeMeta {
             && let Some(segment) = type_path.path.segments.last()
         {
             let ident_str = segment.ident.to_string();
-            find! {
+            return find! {
                 in &ident_str;
 
                 "i64", "i32", "u64", "u32", "f64", "usize", "i16"
-                    => Self::number(),
+                    => Self::number();
 
                 "Uuid", "uuid"
-                    => Self::uuid(),
+                    => Self::uuid();
 
                 "TinyAsciiStr", "TinyStr"
-                    => Self::tinystr()
+                    => Self::tinystr(),
+
+                default => Some(Self::other())
             }
         }
 

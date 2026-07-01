@@ -6,7 +6,7 @@ struct CastedModel(models::folders::Model);
 
 impl From<(persistence::folders::Model, models::encrypted_blobs::Model)> for CastedModel {
     fn from(
-        (model, encrypted_name): (persistence::folders::Model, models::encrypted_blobs::Model),
+        (model, encrypted_name): (persistence::folders::Model, models::folders::FolderName),
     ) -> Self {
         CastedModel(models::folders::Model {
             id: model.id,
@@ -44,17 +44,19 @@ impl FoldersRepository for DatabaseConnection {
         folder.insert(self).await
     }
 
-    async fn delete(&self, folder_id: folders::Id) -> Result<Option<folders::Model>, Self::Error> {
-        persistence::folders::Entity::delete_by_id(folder_id)
+    async fn delete(&self, folder_id: models::folders::Id) -> Result<Option<models::folders::Model>, Self::Error> {
+        let Some(res) = persistence::folders::Entity::delete_by_id(folder_id)
             .exec_with_returning(self)
-            .await
+            .await?;
+
+        todo!()
     }
 
     async fn rename(
         &self,
-        folder_id: folders::Id,
+        folder_id: models::folders::Id,
         encrypted_name: String,
-    ) -> Result<Option<folders::Model>, Self::Error> {
+    ) -> Result<Option<models::folders::Model>, Self::Error> {
         let model = folders::ActiveModel {
             id: Set(folder_id),
             encrypted_name: Set(encrypted_name),

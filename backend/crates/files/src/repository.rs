@@ -4,7 +4,7 @@ pub mod cache;
 use domain::models::{files, folders};
 use service::service;
 
-#[service]
+#[service(dynamic)]
 pub trait FilesRepository {
     type Error;
 

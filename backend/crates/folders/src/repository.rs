@@ -18,5 +18,5 @@ pub trait FoldersRepository {
     async fn delete(&self, folder_id: folders::Id) -> Option<folders::Model>;
     
     #[result]
-    async fn rename(&self, folder_id: folders::Id, encrypted_name: encrypted_blobs::Model) -> Option<folders::Model>;
+    async fn rename(&self, folder_id: folders::Id, encrypted_name: folders::FolderName) -> Option<folders::Model>;
 }

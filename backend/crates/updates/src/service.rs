@@ -55,6 +55,6 @@ make_updates_service! {
     FileUploaded  { file: files::Model };
     FileDeleted   { file: files::Model };
 
-    FolderRenamed { new_folder_name: encrypted_blobs::Model } | { folder_id: folders::Id };
+    FolderRenamed { new_folder_name: folders::FolderName } | { folder_id: folders::Id };
     FolderDeleted { folder: folders::Model };
 }
