@@ -21,3 +21,37 @@ pub struct Model {
 }
 
 impl ActiveModelBehavior for ActiveModel {}
+
+impl From<models::encrypted_vault::Model> for ActiveModelEx {
+    fn from(value: models::encrypted_vault::Model) -> Self {
+        ActiveModel::builder()
+            .set_iv(value.iv)
+            .set_tag(value.tag)
+            .set_ver(value.ver)
+            .set_algo(value.algo)
+    }
+}
+
+impl From<models::encrypted_vault::NewVault> for ActiveModelEx {
+    fn from(value: models::encrypted_vault::NewVault) -> Self {
+        ActiveModel::builder()
+            .set_iv(value.iv)
+            .set_tag(value.tag)
+            .set_ver(value.ver)
+            .set_algo(value.algo)
+    }
+}
+
+impl TryFrom<ActiveModelEx> for models::encrypted_vault::Model {
+    type Error = ();
+
+    fn try_from(mut value: ActiveModelEx) -> Result<Self, Self::Error> {
+        Ok(Self {
+            id: value.id.take().ok_or(())?,
+            iv: value.iv.take().ok_or(())?,
+            tag: value.tag.take().ok_or(())?,
+            ver: value.ver.take().ok_or(())?,
+            algo: value.algo.take().ok_or(())?.into(),
+        })
+    }
+}

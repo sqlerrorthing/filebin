@@ -2,12 +2,12 @@ use futures_util::TryStreamExt;
 use crate::service::DownloadService;
 use bytes::Bytes;
 use derive_new::new;
-use domain::models;
 use files::service::FilesService;
 use folders::service::FoldersService;
 use futures_core::Stream;
 use std::fmt::Debug;
 use thiserror::Error;
+use domain::models;
 
 #[derive(Debug, Clone, new)]
 pub struct BasicDownloadService<FilesS, FoldersS> {
@@ -38,8 +38,8 @@ where
 
     async fn download_file_stream_by_public_ids(
         &self,
-        folder_id: persistence::folders::PublicId,
-        file_id: persistence::files::PublicId,
+        folder_id: models::folders::PublicId,
+        file_id: models::files::PublicId,
     ) -> Result<Option<Self::DownloadFileByPublicIdsStream>, Self::Error> {
         let Some(folder) = self
             .folders_service

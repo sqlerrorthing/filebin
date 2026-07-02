@@ -13,3 +13,4 @@ quote.workspace = true
 bitflags.workspace = true
 proc-macro-crate.workspace = true
 derive-new.workspace = true
+heck = "0.5.0"

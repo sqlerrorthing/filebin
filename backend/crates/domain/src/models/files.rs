@@ -8,10 +8,10 @@ use uuid::Uuid;
     newtypes(
         Id(i32),
         PublicId(tinystr::TinyAsciiStr<16>),
-        StoragePath(Uuid)
+        StoragePath(Uuid),
     ),
     inputs(
-        NewFile(public_id, folder_id, data_meta, meta, storage_path, file_size)
+        NewFile(public_id, folder_id, data_meta, meta, storage_path, file_size),
     )
 )]
 pub struct Model {

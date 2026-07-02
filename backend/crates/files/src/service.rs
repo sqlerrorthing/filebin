@@ -2,7 +2,7 @@ pub mod basic;
 
 use std::fmt::Debug;
 use bytes::Bytes;
-use domain::models::{files, folders};
+use domain::models::{encrypted_blobs, encrypted_vault, files, folders};
 use futures_core::Stream;
 use service::service;
 use thiserror::Error;
@@ -36,9 +36,8 @@ pub trait FilesService {
     async fn upload_file<E>(
         &self,
         folder_id: folders::Id,
-        encrypted_path: String,
-        encrypted_mime_type: String,
-        encrypted_file_hash: String,
+        data_meta: encrypted_vault::NewVault,
+        file_meta: encrypted_blobs::NewBlob,
         chunks: impl Stream<Item = Result<Bytes, E>> + Send + 'static,
     ) -> files::Model
     where

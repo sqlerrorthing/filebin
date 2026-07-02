@@ -91,11 +91,11 @@ where
     async fn rename_folder(
         &self,
         folder_id: folders::Id,
-        encrypted_name: encrypted_blobs::Model,
+        new_name: encrypted_blobs::NewBlob,
     ) -> Result<Option<folders::Model>, Self::Error> {
         let model = self
             .folder_repository
-            .rename(folder_id, encrypted_name.clone())
+            .rename(folder_id, new_name.clone())
             .await
             .map_err(Error::Repository)?;
 
@@ -105,7 +105,7 @@ where
             }
 
             self.updates_service
-                .fire_folder_renamed(folder_id, encrypted_name);
+                .fire_folder_renamed(folder_id, folder.encrypted_name.clone());
         }
 
         Ok(model)
@@ -132,14 +132,13 @@ where
 
     async fn create_folder(
         &self,
-        encrypted_name: encrypted_blobs::Model,
+        encrypted_name: encrypted_blobs::NewBlob,
         expires: Option<Duration>,
     ) -> Result<folders::Model, Self::Error> {
         let model = folders::NewFolder {
             public_id: self.id_generator_service.next_public_folder_id(),
             encrypted_name,
             expired_at: expires.map(|exp| (Utc::now() + exp).into()),
-            ..Default::default()
         };
 
         self.folder_repository

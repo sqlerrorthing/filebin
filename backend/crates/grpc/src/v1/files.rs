@@ -7,7 +7,7 @@ use crate::schema::{BoolExt, IntoInternal, ServiceErrorExt, ServiceResultExt};
 use async_trait::async_trait;
 use auth::service::TokenService;
 use derive_new::new;
-use domain::persistence;
+use domain::models;
 use download::service::DownloadService;
 use futures::Stream;
 use futures_util::TryStreamExt;
@@ -40,7 +40,7 @@ where
         request: Request<ListFilesRequest>,
     ) -> Result<Response<ListFilesResponse>, Status> {
         let payload = request.into_inner();
-        let folder: persistence::folders::PublicId = payload.folder.try_into()?;
+        let folder: models::folders::PublicId = payload.folder.try_into()?;
 
         let folder = self
             .folders_service
@@ -64,27 +64,31 @@ where
         &self,
         request: Request<Streaming<UploadFileRequest>>,
     ) -> Result<Response<UploadFileResponse>, Status> {
+        use upload_file_request as ufr;
+
         let mut stream = request.into_inner();
 
         let Some(Ok(UploadFileRequest {
-            data: Some(upload_file_request::Data::Initiate(initiate)),
+            data: Some(ufr::Data::Initiate(initiate)),
         })) = stream.next().await
         else {
             return Err(Status::invalid_argument("invalid initial request"));
         };
 
-        let public_id = persistence::folders::PublicId::try_from(initiate.folder.folder_id)?;
+        let public_id = models::folders::PublicId::try_from(initiate.folder.folder_id)?;
+        let data_meta = models::encrypted_vault::NewVault::try_from(initiate.vault)?;
+        let file_meta = models::encrypted_blobs::NewBlob::try_from(initiate.metadata.value)?;
+        
         let result: Result<_, _> = self
             .upload_service
             .upload_file_by_public_folder_id(
                 public_id,
                 initiate.folder.token.value,
-                initiate.metadata.encrypted_path,
-                initiate.metadata.encrypted_mime,
-                initiate.metadata.encrypted_hash,
+                data_meta,
+                file_meta,
                 stream.map(|item| match item {
                     Ok(UploadFileRequest {
-                        data: Some(upload_file_request::Data::ChunkData(bytes)),
+                        data: Some(ufr::Data::ChunkData(bytes)),
                     }) => Ok(bytes),
                     _ => Err(Status::aborted("aborted")),
                 }),
@@ -112,8 +116,8 @@ where
         request: Request<DownloadRequest>,
     ) -> Result<Response<Self::DownloadStream>, Status> {
         let inner = request.into_inner();
-        let folder_id = persistence::folders::PublicId::try_from(inner.folder)?;
-        let file_id = persistence::files::PublicId::try_from(inner.file)?;
+        let folder_id = models::folders::PublicId::try_from(inner.folder)?;
+        let file_id = models::files::PublicId::try_from(inner.file)?;
 
         let stream = self
             .download_service
@@ -131,8 +135,8 @@ where
 
     async fn delete(&self, request: Request<DeleteRequest>) -> Result<Response<Empty>, Status> {
         let payload = request.into_inner();
-        let folder: persistence::folders::PublicId = payload.folder.folder_id.try_into()?;
-        let file: persistence::files::PublicId = payload.file_id.try_into()?;
+        let folder: models::folders::PublicId = payload.folder.folder_id.try_into()?;
+        let file: models::files::PublicId = payload.file_id.try_into()?;
         let token = payload.folder.token.value;
 
         self.token_service

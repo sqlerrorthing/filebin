@@ -1,10 +1,10 @@
-use crate::args::{Args, Input};
+use crate::args::{Args, Input, InputField};
 use crate::newtype::NewtypeMeta;
 use derive_new::new;
-use proc_macro2::TokenStream;
+use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 use syn::spanned::Spanned;
-use syn::{DeriveInput, Error, FieldsNamed, Result};
+use syn::{DeriveInput, Error, Field, FieldsNamed, Result, parse_quote};
 
 #[derive(new)]
 pub struct Generator {
@@ -12,6 +12,14 @@ pub struct Generator {
     input: DeriveInput,
     fields: FieldsNamed,
     _root: TokenStream,
+}
+
+#[derive(new)]
+struct ResolvedInputField<'a> {
+    name: &'a Ident,
+    struct_name: &'a Ident,
+    struct_field: Field,
+    spread: bool,
 }
 
 impl Generator {
@@ -64,46 +72,92 @@ impl Generator {
     fn generate_input(&self, input: &Input) -> Result<TokenStream> {
         let vis = &self.input.vis;
         let name = &input.name;
-        let fields = input
+        let resolved_fields = input
             .fields
             .iter()
-            .map(|name| {
-                let struct_field = self
-                    .fields
-                    .named
-                    .iter()
-                    .find(|f| *f.ident.as_ref().unwrap() == *name)
-                    .ok_or(Error::new(
-                        name.span(),
-                        "this name found in the struct definition",
-                    ))?;
+            .map(|input_field| {
+                let (name, alias, struct_field, spread) = match input_field {
+                    InputField::Field { name, alias } => {
+                        let mut struct_field = self
+                            .fields
+                            .named
+                            .iter()
+                            .find(|f| *f.ident.as_ref().unwrap() == *name)
+                            .ok_or(Error::new(
+                                name.span(),
+                                "this name found in the struct definition",
+                            ))?
+                            .clone();
 
-                Ok(struct_field)
+                        struct_field.ident = Some(alias.clone());
+                        (name, alias, struct_field, false)
+                    }
+                    InputField::Spread { name, path } => (
+                        name,
+                        name,
+                        parse_quote! {
+                            #vis #name: #path
+                        },
+                        true,
+                    ),
+                };
+
+                Ok(ResolvedInputField::new(name, alias, struct_field, spread))
             })
             .collect::<Result<Vec<_>>>()?;
 
-        let body = if fields.is_empty() {
+        let body = if resolved_fields.is_empty() {
             quote!(;)
         } else {
-            quote!({ #(#fields),* })
+            let struct_fields = resolved_fields.iter().map(|f| &f.struct_field);
+            quote!({ #(#struct_fields),* })
         };
 
-        let field_idents: Vec<_> = fields.iter().map(|f| &f.ident).collect();
-        let field_tys: Vec<_> = fields.iter().map(|f| &f.ty).collect();
+        let struct_field_idents: Vec<_> = resolved_fields.iter().map(|f| &f.struct_name).collect();
+        let field_idents: Vec<_> = resolved_fields.iter().map(|f| &f.name).collect();
+        let field_tys: Vec<_> = resolved_fields.iter().map(|f| &f.struct_field.ty).collect();
+        let no_spreads: bool = resolved_fields.iter().all(|f| !f.spread);
 
-        let from_one_field = if fields.len() == 1 && let Some(field) = fields.first() {
-            let id = &field.ident;
-            let ty = &field.ty;
+        let from_one_field = if resolved_fields.len() == 1 && let Some(field) = resolved_fields.first() {
+            let struct_id = &field.struct_field;
+            let ty = &field.struct_field.ty;
             Some(quote! {
                 impl From<#ty> for #name {
-                    fn from(#id: #ty) -> Self {
-                        Self { #id }
+                    fn from(#struct_id: #ty) -> Self {
+                        Self {
+                            #struct_id
+                        }
                     }
                 }
             })
         } else {
             None
         };
+
+        let model_related_methods = no_spreads.then(|| {
+            quote! {
+                impl #name {
+                    fn apply(self, model: Model) -> Model {
+                        Model {
+                            #(#field_idents : self.#struct_field_idents,)*
+                            ..model
+                        }
+                    }
+
+                    fn apply_ref(self, model: &mut Model) {
+                        #(model.#field_idents = self.#struct_field_idents;)*
+                    }
+                }
+
+                impl From<Model> for #name {
+                    fn from(model: Model) -> Self {
+                        Self {
+                            #(#struct_field_idents : model.#field_idents),*
+                        }
+                    }
+                }
+            }
+        });
 
         Ok(quote! {
             #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
@@ -112,33 +166,15 @@ impl Generator {
             impl #name {
                 #[allow(clippy::too_many_arguments)]
                 #vis fn new(
-                    #(#field_idents : impl ::core::convert::Into<#field_tys>),*
+                    #(#struct_field_idents : impl ::core::convert::Into<#field_tys>),*
                 ) -> Self {
                     Self {
-                        #(#field_idents : ::core::convert::Into::into(#field_idents)),*
-                    }
-                }
-
-                fn apply(self, model: Model) -> Model {
-                    Model {
-                        #(#field_idents : self.#field_idents,)*
-                        ..model
-                    }
-                }
-
-                fn apply_ref(self, model: &mut Model) {
-                    #(model.#field_idents = self.#field_idents;)*
-                }
-            }
-
-            impl From<Model> for #name {
-                fn from(model: Model) -> Self {
-                    Self {
-                        #(#field_idents : model.#field_idents),*
+                        #(#struct_field_idents : ::core::convert::Into::into(#struct_field_idents)),*
                     }
                 }
             }
-
+            
+            #model_related_methods
             #from_one_field
         })
     }

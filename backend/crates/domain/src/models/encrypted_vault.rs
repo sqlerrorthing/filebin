@@ -1,3 +1,4 @@
+use derive_more::{Display, FromStr};
 use tinystr::TinyAsciiStr;
 use crate::macros::tiny_str_sea_orm_derive;
 use nutype::nutype;
@@ -48,19 +49,27 @@ macro_rules! b64_encoded_exact_size {
 
 b64_encoded_exact_size!(IV(16) Tag(24));
 
-#[derive(Debug, Clone, PartialEq, Eq, EnumIter, Serialize, Deserialize)]
+#[derive(Display, Debug, Clone, PartialEq, Eq, EnumIter, Serialize, Deserialize, FromStr)]
+#[from_str(rename_all = "kebab-case")]
+#[display(rename_all = "kebab-case")]
 pub enum EncryptionAlgo {
     Aes256Gcm
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize, Model)]
-#[model(newtypes(
-    Id(i32), Version(i16)
-))]
+#[model(
+    newtypes(
+        Id(i32), Version(i16)
+    ),
+    inputs(
+        NewVault(iv, tag, ver, algo)
+    )
+
+)]
 pub struct Model {
     pub id: Id,
     pub iv: IV,
     pub tag: Tag,
     pub ver: Version,
-    pub algo: EncryptionAlgo
+    pub algo: EncryptionAlgo,
 }

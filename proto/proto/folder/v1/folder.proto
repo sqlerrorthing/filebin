@@ -23,7 +23,7 @@ service FolderService {
 
 message RenameRequest {
   required OwnedFolderRef owned_folder = 1;
-  required EncryptedBlobs name = 2;
+  required FolderName name = 2;
 }
 
 message UpdatesRequest {
@@ -36,7 +36,7 @@ message LimitsResponse {
 }
 
 message CreateFolderRequest {
-  required EncryptedVault name = 1;
+  required FolderName name = 1;
   optional google.protobuf.Duration expires = 2;
 }
 

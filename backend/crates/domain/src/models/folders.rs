@@ -10,7 +10,11 @@ use domain_macros::Model;
         FolderName(super::super::encrypted_blobs::Model)
     ),
     inputs(
-        NewFolder(public_id, encrypted_name, expired_at)
+        NewFolder(
+            public_id, 
+            ..super::encrypted_blobs::NewBlob as encrypted_name, 
+            expired_at
+        ),
     )
 )]
 pub struct Model {

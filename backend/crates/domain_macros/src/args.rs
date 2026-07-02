@@ -1,6 +1,9 @@
+use heck::ToSnakeCase;
 use proc_macro2::Ident;
+use quote::format_ident;
 use syn::parse::{Parse, ParseStream};
 use syn::{Result, Token, Type};
+use syn::token::Paren;
 
 #[derive(Debug, Clone)]
 pub struct NewType {
@@ -19,19 +22,64 @@ impl Parse for NewType {
 }
 
 #[derive(Debug, Clone)]
+pub enum InputField {
+    Field {
+        name: Ident,
+        alias: Ident
+    },
+    Spread {
+        name: Ident,
+        path: syn::Path,
+    },
+}
+
+impl Parse for InputField {
+    fn parse(input: ParseStream) -> Result<Self> {
+        if input.peek(Token![..]) {
+            input.parse::<Token![..]>()?;
+            let path: syn::Path = input.parse()?;
+
+            let prefix = if input.peek(Token![as]) {
+                input.parse::<Token![as]>()?;
+                input.parse::<Ident>()?
+            } else {
+                format_ident!("{}", path.segments.last().unwrap().ident.to_string().to_snake_case())
+            };
+
+            return Ok(InputField::Spread { path, name: prefix });
+        }
+
+        let name: Ident = input.parse()?;
+        let alias = if input.peek(Token![as]) {
+            input.parse::<Token![as]>()?;
+            input.parse()?
+        } else {
+            name.clone()
+        };
+
+        Ok(InputField::Field { name, alias })
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct Input {
     pub name: Ident,
-    pub fields: Vec<Ident>,
+    pub fields: Vec<InputField>,
 }
 
 impl Parse for Input {
     fn parse(input: ParseStream) -> Result<Self> {
         let name: Ident = input.parse()?;
+
+        if !input.peek(Paren) {
+            return Ok(Input { name, fields: vec![] })
+        }
+
         let content;
         syn::parenthesized!(content in input);
 
         let fields = content
-            .parse_terminated(Ident::parse, Token![,])?
+            .parse_terminated(InputField::parse, Token![,])?
             .into_iter()
             .collect();
 

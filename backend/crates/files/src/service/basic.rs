@@ -13,6 +13,7 @@ use std::fmt::Debug;
 use thiserror::Error;
 use tracing::{Level, error, span};
 use updates::service::UpdatesService;
+use domain::models::{encrypted_blobs, encrypted_vault, files, folders};
 
 #[derive(Clone, Debug, new)]
 pub struct BasicFilesService<FS, FR, IGS, US> {
@@ -93,10 +94,9 @@ where
 
     async fn upload_file<E>(
         &self,
-        folder_id: folders::Id,
-        encrypted_path: String,
-        encrypted_mime_type: String,
-        encrypted_file_hash: String,
+        _folder_id: folders::Id,
+        _data_meta: encrypted_vault::NewVault,
+        _file_meta: encrypted_blobs::NewBlob,
         chunks: impl Stream<Item = Result<Bytes, E>> + Send + 'static,
     ) -> Result<files::Model, ServiceError<E, Self::Error>>
     where
@@ -134,22 +134,23 @@ where
             .await
             .map_err(Error::Storage)?;
 
-        let model = self
-            .files_repository
-            .insert(files::ActiveModel {
-                public_id: Set(self.id_generator_service.next_public_file_id()),
-                folder_id: Set(folder_id),
-                storage_path: Set(storage_path),
-                encrypted_path: Set(encrypted_path),
-                encrypted_mime_type: Set(encrypted_mime_type),
-                encrypted_file_hash: Set(encrypted_file_hash),
-                file_size: Set(total_bytes_received as _),
-                ..Default::default()
-            })
-            .await
-            .map_err(Error::Repository)?;
+        // let model = self
+        //     .files_repository
+        //     .insert(files::ActiveModel {
+        //         public_id: Set(self.id_generator_service.next_public_file_id()),
+        //         folder_id: Set(folder_id),
+        //         storage_path: Set(storage_path),
+        //         encrypted_path: Set(encrypted_path),
+        //         encrypted_mime_type: Set(encrypted_mime_type),
+        //         encrypted_file_hash: Set(encrypted_file_hash),
+        //         file_size: Set(total_bytes_received as _),
+        //         ..Default::default()
+        //     })
+        //     .await
+        //     .map_err(Error::Repository)?;
 
-        Ok(model)
+        // Ok(model)
+        todo!()
     }
 
     async fn get_file_by_storage_path(
