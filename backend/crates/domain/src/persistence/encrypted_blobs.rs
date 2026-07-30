@@ -3,50 +3,20 @@
 use crate::models;
 use nutype::nutype;
 use sea_orm::entity::prelude::*;
-
-#[nutype(
-    const_fn,
-    derive(
-        Debug,
-        PartialEq,
-        Eq,
-        Copy,
-        Clone,
-        Serialize,
-        Deserialize,
-        Hash,
-        Deref,
-        Display,
-        FromStr
-    ),
-    derive_unchecked(DeriveValueType)
-)]
-pub struct Id(models::encrypted_vault::Id);
-
-impl sea_orm::TryFromU64 for Id {
-    fn try_from_u64(n: u64) -> Result<Self, DbErr> {
-        use std::convert::TryInto;
-        Ok(Self::new(models::encrypted_vault::Id::new(
-            n.try_into().map_err(|e| DbErr::TryIntoErr {
-                from: "u64",
-                into: "Id",
-                source: std::sync::Arc::new(e),
-            })?,
-        )))
-    }
-}
+use crate::persistence::FromActiveModelExError;
 
 #[sea_orm::model]
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel)]
 #[sea_orm(table_name = "encrypted_blobs")]
 pub struct Model {
-    #[sea_orm(primary_key, auto_increment = false)]
-    pub id: Id,
+    #[sea_orm(primary_key)]
+    pub id: models::encrypted_blobs::Id,
+    pub vault_id: models::encrypted_vault::Id,
     #[sea_orm(column_type = "VarBinary(StringLen::None)")]
     pub data: Vec<u8>,
     #[sea_orm(
         belongs_to,
-        from = "id",
+        from = "vault_id",
         to = "id",
         on_update = "NoAction",
         on_delete = "Cascade"
@@ -77,12 +47,13 @@ impl From<models::encrypted_blobs::NewBlob> for ActiveModelEx {
 } 
 
 impl TryFrom<ActiveModelEx> for models::encrypted_blobs::Model {
-    type Error = ();
+    type Error = FromActiveModelExError;
 
     fn try_from(mut value: ActiveModelEx) -> Result<Self, Self::Error> {
         Ok(Self {
-            meta: value.encrypted_vault.take().ok_or(())?.try_into()?,
-            data: value.data.take().ok_or(())?.into(),
+            id: value.id.take().ok_or(FromActiveModelExError::ValueNotProvided)?,
+            meta: value.encrypted_vault.take().ok_or(FromActiveModelExError::ValueNotProvided)?.try_into()?,
+            data: value.data.take().ok_or(FromActiveModelExError::ValueNotProvided)?.into(),
         })
     }
 }

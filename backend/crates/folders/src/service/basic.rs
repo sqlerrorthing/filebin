@@ -138,7 +138,7 @@ where
         let model = folders::NewFolder {
             public_id: self.id_generator_service.next_public_folder_id(),
             encrypted_name,
-            expired_at: expires.map(|exp| (Utc::now() + exp).into()),
+            expired_at: expires.map(|exp| Utc::now() + exp),
         };
 
         self.folder_repository

@@ -4,7 +4,7 @@ CREATE DOMAIN encryption_version AS SMALLINT
 
 CREATE TABLE encrypted_vault
 (
-    id   SERIAL PRIMARY KEY,
+    id   BIGSERIAL PRIMARY KEY,
     iv   VARCHAR(16)        NOT NULL, -- b64 encoded 12 bytes
     tag  VARCHAR(24)        NOT NULL, -- b64 encoded 16 bytes
     ver  encryption_version NOT NULL DEFAULT 1,
@@ -13,13 +13,14 @@ CREATE TABLE encrypted_vault
 
 CREATE TABLE encrypted_blobs
 (
-    id   INTEGER PRIMARY KEY REFERENCES encrypted_vault (id) ON DELETE CASCADE,
-    data BYTEA NOT NULL
+    id       BIGSERIAL PRIMARY KEY,
+    vault_id INT REFERENCES encrypted_vault (id) ON DELETE CASCADE NOT NULL UNIQUE,
+    data     BYTEA                                                 NOT NULL
 );
 
 CREATE TABLE folders
 (
-    id             SERIAL PRIMARY KEY,
+    id             BIGSERIAL PRIMARY KEY,
     public_id      VARCHAR(8)                                            NOT NULL UNIQUE,
     encrypted_name INT REFERENCES encrypted_blobs (id) ON DELETE CASCADE NOT NULL,
     expired_at     TIMESTAMPTZ,
@@ -28,7 +29,7 @@ CREATE TABLE folders
 
 CREATE TABLE files
 (
-    id           SERIAL PRIMARY KEY,
+    id           BIGSERIAL PRIMARY KEY,
     public_id    VARCHAR(16)                                           NOT NULL UNIQUE,
     folder_id    INT REFERENCES folders (id) ON DELETE CASCADE         NOT NULL,
 

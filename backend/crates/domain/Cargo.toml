@@ -16,3 +16,4 @@ bytes.workspace = true
 strum = "0.28.0"
 strum_macros = "0.28.0"
 domain_macros.path = "../domain_macros"
+thiserror.workspace = true

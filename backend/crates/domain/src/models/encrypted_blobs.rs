@@ -4,6 +4,9 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize, Model)]
 #[model(
+    newtypes(
+        Id(i32)
+    ),
     inputs(
         NewBlob(
             ..super::encrypted_vault::NewVault,
@@ -12,6 +15,7 @@ use serde::{Deserialize, Serialize};
     )
 )]
 pub struct Model {
+    pub id: Id,
     pub meta: super::encrypted_vault::Model,
     pub data: Bytes,
 }

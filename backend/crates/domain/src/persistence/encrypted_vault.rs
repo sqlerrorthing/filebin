@@ -3,6 +3,7 @@
 use super::sea_orm_active_enums::EncryptionAlgo;
 use sea_orm::entity::prelude::*;
 use crate::models;
+use crate::persistence::FromActiveModelExError;
 
 #[sea_orm::model]
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel)]
@@ -14,8 +15,8 @@ pub struct Model {
     pub tag: models::encrypted_vault::Tag,
     pub ver: models::encrypted_vault::Version,
     pub algo: EncryptionAlgo,
-    #[sea_orm(has_one)]
-    pub encrypted_blobs: HasOne<super::encrypted_blobs::Entity>,
+    #[sea_orm(has_many)]
+    pub encrypted_blobs: HasMany<super::encrypted_blobs::Entity>,
     #[sea_orm(has_many)]
     pub files: HasMany<super::files::Entity>,
 }
@@ -43,15 +44,15 @@ impl From<models::encrypted_vault::NewVault> for ActiveModelEx {
 }
 
 impl TryFrom<ActiveModelEx> for models::encrypted_vault::Model {
-    type Error = ();
+    type Error = FromActiveModelExError;
 
     fn try_from(mut value: ActiveModelEx) -> Result<Self, Self::Error> {
         Ok(Self {
-            id: value.id.take().ok_or(())?,
-            iv: value.iv.take().ok_or(())?,
-            tag: value.tag.take().ok_or(())?,
-            ver: value.ver.take().ok_or(())?,
-            algo: value.algo.take().ok_or(())?.into(),
+            id: value.id.take().ok_or(FromActiveModelExError::ValueNotProvided)?,
+            iv: value.iv.take().ok_or(FromActiveModelExError::ValueNotProvided)?,
+            tag: value.tag.take().ok_or(FromActiveModelExError::ValueNotProvided)?,
+            ver: value.ver.take().ok_or(FromActiveModelExError::ValueNotProvided)?,
+            algo: value.algo.take().ok_or(FromActiveModelExError::ValueNotProvided)?.into(),
         })
     }
 }

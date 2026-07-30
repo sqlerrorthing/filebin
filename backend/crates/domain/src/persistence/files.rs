@@ -17,7 +17,7 @@ pub struct Model {
     pub public_id: models::files::PublicId,
     pub folder_id: models::folders::Id,
     pub data_meta_id: models::encrypted_vault::Id,
-    pub meta_id: super::encrypted_blobs::Id,
+    pub meta_id: models::encrypted_blobs::Id,
     #[sea_orm(unique)]
     pub storage_path: models::files::StoragePath,
     pub file_size: i64,

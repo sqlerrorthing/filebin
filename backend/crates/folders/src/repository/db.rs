@@ -1,6 +1,10 @@
 use crate::repository::FoldersRepository;
 use domain::{models, persistence};
+use sea_orm::ColumnTrait;
 use sea_orm::{DatabaseConnection, EntityTrait};
+use sea_orm::{IntoActiveModel, QueryFilter};
+use std::any::{type_name, type_name_of_val};
+use std::sync::Arc;
 
 impl FoldersRepository for DatabaseConnection {
     type Error = sea_orm::DbErr;
@@ -9,31 +13,45 @@ impl FoldersRepository for DatabaseConnection {
         &self,
         public_id: models::folders::PublicId,
     ) -> Result<Option<models::folders::Model>, Self::Error> {
-    //     let Some(res) = persistence::folders::Entity::load()
-    //         .filter(persistence::folders::Column::PublicId.eq(public_id))
-    //         .with(persistence::encrypted_blobs::Entity)
-    //         .one(self)
-    //         .await?
-    //     else {
-    //         Ok(None)
-    //     };
+        let Some(folder) = persistence::folders::Entity::load()
+            .filter(persistence::folders::Column::PublicId.eq(public_id))
+            .with((
+                persistence::encrypted_blobs::Entity,
+                persistence::encrypted_vault::Entity,
+            ))
+            .one(self)
+            .await?
+        else {
+            return Ok(None);
+        };
 
-        // dbg!(res);
-        todo!()
+        let from = type_name_of_val(&folder);
+        folder.into_active_model().try_into().map_err(|e| {
+            sea_orm::DbErr::TryIntoErr {
+                from,
+                into: type_name::<models::folders::Model>(),
+                source: Arc::new(e),
+            }
+        }).map(Some)
     }
 
     async fn new_folder(
         &self,
-        folder: models::folders::NewFolder,
+        new_folder: models::folders::NewFolder,
     ) -> Result<models::folders::Model, Self::Error> {
         let folder = persistence::folders::ActiveModel::builder()
-            .set_public_id(folder.public_id)
-            .set_expired_at(folder.expired_at.map(|f| f.fixed_offset()))
-            .set_encrypted_blobs(folder.encrypted_name)
+            .set_public_id(new_folder.public_id)
+            .set_expired_at(new_folder.expired_at.map(|f| f.fixed_offset()))
+            .set_encrypted_blobs(new_folder.encrypted_name)
             .save(self)
             .await?;
 
-        todo!("{:?}", dbg!(folder))
+        let from = type_name_of_val(&folder);
+        folder.try_into().map_err(|e| sea_orm::DbErr::TryIntoErr {
+            from,
+            into: type_name::<models::folders::Model>(),
+            source: Arc::new(e),
+        })
     }
 
     async fn delete(

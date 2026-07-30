@@ -4,6 +4,8 @@ use tinystr::TinyAsciiStr;
 use sea_orm::entity::prelude::*;
 use crate::macros::tiny_str_sea_orm_derive;
 use crate::models;
+use crate::models::folders::FolderName;
+use crate::persistence::FromActiveModelExError;
 
 tiny_str_sea_orm_derive!(models::folders::PublicId as 8: |s| { Self::new(s) });
 
@@ -15,7 +17,7 @@ pub struct Model {
     pub id: models::folders::Id,
     #[sea_orm(unique)]
     pub public_id: models::folders::PublicId,
-    pub encrypted_name: super::encrypted_blobs::Id,
+    pub encrypted_name: models::encrypted_blobs::Id,
     pub expired_at: Option<DateTimeWithTimeZone>,
     pub created_at: DateTimeWithTimeZone,
     #[sea_orm(
@@ -31,3 +33,17 @@ pub struct Model {
 }
 
 impl ActiveModelBehavior for ActiveModel {}
+
+impl TryFrom<ActiveModelEx> for models::folders::Model {
+    type Error = FromActiveModelExError;
+
+    fn try_from(mut value: ActiveModelEx) -> Result<Self, Self::Error> {
+        Ok(Self {
+            id: value.id.take().ok_or(FromActiveModelExError::ValueNotProvided)?,
+            public_id: value.public_id.take().ok_or(FromActiveModelExError::ValueNotProvided)?,
+            encrypted_name: FolderName::new(value.encrypted_blobs.take().ok_or(FromActiveModelExError::ValueNotProvided)?.try_into()?),
+            expired_at: value.expired_at.take().ok_or(FromActiveModelExError::ValueNotProvided)?.map(|e| e.to_utc()),
+            created_at: value.created_at.take().ok_or(FromActiveModelExError::ValueNotProvided)?.to_utc(),
+        })
+    }
+}

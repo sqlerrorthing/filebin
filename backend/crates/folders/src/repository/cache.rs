@@ -32,10 +32,7 @@ where
     }
 
     async fn new_folder(&self, new_folder: folders::NewFolder) -> Result<folders::Model, Self::Error> {
-        let folder = self.repository().new_folder(new_folder).await?;
-        self.clear_cache_keys([key_by_id(folder.id), key_by_public_id(&folder.public_id)])
-            .await;
-        Ok(folder)
+        self.repository().new_folder(new_folder).await
     }
 
     async fn delete(&self, folder_id: folders::Id) -> Result<Option<folders::Model>, Self::Error> {
