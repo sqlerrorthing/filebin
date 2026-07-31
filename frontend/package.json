@@ -9,7 +9,8 @@
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || || tw-patch || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"proto:generate": "protoc -I=../proto/proto -I=../proto/vendor --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=src/lib/generated --ts_proto_opt=esModuleInterop=true,outputServices=generic-definitions $(find ../proto/proto -name '*.proto')"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^7.0.1",
@@ -25,6 +26,7 @@
 		"vite": "^8.0.16"
 	},
 	"dependencies": {
+		"@bufbuild/protobuf": "^2.13.0",
 		"protobufjs": "^8.7.1",
 		"ts-proto": "^2.12.0"
 	}
