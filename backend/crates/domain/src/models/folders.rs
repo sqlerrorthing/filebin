@@ -6,7 +6,7 @@ use domain_macros::Model;
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize, Model)]
 #[model(
     newtypes(
-        Id(i32),
+        Id(i64),
         PublicId(tinystr::TinyAsciiStr<8>),
 
         #[derive(FromJsonQueryResult)]

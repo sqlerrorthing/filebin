@@ -6,7 +6,7 @@ use uuid::Uuid;
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize, Model)]
 #[model(
     newtypes(
-        Id(i32),
+        Id(i64),
         PublicId(tinystr::TinyAsciiStr<16>),
         StoragePath(Uuid),
     ),
