@@ -1,6 +1,6 @@
 use crate::repository::FilesRepository;
 use cache::Cache;
-use domain::entity::{files, folders};
+use domain::models::{files, folders};
 use storage::Storage;
 
 const PREFIX: &str = "cache:files";
@@ -64,8 +64,9 @@ where
                 key_by_id(file.id),
                 folder_files_key(file.folder_id),
                 key_by_public_id(&file.public_id),
-                folder_files_count_key(file.folder_id)
-            ]).await;
+                folder_files_count_key(file.folder_id),
+            ])
+            .await;
         }
 
         Ok(file)
@@ -91,26 +92,7 @@ where
         .await
     }
 
-    async fn insert(&self, file: files::ActiveModel) -> Result<files::Model, Self::Error> {
-        let file = self.repository().insert(file).await?;
-        self.clear_cache_keys([
-            key_by_id(file.id),
-            folder_files_key(file.folder_id),
-            key_by_public_id(&file.public_id),
-            folder_files_count_key(file.folder_id)
-        ])
-        .await;
-        Ok(file)
-    }
-
-    async fn update(&self, file: files::ActiveModel) -> Result<files::Model, Self::Error> {
-        let file = self.repository().update(file).await?;
-        self.clear_cache_keys([
-            key_by_id(file.id),
-            folder_files_key(file.folder_id),
-            key_by_public_id(&file.public_id),
-            folder_files_count_key(file.folder_id)
-        ]).await;
-        Ok(file)
+    async fn new_file(&self, new_file: files::NewFile) -> Result<files::Model, Self::Error> {
+        self.repository().new_file(new_file).await
     }
 }

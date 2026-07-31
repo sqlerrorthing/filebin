@@ -1,16 +1,16 @@
 use crate::repository::FoldersRepository;
 use crate::service::FoldersService;
 use derive_new::new;
-use domain::entity::folders;
 use files::service::FilesService;
 use id_generator::service::IdGeneratorService;
 use sea_orm::sea_query::prelude::Utc;
-use sea_orm::{NotSet, Set};
 use std::hint::cold_path;
 use std::time::Duration;
 use thiserror::Error;
 use tokio::spawn;
 use tracing::{error, info};
+use domain::models::ActiveValue::{NotSet, Set};
+use domain::models::{encrypted_blobs, folders};
 use updates::service::UpdatesService;
 
 #[derive(Debug, Clone, new)]
@@ -91,11 +91,11 @@ where
     async fn rename_folder(
         &self,
         folder_id: folders::Id,
-        encrypted_name: String,
+        new_name: folders::FolderName,
     ) -> Result<Option<folders::Model>, Self::Error> {
         let model = self
             .folder_repository
-            .rename(folder_id, encrypted_name.clone())
+            .rename(folder_id, new_name.clone())
             .await
             .map_err(Error::Repository)?;
 
@@ -105,7 +105,7 @@ where
             }
 
             self.updates_service
-                .fire_folder_renamed(folder_id, encrypted_name);
+                .fire_folder_renamed(folder_id, folder.encrypted_name.clone());
         }
 
         Ok(model)
@@ -132,19 +132,17 @@ where
 
     async fn create_folder(
         &self,
-        encrypted_name: String,
+        encrypted_name: folders::FolderName,
         expires: Option<Duration>,
     ) -> Result<folders::Model, Self::Error> {
-        let model = folders::ActiveModel {
-            public_id: Set(self.id_generator_service.next_public_folder_id()),
-            encrypted_name: Set(encrypted_name),
-            expired_at: expires.map_or(NotSet, |expires| Set(Some((Utc::now() + expires).into()))),
-            created_at: Set(Utc::now().into()),
-            ..Default::default()
+        let model = folders::NewFolder {
+            public_id: self.id_generator_service.next_public_folder_id(),
+            encrypted_name,
+            expired_at: expires.map(|exp| Utc::now() + exp),
         };
 
         self.folder_repository
-            .insert(model)
+            .new_folder(model)
             .await
             .map_err(Error::Repository)
     }

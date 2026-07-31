@@ -1,6 +1,7 @@
 syntax = "proto2";
 
 import "google/type/datetime.proto";
+import "folder/v1/encryption.proto";
 
 package folder.v1;
 
@@ -17,9 +18,13 @@ message FolderToken {
   required string value = 2;
 }
 
+message FolderName {
+  required EncryptedBlobs value = 1;
+}
+
 message Folder {
   required FolderId id = 1;
-  required string encrypted_name = 2;
+  required FolderName name = 2;
   required google.type.DateTime created_at = 3;
   optional google.type.DateTime expired_at = 4;
 }

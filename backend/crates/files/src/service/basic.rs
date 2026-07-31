@@ -3,7 +3,8 @@ use crate::service::FilesService;
 use crate::storage::FilesStorage;
 use bytes::Bytes;
 use derive_new::new;
-use domain::entity::{files, folders};
+use domain::models::files::NewFile;
+use domain::models::{encrypted_blobs, encrypted_vault, files, folders};
 use futures_core::Stream;
 use futures_util::{StreamExt, TryStreamExt};
 use id_generator::service::IdGeneratorService;
@@ -95,9 +96,8 @@ where
     async fn upload_file<E>(
         &self,
         folder_id: folders::Id,
-        encrypted_path: String,
-        encrypted_mime_type: String,
-        encrypted_file_hash: String,
+        data_meta: encrypted_vault::Model,
+        file_meta: encrypted_blobs::Model,
         chunks: impl Stream<Item = Result<Bytes, E>> + Send + 'static,
     ) -> Result<files::Model, ServiceError<E, Self::Error>>
     where
@@ -135,20 +135,14 @@ where
             .await
             .map_err(Error::Storage)?;
 
-        let model = self
-            .files_repository
-            .insert(files::ActiveModel {
-                public_id: Set(self.id_generator_service.next_public_file_id()),
-                folder_id: Set(folder_id),
-                storage_path: Set(storage_path),
-                encrypted_path: Set(encrypted_path),
-                encrypted_mime_type: Set(encrypted_mime_type),
-                encrypted_file_hash: Set(encrypted_file_hash),
-                file_size: Set(total_bytes_received as _),
-                ..Default::default()
-            })
-            .await
-            .map_err(Error::Repository)?;
+        let model = self.files_repository.new_file(NewFile {
+            public_id: self.id_generator_service.next_public_file_id(),
+            folder_id,
+            data_meta,
+            meta: file_meta,
+            storage_path,
+            file_size: total_bytes_received as _,
+        }).await.map_err(Error::Repository)?;
 
         Ok(model)
     }

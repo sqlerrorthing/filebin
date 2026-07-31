@@ -1,7 +1,7 @@
 use crate::repository::FoldersRepository;
 use cache::{Cache, Cached};
-use domain::entity::folders;
 use storage::Storage;
+use domain::models::{encrypted_blobs, folders};
 
 const PREFIX: &str = "cache:folders";
 
@@ -31,18 +31,8 @@ where
         .map(|v| v.0)
     }
 
-    async fn insert(&self, folder: folders::ActiveModel) -> Result<folders::Model, Self::Error> {
-        let folder = self.repository().insert(folder).await?;
-        self.clear_cache_keys([key_by_id(folder.id), key_by_public_id(&folder.public_id)])
-            .await;
-        Ok(folder)
-    }
-
-    async fn update(&self, folder: folders::ActiveModel) -> Result<folders::Model, Self::Error> {
-        let folder = self.repository().update(folder).await?;
-        self.clear_cache_keys([key_by_id(folder.id), key_by_public_id(&folder.public_id)])
-            .await;
-        Ok(folder)
+    async fn new_folder(&self, new_folder: folders::NewFolder) -> Result<folders::Model, Self::Error> {
+        self.repository().new_folder(new_folder).await
     }
 
     async fn delete(&self, folder_id: folders::Id) -> Result<Option<folders::Model>, Self::Error> {
@@ -54,8 +44,8 @@ where
         Ok(folder)
     }
 
-    async fn rename(&self, folder_id: folders::Id, encrypted_name: String) -> Result<Option<folders::Model>, Self::Error> {
-        let folder = self.repository().rename(folder_id, encrypted_name).await?;
+    async fn rename(&self, folder_id: folders::Id, new_name: folders::FolderName) -> Result<Option<folders::Model>, Self::Error> {
+        let folder = self.repository().rename(folder_id, new_name).await?;
         if let Some(folder) = &folder {
             self.clear_cache_keys([key_by_id(folder.id), key_by_public_id(&folder.public_id)])
                 .await;

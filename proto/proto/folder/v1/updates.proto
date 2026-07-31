@@ -2,6 +2,7 @@ syntax = "proto2";
 
 import "folder/v1/files.proto";
 import "folder/v1/common.proto";
+import "folder/v1/encryption.proto";
 import "google/protobuf/empty.proto";
 
 package folder.v1;
@@ -20,7 +21,7 @@ message FileDeleted {
 }
 
 message FolderNameChanged {
-  required string name = 1;
+  required FolderName name = 1;
 }
 
 message NewFile {

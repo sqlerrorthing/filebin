@@ -3,8 +3,7 @@ use rand::distr::Alphanumeric;
 use rand::prelude::IteratorRandom;
 use tinystr::TinyAsciiStr;
 use uuid::Uuid;
-use domain::entity::files;
-use domain::entity::folders;
+use domain::models::{files, folders};
 use crate::service::IdGeneratorService;
 
 #[derive(Debug, Copy, Clone)]

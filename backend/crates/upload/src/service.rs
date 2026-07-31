@@ -4,7 +4,7 @@ use std::error::Error;
 use bytes::Bytes;
 use futures::Stream;
 use thiserror::Error;
-use domain::entity;
+use domain::models::{encrypted_blobs, encrypted_vault, files, folders};
 use service::service;
 
 #[derive(Debug, Error)]
@@ -28,13 +28,12 @@ pub trait UploadService {
     #[result(UploadFileError<E>)]
     async fn upload_file_by_public_folder_id<E: Error>(
         &self,
-        public_id: entity::folders::PublicId,
+        public_id: folders::PublicId,
         token: String,
-        encrypted_path: String,
-        encrypted_mime_type: String,
-        encrypted_file_hash: String,
+        data_meta: encrypted_vault::Model,
+        file_meta: encrypted_blobs::Model,
         chunks: impl Stream<Item = Result<Bytes, E>> + Send + 'static,
-    ) -> entity::files::Model
+    ) -> files::Model
     where
         E: Send + 'static;
 }

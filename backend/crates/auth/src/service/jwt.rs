@@ -1,10 +1,10 @@
 use std::time::Duration;
 use crate::service::TokenService;
 use chrono::{DateTime, Utc};
-use domain::entity::folders::PublicId;
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
+use domain::models;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct ModifyFolderToken {
@@ -14,7 +14,7 @@ struct ModifyFolderToken {
     #[serde(rename = "iat", with = "chrono::serde::ts_seconds")]
     issued_at: DateTime<Utc>,
 
-    folder: PublicId,
+    folder: models::folders::PublicId,
 }
 
 #[derive(Debug, Clone)]
@@ -47,7 +47,7 @@ impl TokenService for JwtTokenService {
 
     async fn generate_token_for_folder_public_id(
         &self,
-        folder_long_id: &PublicId,
+        folder_long_id: &models::folders::PublicId,
     ) -> Result<String, Self::Error> {
         let claims = ModifyFolderToken {
             expiration: Utc::now() + self.expires,
@@ -60,7 +60,7 @@ impl TokenService for JwtTokenService {
 
     async fn is_token_valid_for_folder(
         &self,
-        folder_long_id: &PublicId,
+        folder_long_id: &models::folders::PublicId,
         token: String,
     ) -> Result<bool, Self::Error> {
         Ok(

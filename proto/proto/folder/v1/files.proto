@@ -3,6 +3,7 @@ syntax = "proto2";
 package folder.v1;
 
 import "folder/v1/common.proto";
+import "folder/v1/encryption.proto";
 import "google/protobuf/empty.proto";
 
 
@@ -26,7 +27,9 @@ message UploadFileRequest {
 }
 
 message InitiateUpload {
-  required EncryptedFileMetadata metadata = 1;
+  // Encryption meta used to encrypt entire file
+  required EncryptedVault vault = 3;
+  required FileMetadata metadata = 1;
   required OwnedFolderRef folder = 2;
 }
 
@@ -53,12 +56,12 @@ message ListFilesResponse {
 
 message FileView {
   required FileId id = 3;
-  required EncryptedFileMetadata metadata = 1;
+  required FileMetadata metadata = 1;
   required sint64 size = 2;
 }
 
-message EncryptedFileMetadata {
-  required string encrypted_path = 2;
-  required string encrypted_mime = 1;
-  required string encrypted_hash = 4;
+// Encrypted json payload
+// Contains only path: string, mime: string and hash (of original file): string
+message FileMetadata {
+  required EncryptedBlobs value = 1;
 }

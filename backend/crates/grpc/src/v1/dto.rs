@@ -1,12 +1,9 @@
 use crate::schema::ServiceErrorExt;
 use crate::schema::api::folder::v1::folder_update::Update;
-use crate::schema::api::folder::v1::{
-    EncryptedFileMetadata, FileDeleted, FileId, FileView, Folder, FolderId, FolderNameChanged,
-    FolderToken, NewFile,
-};
+use crate::schema::api::folder::v1::{Algorithm, EncryptedBlobs, EncryptedVault, FileDeleted, FileId, FileMetadata, FileView, Folder, FolderId, FolderName, FolderNameChanged, FolderToken, NewFile, Version};
 use crate::schema::api::google;
 use chrono::{Datelike, Timelike};
-use domain::entity;
+use domain::models;
 use pbjson_types::Empty;
 use sea_orm::prelude::DateTimeUtc;
 use std::time::Duration;
@@ -14,8 +11,8 @@ use thiserror::Error;
 use tinystr::{TinyStr8, TinyStr16};
 use tonic::Status;
 
-impl From<entity::folders::PublicId> for FolderId {
-    fn from(value: entity::folders::PublicId) -> Self {
+impl From<models::folders::PublicId> for FolderId {
+    fn from(value: models::folders::PublicId) -> Self {
         FolderId {
             value: value.into_inner().to_string(),
         }
@@ -32,7 +29,7 @@ impl From<&updates::service::FolderUpdateKind> for Update {
             }),
             FolderUpdateKind::FolderRenamed { new_folder_name } => {
                 Update::FolderNameChanged(FolderNameChanged {
-                    name: new_folder_name.clone(),
+                    name: new_folder_name.clone().into_inner().into(),
                 })
             }
             FolderUpdateKind::FolderDeleted { .. } => Update::FolderDeleted(Empty {}),
@@ -43,29 +40,29 @@ impl From<&updates::service::FolderUpdateKind> for Update {
     }
 }
 
-impl From<entity::files::PublicId> for FileId {
-    fn from(value: entity::files::PublicId) -> Self {
+impl From<models::files::PublicId> for FileId {
+    fn from(value: models::files::PublicId) -> Self {
         FileId {
             value: value.into_inner().to_string(),
         }
     }
 }
 
-impl TryFrom<FolderId> for entity::folders::PublicId {
+impl TryFrom<FolderId> for models::folders::PublicId {
     type Error = Status;
 
     fn try_from(value: FolderId) -> Result<Self, Self::Error> {
-        Ok(entity::folders::PublicId::new(
+        Ok(models::folders::PublicId::new(
             TinyStr8::try_from_str(&value.value).ok_or_invalid_argument("invalid id")?,
         ))
     }
 }
 
-impl TryFrom<FileId> for entity::files::PublicId {
+impl TryFrom<FileId> for models::files::PublicId {
     type Error = Status;
 
     fn try_from(value: FileId) -> Result<Self, Self::Error> {
-        Ok(entity::files::PublicId::new(
+        Ok(models::files::PublicId::new(
             TinyStr16::try_from_str(&value.value).ok_or_invalid_argument("invalid id")?,
         ))
     }
@@ -97,25 +94,89 @@ impl From<String> for FolderToken {
     }
 }
 
-impl From<entity::folders::Model> for Folder {
-    fn from(value: entity::folders::Model) -> Self {
+impl From<models::encrypted_blobs::Model> for FolderName {
+    fn from(value: models::encrypted_blobs::Model) -> Self {
+        Self {
+            value: value.into()
+        }
+    }
+}
+
+impl From<models::folders::Model> for Folder {
+    fn from(value: models::folders::Model) -> Self {
         Folder {
             id: value.public_id.into(),
-            encrypted_name: value.encrypted_name,
+            name: value.encrypted_name.into_inner().into(),
             created_at: value.created_at.to_utc().into(),
             expired_at: value.expired_at.map(|exp| exp.to_utc().into()),
         }
     }
 }
 
-impl From<entity::files::Model> for FileView {
-    fn from(value: entity::files::Model) -> Self {
+impl From<models::encrypted_blobs::Model> for EncryptedBlobs {
+    fn from(value: models::encrypted_blobs::Model) -> Self {
+        Self {
+            meta: value.meta.into(),
+            data: value.data,
+        }
+    }
+}
+
+impl TryFrom<EncryptedVault> for models::encrypted_vault::Model {
+    type Error = Status;
+    
+    fn try_from(value: EncryptedVault) -> Result<Self, Self::Error> {
+        Ok(Self {
+            iv: value.iv.parse().map_err(|_| Status::invalid_argument("invalid iv"))?,
+            tag: value.tag.parse().map_err(|_| Status::invalid_argument("invalid iv"))?,
+            ver: models::encrypted_vault::Version::new(value.version.value as _),
+            algo: value.algo.value.parse().map_err(|_| Status::invalid_argument("unsupported algo"))?,
+        })
+    }
+}
+
+impl TryFrom<EncryptedBlobs> for models::encrypted_blobs::Model {
+    type Error = Status;
+    
+    fn try_from(value: EncryptedBlobs) -> Result<Self, Self::Error> {
+        Ok(Self {
+            meta: value.meta.try_into()?,
+            data: value.data,
+        })
+    }
+}
+
+impl From<models::encrypted_vault::Version> for Version {
+    fn from(value: models::encrypted_vault::Version) -> Self {
+        Self { value: *value as _ }
+    }
+}
+
+impl From<models::encrypted_vault::EncryptionAlgo> for Algorithm {
+    fn from(value: models::encrypted_vault::EncryptionAlgo) -> Self {
+        Self {
+            value: value.to_string(),
+        }
+    }
+}
+
+impl From<models::encrypted_vault::Model> for EncryptedVault {
+    fn from(value: models::encrypted_vault::Model) -> Self {
+        Self {
+            iv: value.iv.to_string(),
+            tag: value.tag.to_string(),
+            version: value.ver.into(),
+            algo: value.algo.into(),
+        }
+    }
+}
+
+impl From<models::files::Model> for FileView {
+    fn from(value: models::files::Model) -> Self {
         FileView {
             id: value.public_id.into(),
-            metadata: EncryptedFileMetadata {
-                encrypted_path: value.encrypted_path,
-                encrypted_mime: value.encrypted_mime_type,
-                encrypted_hash: value.encrypted_file_hash,
+            metadata: FileMetadata {
+                value: value.meta.into(),
             },
             size: value.file_size,
         }

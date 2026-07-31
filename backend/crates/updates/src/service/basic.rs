@@ -1,6 +1,6 @@
 use crate::service::{FolderUpdate, FolderUpdateKind, UpdatesService};
 use derive_new::new;
-use domain::entity::{files, folders};
+use domain::models::{files, folders};
 use futures::Stream;
 use futures::StreamExt;
 use parking_lot::Mutex;
@@ -103,7 +103,7 @@ impl UpdatesService for LocalUpdatesService {
         )
     }
 
-    fn fire_folder_renamed(&self, folder_id: folders::Id, new_folder_name: String) {
+    fn fire_folder_renamed(&self, folder_id: folders::Id, new_folder_name: folders::FolderName) {
         self.send_update(
             folder_id,
             FolderUpdateKind::FolderRenamed { new_folder_name },

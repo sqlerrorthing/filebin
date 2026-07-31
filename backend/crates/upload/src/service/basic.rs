@@ -3,13 +3,13 @@ use auth::service::TokenService;
 use bytes::Bytes;
 use derive_builder::Builder;
 use derive_new::new;
-use domain::entity;
-use domain::entity::files::Model;
+use domain::models;
 use files::service::FilesService;
 use folders::service::FoldersService;
 use futures::{Stream, StreamExt, TryStreamExt};
 use service::error::{OptionExt, ResultExt, ServiceError};
 use thiserror::Error;
+use domain::models::{encrypted_blobs, encrypted_vault};
 use updates::service::UpdatesService;
 use crate::limited_stream::{LimitStreamError, LimitedStream};
 
@@ -49,13 +49,12 @@ where
 
     async fn upload_file_by_public_folder_id<E: std::error::Error>(
         &self,
-        public_id: entity::folders::PublicId,
+        public_id: models::folders::PublicId,
         token: String,
-        encrypted_path: String,
-        encrypted_mime_type: String,
-        encrypted_file_hash: String,
+        data_meta: encrypted_vault::Model,
+        file_meta: encrypted_blobs::Model,
         chunks: impl Stream<Item = Result<Bytes, E>> + Send + 'static,
-    ) -> Result<Model, ServiceError<UploadFileError<E>, Self::Error>>
+    ) -> Result<models::files::Model, ServiceError<UploadFileError<E>, Self::Error>>
     where
         E: Send + 'static,
     {
@@ -77,9 +76,8 @@ where
 
         let res = self.files_service.upload_file(
             folder.id,
-            encrypted_path,
-            encrypted_mime_type,
-            encrypted_file_hash,
+            data_meta,
+            file_meta,
             LimitedStream::new(chunks, self.limits.max_filesize)
                 .map_err(|err| {
                     match err {

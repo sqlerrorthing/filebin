@@ -1,7 +1,7 @@
 pub mod db;
 pub mod cache;
 
-use domain::entity::{files, folders};
+use domain::models::{files, folders};
 use service::service;
 
 #[service]
@@ -25,8 +25,5 @@ pub trait FilesRepository {
     async fn list_folder_files(&self, folder_id: folders::Id) -> Vec<files::Model>;
     
     #[result]
-    async fn insert(&self, files: files::ActiveModel) -> files::Model;
-    
-    #[result]
-    async fn update(&self, files: files::ActiveModel) -> files::Model;
+    async fn new_file(&self, new_file: files::NewFile) -> files::Model;
 }

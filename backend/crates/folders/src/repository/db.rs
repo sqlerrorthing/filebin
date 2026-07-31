@@ -1,47 +1,66 @@
+use std::default::Default;
 use crate::repository::FoldersRepository;
-use domain::entity::folders;
-use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set};
+use domain::{models, persistence};
+use sea_orm::{ActiveModelTrait, ColumnTrait, Set, TryIntoModel};
+use sea_orm::{DatabaseConnection, EntityTrait};
+use sea_orm::QueryFilter;
 
 impl FoldersRepository for DatabaseConnection {
     type Error = sea_orm::DbErr;
 
     async fn find_folder_by_public_id(
         &self,
-        public_id: folders::PublicId,
-    ) -> Result<Option<folders::Model>, Self::Error> {
-        folders::Entity::find()
-            .filter(folders::Column::PublicId.eq(public_id))
+        public_id: models::folders::PublicId,
+    ) -> Result<Option<models::folders::Model>, Self::Error> {
+        let Some(folder) = persistence::folders::Entity::find()
+            .filter(persistence::folders::Column::PublicId.eq(public_id))
             .one(self)
-            .await
+            .await?
+        else {
+            return Ok(None);
+        };
+
+        Ok(Some(folder.into()))
     }
 
-    async fn insert(&self, folder: folders::ActiveModel) -> Result<folders::Model, Self::Error> {
-        folder.insert(self).await
+    async fn new_folder(
+        &self,
+        new_folder: models::folders::NewFolder,
+    ) -> Result<models::folders::Model, Self::Error> {
+        let folder= persistence::folders::ActiveModel {
+            public_id: Set(new_folder.public_id),
+            encrypted_name: Set(new_folder.encrypted_name),
+            expired_at: Set(new_folder.expired_at.map(|d| d.fixed_offset())),
+            ..Default::default()
+        }.save(self).await?;
+
+        Ok(folder.try_into_model()?.into())
     }
 
-    async fn update(&self, folder: folders::ActiveModel) -> Result<folders::Model, Self::Error> {
-        folder.update(self).await
-    }
-
-    async fn delete(&self, folder_id: folders::Id) -> Result<Option<folders::Model>, Self::Error> {
-        folders::Entity::delete_by_id(folder_id)
+    async fn delete(
+        &self,
+        folder_id: models::folders::Id,
+    ) -> Result<Option<models::folders::Model>, Self::Error> {
+        let res = persistence::folders::Entity::delete_by_id(folder_id)
             .exec_with_returning(self)
-            .await
+            .await?;
+
+        Ok(res.map(Into::into))
     }
 
     async fn rename(
         &self,
-        folder_id: folders::Id,
-        encrypted_name: String,
-    ) -> Result<Option<folders::Model>, Self::Error> {
-        let model = folders::ActiveModel {
+        folder_id: models::folders::Id,
+        new_name: models::folders::FolderName,
+    ) -> Result<Option<models::folders::Model>, Self::Error> {
+        let model = persistence::folders::ActiveModel {
             id: Set(folder_id),
-            encrypted_name: Set(encrypted_name),
+            encrypted_name: Set(new_name),
             ..Default::default()
         };
 
-        match folders::Entity::update(model).validate()?.exec(self).await {
-            Ok(x) => Ok(Some(x)),
+        match persistence::folders::Entity::update(model).validate()?.exec(self).await {
+            Ok(x) => Ok(Some(x.into())),
             Err(sea_orm::DbErr::RecordNotFound(_)) => Ok(None),
             Err(err) => Err(err),
         }

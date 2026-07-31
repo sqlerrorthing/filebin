@@ -1,5 +1,5 @@
 use std::error::Error;
-use domain::entity::folders;
+use domain::models::folders;
 use service::service;
 
 pub mod jwt;

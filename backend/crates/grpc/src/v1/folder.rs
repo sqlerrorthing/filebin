@@ -10,13 +10,14 @@ use crate::v1::dto::prost_duration_to_std_duration;
 use async_trait::async_trait;
 use auth::service::TokenService;
 use derive_new::new;
-use domain::entity;
+use domain::models;
 use futures::Stream;
 use pbjson_types::Empty;
 use std::ops::Deref;
 use std::sync::Arc;
 use tonic::codegen::tokio_stream::StreamExt;
 use tonic::{Request, Response, Status};
+use domain::models::encrypted_blobs;
 use updates::service::UpdatesService;
 
 #[derive(new)]
@@ -38,11 +39,12 @@ where
         request: Request<CreateFolderRequest>,
     ) -> Result<Response<OwnedFolder>, Status> {
         let payload = request.into_inner();
+        let folder_name = encrypted_blobs::Model::try_from(payload.name.value)?;
 
         let folder = self
             .folders_service
             .create_folder(
-                payload.encrypted_name.clone(),
+                models::folders::FolderName::new(folder_name),
                 payload
                     .expires
                     .map(prost_duration_to_std_duration)
@@ -69,7 +71,7 @@ where
         request: Request<DeleteFolderRequest>,
     ) -> Result<Response<Empty>, Status> {
         let payload = request.into_inner();
-        let id: entity::folders::PublicId = payload.owned_folder.folder_id.try_into()?;
+        let id: models::folders::PublicId = payload.owned_folder.folder_id.try_into()?;
         let token = payload.owned_folder.token.value;
 
         if !self
@@ -109,8 +111,9 @@ where
 
     async fn rename(&self, request: Request<RenameRequest>) -> Result<Response<Empty>, Status> {
         let payload = request.into_inner();
-        let id: entity::folders::PublicId = payload.owned_folder.folder_id.try_into()?;
+        let id: models::folders::PublicId = payload.owned_folder.folder_id.try_into()?;
         let token = payload.owned_folder.token.value;
+        let new_name = encrypted_blobs::Model::try_from(payload.name.value)?;
 
         self
             .token_service
@@ -127,7 +130,7 @@ where
             .ok_or_not_found("folder not found")?;
 
         self.folders_service
-            .rename_folder(folder.id, payload.encrypted_name)
+            .rename_folder(folder.id, models::folders::FolderName::new(new_name))
             .await
             .ok_or_internal()?
             .ok_or_not_found("folder not found")?;
@@ -141,7 +144,7 @@ where
         &self,
         request: Request<UpdatesRequest>,
     ) -> Result<Response<Self::UpdatesStream>, Status> {
-        let folder_id: entity::folders::PublicId = request.into_inner().id.try_into()?;
+        let folder_id: models::folders::PublicId = request.into_inner().id.try_into()?;
         let folder = self
             .folders_service
             .find_folder_by_public_id(folder_id)
