@@ -14,6 +14,7 @@ use futures_util::TryStreamExt;
 use pbjson_types::Empty;
 use tonic::codegen::tokio_stream::StreamExt;
 use tonic::{Request, Response, Status, Streaming};
+use domain::models::{encrypted_blobs, encrypted_vault};
 use upload::service::{UploadFileError, UploadService};
 
 #[derive(Debug, Clone, new)]
@@ -76,8 +77,8 @@ where
         };
 
         let public_id = models::folders::PublicId::try_from(initiate.folder.folder_id)?;
-        let data_meta = models::encrypted_vault::NewVault::try_from(initiate.vault)?;
-        let file_meta = models::encrypted_blobs::NewBlob::try_from(initiate.metadata.value)?;
+        let data_meta = encrypted_vault::Model::try_from(initiate.vault)?;
+        let file_meta = encrypted_blobs::Model::try_from(initiate.metadata.value)?;
         
         let result: Result<_, _> = self
             .upload_service

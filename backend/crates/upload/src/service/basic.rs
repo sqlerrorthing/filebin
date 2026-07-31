@@ -51,8 +51,8 @@ where
         &self,
         public_id: models::folders::PublicId,
         token: String,
-        data_meta: encrypted_vault::NewVault,
-        file_meta: encrypted_blobs::NewBlob,
+        data_meta: encrypted_vault::Model,
+        file_meta: encrypted_blobs::Model,
         chunks: impl Stream<Item = Result<Bytes, E>> + Send + 'static,
     ) -> Result<models::files::Model, ServiceError<UploadFileError<E>, Self::Error>>
     where

@@ -39,12 +39,12 @@ where
         request: Request<CreateFolderRequest>,
     ) -> Result<Response<OwnedFolder>, Status> {
         let payload = request.into_inner();
-        let folder_name = encrypted_blobs::NewBlob::try_from(payload.name.value)?;
+        let folder_name = encrypted_blobs::Model::try_from(payload.name.value)?;
 
         let folder = self
             .folders_service
             .create_folder(
-                folder_name,
+                models::folders::FolderName::new(folder_name),
                 payload
                     .expires
                     .map(prost_duration_to_std_duration)
@@ -113,7 +113,7 @@ where
         let payload = request.into_inner();
         let id: models::folders::PublicId = payload.owned_folder.folder_id.try_into()?;
         let token = payload.owned_folder.token.value;
-        let new_name = encrypted_blobs::NewBlob::try_from(payload.name.value)?;
+        let new_name = encrypted_blobs::Model::try_from(payload.name.value)?;
 
         self
             .token_service
@@ -130,7 +130,7 @@ where
             .ok_or_not_found("folder not found")?;
 
         self.folders_service
-            .rename_folder(folder.id, new_name)
+            .rename_folder(folder.id, models::folders::FolderName::new(new_name))
             .await
             .ok_or_internal()?
             .ok_or_not_found("folder not found")?;

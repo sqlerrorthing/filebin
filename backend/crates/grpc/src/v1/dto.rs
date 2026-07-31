@@ -122,7 +122,7 @@ impl From<models::encrypted_blobs::Model> for EncryptedBlobs {
     }
 }
 
-impl TryFrom<EncryptedVault> for models::encrypted_vault::NewVault {
+impl TryFrom<EncryptedVault> for models::encrypted_vault::Model {
     type Error = Status;
     
     fn try_from(value: EncryptedVault) -> Result<Self, Self::Error> {
@@ -135,12 +135,12 @@ impl TryFrom<EncryptedVault> for models::encrypted_vault::NewVault {
     }
 }
 
-impl TryFrom<EncryptedBlobs> for models::encrypted_blobs::NewBlob {
+impl TryFrom<EncryptedBlobs> for models::encrypted_blobs::Model {
     type Error = Status;
     
     fn try_from(value: EncryptedBlobs) -> Result<Self, Self::Error> {
         Ok(Self {
-            new_vault: value.meta.try_into()?,
+            meta: value.meta.try_into()?,
             data: value.data,
         })
     }

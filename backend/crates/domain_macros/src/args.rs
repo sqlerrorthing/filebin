@@ -2,22 +2,24 @@ use heck::ToSnakeCase;
 use proc_macro2::Ident;
 use quote::format_ident;
 use syn::parse::{Parse, ParseStream};
-use syn::{Result, Token, Type};
+use syn::{Attribute, Result, Token, Type};
 use syn::token::Paren;
 
 #[derive(Debug, Clone)]
 pub struct NewType {
+    pub attrs: Vec<Attribute>,
     pub name: Ident,
     pub inner: Type,
 }
 
 impl Parse for NewType {
     fn parse(input: ParseStream) -> Result<Self> {
+        let attrs = input.call(Attribute::parse_outer)?;
         let name: Ident = input.parse()?;
         let content;
         syn::parenthesized!(content in input);
         let inner: Type = content.parse()?;
-        Ok(NewType { name, inner })
+        Ok(NewType { attrs, name, inner })
     }
 }
 

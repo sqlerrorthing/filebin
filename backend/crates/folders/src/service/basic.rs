@@ -91,7 +91,7 @@ where
     async fn rename_folder(
         &self,
         folder_id: folders::Id,
-        new_name: encrypted_blobs::NewBlob,
+        new_name: folders::FolderName,
     ) -> Result<Option<folders::Model>, Self::Error> {
         let model = self
             .folder_repository
@@ -132,7 +132,7 @@ where
 
     async fn create_folder(
         &self,
-        encrypted_name: encrypted_blobs::NewBlob,
+        encrypted_name: folders::FolderName,
         expires: Option<Duration>,
     ) -> Result<folders::Model, Self::Error> {
         let model = folders::NewFolder {

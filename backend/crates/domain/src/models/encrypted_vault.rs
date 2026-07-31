@@ -4,6 +4,7 @@ use crate::macros::tiny_str_sea_orm_derive;
 use nutype::nutype;
 use serde::{Deserialize, Serialize};
 use sea_orm::entity::prelude::DeriveValueType;
+use sea_orm::FromJsonQueryResult;
 use strum_macros::EnumIter;
 use domain_macros::Model;
 
@@ -56,18 +57,14 @@ pub enum EncryptionAlgo {
     Aes256Gcm
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize, Model)]
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize, Model, FromJsonQueryResult)]
 #[model(
     newtypes(
-        Id(i32), Version(i16)
-    ),
-    inputs(
-        NewVault(iv, tag, ver, algo)
+        Version(i16)
     )
 
 )]
 pub struct Model {
-    pub id: Id,
     pub iv: IV,
     pub tag: Tag,
     pub ver: Version,

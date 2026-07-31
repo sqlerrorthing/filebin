@@ -44,7 +44,7 @@ where
         Ok(folder)
     }
 
-    async fn rename(&self, folder_id: folders::Id, new_name: encrypted_blobs::NewBlob) -> Result<Option<folders::Model>, Self::Error> {
+    async fn rename(&self, folder_id: folders::Id, new_name: folders::FolderName) -> Result<Option<folders::Model>, Self::Error> {
         let folder = self.repository().rename(folder_id, new_name).await?;
         if let Some(folder) = &folder {
             self.clear_cache_keys([key_by_id(folder.id), key_by_public_id(&folder.public_id)])

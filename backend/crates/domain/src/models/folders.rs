@@ -1,3 +1,4 @@
+use sea_orm::FromJsonQueryResult;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use domain_macros::Model;
@@ -7,12 +8,14 @@ use domain_macros::Model;
     newtypes(
         Id(i32),
         PublicId(tinystr::TinyAsciiStr<8>),
+
+        #[derive(FromJsonQueryResult)]
         FolderName(super::super::encrypted_blobs::Model)
     ),
     inputs(
         NewFolder(
             public_id, 
-            ..super::encrypted_blobs::NewBlob as encrypted_name, 
+            ..FolderName as encrypted_name,
             expired_at
         ),
     )

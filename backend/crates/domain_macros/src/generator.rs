@@ -53,11 +53,14 @@ impl Generator {
                     sea_orm::entity::prelude::DeriveValueType
                 )));
 
+                let attrs = &t.attrs;
+                
                 let args = [const_fn, Some(derives), derive_value_type]
                     .into_iter()
                     .flatten();
 
                 Ok(quote! {
+                    #(#attrs)*
                     #[::nutype::nutype(
                         #(#args),*
                     )]

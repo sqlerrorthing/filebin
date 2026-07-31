@@ -12,11 +12,11 @@ pub trait FoldersService {
     async fn delete_folder(&self, folder_id: folders::Id) -> bool;
 
     #[result]
-    async fn rename_folder(&self, folder_id: folders::Id, new_name: encrypted_blobs::NewBlob) -> Option<folders::Model>;
+    async fn rename_folder(&self, folder_id: folders::Id, new_name: folders::FolderName) -> Option<folders::Model>;
 
     #[result]
     async fn find_folder_by_public_id(&self, public_id: folders::PublicId) -> Option<folders::Model>;
 
     #[result]
-    async fn create_folder(&self, encrypted_name: encrypted_blobs::NewBlob, expires: Option<Duration>) -> folders::Model;
+    async fn create_folder(&self, encrypted_name: folders::FolderName, expires: Option<Duration>) -> folders::Model;
 }

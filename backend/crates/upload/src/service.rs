@@ -30,8 +30,8 @@ pub trait UploadService {
         &self,
         public_id: folders::PublicId,
         token: String,
-        data_meta: encrypted_vault::NewVault,
-        file_meta: encrypted_blobs::NewBlob,
+        data_meta: encrypted_vault::Model,
+        file_meta: encrypted_blobs::Model,
         chunks: impl Stream<Item = Result<Bytes, E>> + Send + 'static,
     ) -> files::Model
     where
