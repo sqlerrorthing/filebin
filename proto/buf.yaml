@@ -15,6 +15,3 @@ breaking:
 modules:
   - path: proto
   - path: vendor
-
-deps:
-  - buf.build/googleapis/googleapis

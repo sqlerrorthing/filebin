@@ -35,7 +35,7 @@ services:
         condition: service_completed_successfully
       postgres:
         condition: service_healthy
-      valkey:.
+      valkey:
         condition: service_started
       rabbitmq:
         condition: service_healthy

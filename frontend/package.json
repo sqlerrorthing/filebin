@@ -7,12 +7,15 @@
 		"dev": "vite dev",
 		"build": "vite build",
 		"preview": "vite preview",
-		"prepare": "svelte-kit sync || || tw-patch || echo ''",
+		"prepare": "svelte-kit sync || tw-patch || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"proto:generate": "protoc -I=../proto/proto -I=../proto/vendor --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=src/lib/generated --ts_proto_opt=esModuleInterop=true $(find ../proto/proto -name '*.proto')"
+		"proto:generate": "buf generate ../proto"
 	},
 	"devDependencies": {
+		"@bufbuild/buf": "^1.72.0",
+		"@bufbuild/protoc-gen-es": "^2.13.0",
+		"@connectrpc/protoc-gen-connect-es": "^1.7.0",
 		"@sveltejs/adapter-auto": "^7.0.1",
 		"@sveltejs/kit": "^2.63.0",
 		"@sveltejs/vite-plugin-svelte": "^7.1.2",
@@ -27,7 +30,7 @@
 	},
 	"dependencies": {
 		"@bufbuild/protobuf": "^2.13.0",
-		"protobufjs": "^8.7.1",
-		"ts-proto": "^2.12.0"
+		"@connectrpc/connect": "^2.1.2",
+		"@connectrpc/connect-web": "^2.1.2"
 	}
 }

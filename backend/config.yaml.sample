@@ -3,7 +3,7 @@
 
 # Use list for allowed domains (with wildcards) or single string
 # Use `*` for mirror
-cors: *
+cors: "*"
 
 limits:
   max_filesize: 10 MB

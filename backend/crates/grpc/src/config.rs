@@ -109,21 +109,21 @@ pub enum CorsOrigins {
     List(Vec<String>),
 }
 
-fn match_origins(origins: &[impl AsRef<str>]) -> AllowOrigin {
-    let origins: Vec<&str> = origins.iter().map(AsRef::as_ref).collect();
-
-    if origins.iter().any(|o| o.contains(['?', '*'])) {
-        let patterns: Vec<_> = origins.into_iter().map(WildMatch::new).collect();
-        AllowOrigin::predicate(move |val, _| {
-            val.to_str().is_ok_and(|s| patterns.iter().any(|p| p.matches(s)))
-        })
-    } else {
-        AllowOrigin::list(origins.into_iter().map(|o| o.parse().unwrap()))
-    }
-}
-
 impl From<&CorsOrigins> for AllowOrigin {
     fn from(value: &CorsOrigins) -> Self {
+        fn match_origins(origins: &[impl AsRef<str>]) -> AllowOrigin {
+            let origins: Vec<&str> = origins.iter().map(AsRef::as_ref).collect();
+
+            if origins.iter().any(|o| o.contains(['?', '*'])) {
+                let patterns: Vec<_> = origins.into_iter().map(WildMatch::new).collect();
+                AllowOrigin::predicate(move |val, _| {
+                    val.to_str().is_ok_and(|s| patterns.iter().any(|p| p.matches(s)))
+                })
+            } else {
+                AllowOrigin::list(origins.into_iter().map(|o| o.parse().unwrap()))
+            }
+        }
+
         match value {
             CorsOrigins::Single(origin) if origin == "*" => AllowOrigin::mirror_request(),
             CorsOrigins::Single(origin) => match_origins(&[origin]),
