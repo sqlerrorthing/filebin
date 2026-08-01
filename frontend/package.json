@@ -16,6 +16,7 @@
 		"@bufbuild/buf": "^1.72.0",
 		"@bufbuild/protoc-gen-es": "^2.13.0",
 		"@connectrpc/protoc-gen-connect-es": "^1.7.0",
+		"@inlang/paraglide-js": "^2.23.0",
 		"@sveltejs/adapter-auto": "^7.0.1",
 		"@sveltejs/kit": "^2.63.0",
 		"@sveltejs/vite-plugin-svelte": "^7.1.2",
@@ -31,6 +32,9 @@
 	"dependencies": {
 		"@bufbuild/protobuf": "^2.13.0",
 		"@connectrpc/connect": "^2.1.2",
-		"@connectrpc/connect-web": "^2.1.2"
+		"@connectrpc/connect-web": "^2.1.2",
+		"@inlang/paraglide-js": "^2.23.0",
+		"clsx": "^2.1.1",
+		"tailwind-merge": "^3.6.0"
 	}
 }
