@@ -1,12 +1,15 @@
-use pastey::paste;
+use byte_unit::Byte;
 use config_impl::{ConfigError, FileFormat};
+use pastey::paste;
+pub use secrecy;
 use secrecy::{ExposeSecret, SecretString};
 use serde::Deserialize;
 use std::env::var;
 use std::sync::LazyLock;
 use std::time::Duration;
-pub use secrecy;
-use byte_unit::Byte;
+use tonic::codegen::http::HeaderValue;
+use tower_http::cors::AllowOrigin;
+use wildmatch::WildMatch;
 
 macro_rules! config {
     (@gen_struct [$(#[$struct_attrs:meta])*] $vis:vis $field:ident { $($sub:tt)* }) => {
@@ -99,10 +102,41 @@ macro_rules! config {
     };
 }
 
+#[derive(Debug, Deserialize, Clone)]
+#[serde(rename_all = "snake_case", untagged)]
+pub enum CorsOrigins {
+    Single(String),
+    List(Vec<String>),
+}
+
+fn match_origins(origins: &[impl AsRef<str>]) -> AllowOrigin {
+    let origins: Vec<&str> = origins.iter().map(AsRef::as_ref).collect();
+
+    if origins.iter().any(|o| o.contains(['?', '*'])) {
+        let patterns: Vec<_> = origins.into_iter().map(WildMatch::new).collect();
+        AllowOrigin::predicate(move |val, _| {
+            val.to_str().is_ok_and(|s| patterns.iter().any(|p| p.matches(s)))
+        })
+    } else {
+        AllowOrigin::list(origins.into_iter().map(|o| o.parse().unwrap()))
+    }
+}
+
+impl From<&CorsOrigins> for AllowOrigin {
+    fn from(value: &CorsOrigins) -> Self {
+        match value {
+            CorsOrigins::Single(origin) if origin == "*" => AllowOrigin::mirror_request(),
+            CorsOrigins::Single(origin) => match_origins(&[origin]),
+            CorsOrigins::List(origins) => match_origins(origins),
+        }
+    }
+}
+
 config! {
     #[derive(Deserialize)]
     #[serde(rename_all = "snake_case")]
     pub Config {
+        pub cors: CorsOrigins,
         pub jwt: {
             #[serde(with = "humantime_serde")]
             pub expires: Duration,

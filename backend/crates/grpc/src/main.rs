@@ -21,7 +21,10 @@ use sea_orm::{Database, DatabaseConnection, DbErr};
 use sea_orm_migration::migrator::MigratorTrait;
 use secrecy::ExposeSecret;
 use std::any::type_name_of_val;
+use tonic::codegen::http::{HeaderName, Method, header};
 use tonic::transport::Server;
+use tonic_web::GrpcWebLayer;
+use tower_http::cors::{AllowOrigin, CorsLayer};
 use tracing::info;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
@@ -104,6 +107,24 @@ mod sealed {
     }
 }
 
+fn cors() -> CorsLayer {
+    CorsLayer::new()
+        .allow_origin(&CONFIG.cors)
+        .allow_methods([Method::POST, Method::GET])
+        .allow_headers([
+            header::CONTENT_TYPE,
+            header::AUTHORIZATION,
+            HeaderName::from_static("x-grpc-web"),
+            HeaderName::from_static("x-user-agent"),
+            HeaderName::from_static("grpc-timeout"),
+        ])
+        .expose_headers([
+            HeaderName::from_static("grpc-status"),
+            HeaderName::from_static("grpc-message"),
+            HeaderName::from_static("grpc-status-details-bin"),
+        ])
+}
+
 #[tokio::main]
 async fn main() -> color_eyre::Result<()> {
     color_eyre::install()?;
@@ -140,7 +161,7 @@ async fn main() -> color_eyre::Result<()> {
         files_storage,
         Cache::new(redis, db, CONFIG.caches.files.as_secs() as _),
         RandomIdGeneratorService,
-        updates_service
+        updates_service,
     )
     .leaked();
 
@@ -166,6 +187,9 @@ async fn main() -> color_eyre::Result<()> {
     );
 
     Server::builder()
+        .accept_http1(true)
+        .layer(cors())
+        .layer(GrpcWebLayer::new())
         .add_service(FolderServiceServer::new(BasicGrpcFolderService::new(
             folders_service,
             token_service,
@@ -176,7 +200,7 @@ async fn main() -> color_eyre::Result<()> {
             folders_service,
             download_service,
             upload_service,
-            token_service
+            token_service,
         )))
         .serve("0.0.0.0:50051".parse()?)
         .await?;
