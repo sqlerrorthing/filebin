@@ -1,0 +1,11 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "language": "English",
+  "head": {
+    "title": "Anonymous E2EE File storage.\nWe respect your privacy!"
+  },
+  "footer": {
+    "made": "Made with ♥\uFE0F\uD83C\uDFF3\uFE0F\u200D\uD83C\uDF08 by {#link to=$authorUrl}{author}{/link}",
+    "source": "Source code available on {#link to=$url}{platform}{/link}"
+  }
+}
