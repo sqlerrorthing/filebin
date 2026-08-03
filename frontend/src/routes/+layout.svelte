@@ -10,7 +10,7 @@
     let {children} = $props();
 
     onMount(async () => {
-        if (!limitsStore.data && !limitsStore.loading) {
+        if (!limitsStore.data && !limitsStore.hasCalled) {
             await limitsStore.fetch();
         }
     });
@@ -54,15 +54,3 @@
         </div>
     </div>
 </div>
-
-<!--{#if limitsStore.loading}-->
-<!--    <div class="flex items-center justify-center h-screen">-->
-<!--        <LoaderCircle class="h-12 w-12 animate-spin text-primary" />-->
-<!--    </div>-->
-<!--{:else if limitsStore.error}-->
-<!--    <div class="flex items-center justify-center h-screen text-destructive-foreground">-->
-<!--        <p>{m.error({message: limitsStore.error.message})}</p>-->
-<!--    </div>-->
-<!--{:else if limitsStore.data}-->
-
-<!--{/if}-->

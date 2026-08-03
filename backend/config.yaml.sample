@@ -6,7 +6,7 @@
 cors: "*"
 
 limits:
-  max_filesize: 10 MB
+  max_filesize: 10 MiB
   max_files_per_folder: 100
 
 caches:

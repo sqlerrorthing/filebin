@@ -7,7 +7,6 @@ use serde::Deserialize;
 use std::env::var;
 use std::sync::LazyLock;
 use std::time::Duration;
-use tonic::codegen::http::HeaderValue;
 use tower_http::cors::AllowOrigin;
 use wildmatch::WildMatch;
 

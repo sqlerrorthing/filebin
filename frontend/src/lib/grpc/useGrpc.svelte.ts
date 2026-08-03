@@ -14,8 +14,9 @@ export function useGrpc<Req, Res>(
             abortController.abort("Cancelled by a new request");
         }
 
-        abortController = new AbortController();
-        const currentSignal = abortController.signal;
+        const controller = new AbortController();
+        abortController = controller;
+        const currentSignal = controller.signal;
 
         const mergedOptions: CallOptions = {
             ...options,
@@ -49,11 +50,10 @@ export function useGrpc<Req, Res>(
             data = null;
             return null;
         } finally {
-            if (!currentSignal.aborted) {
+            if (abortController === controller) {
+                loading = false;
                 abortController = null;
             }
-
-            loading = false;
         }
     }
 
@@ -66,7 +66,7 @@ export function useGrpc<Req, Res>(
     }
 
     function reset() {
-        abort()
+        abort();
         data = null;
         error = null;
     }

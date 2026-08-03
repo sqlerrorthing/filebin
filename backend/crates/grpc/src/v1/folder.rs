@@ -1,10 +1,6 @@
 use crate::config::CONFIG;
 use crate::schema::api::folder::v1::folder_service_server::FolderService;
-use crate::schema::api::folder::v1::{
-    CreateFolderRequest, DeleteFolderRequest, FolderNameChanged, FolderUpdate,
-    LimitsResponse, NewFile, OwnedFolder, RenameRequest, UpdatesRequest, UploadFileRequest,
-    UploadFileResponse, folder_update, upload_file_request,
-};
+use crate::schema::api::folder::v1::{CreateFolderRequest, DeleteFolderRequest, Folder, FolderUpdate, GetFolderRequest, LimitsResponse, OwnedFolder, RenameRequest, UpdatesRequest};
 use crate::schema::{BoolExt, ServiceErrorExt, ServiceResultExt};
 use crate::v1::dto::prost_duration_to_std_duration;
 use async_trait::async_trait;
@@ -13,8 +9,6 @@ use derive_new::new;
 use domain::models;
 use futures::Stream;
 use pbjson_types::Empty;
-use std::ops::Deref;
-use std::sync::Arc;
 use tonic::codegen::tokio_stream::StreamExt;
 use tonic::{Request, Response, Status};
 use domain::models::encrypted_blobs;
@@ -64,6 +58,19 @@ where
             folder: folder.into(),
             token: token.into(),
         }))
+    }
+
+    async fn get_folder(&self, request: Request<GetFolderRequest>) -> Result<Response<Folder>, Status> {
+        let id: models::folders::PublicId = request.into_inner().id.try_into()?;
+
+        let folder = self
+            .folders_service
+            .find_folder_by_public_id(id)
+            .await
+            .ok_or_internal()?
+            .ok_or_not_found("folder not found")?;
+
+        Ok(Response::new(folder.into()))
     }
 
     async fn delete_folder(
