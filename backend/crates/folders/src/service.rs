@@ -1,8 +1,17 @@
 pub mod basic;
 
 use std::time::Duration;
+use thiserror::Error;
 use domain::models::{encrypted_blobs, folders};
 use service::service;
+
+#[derive(Debug, Error)]
+pub enum RenameFolderError {
+    #[error("folder name is empty")]
+    Empty,
+    #[error("folder name is too long")]
+    TooLong
+}
 
 #[service]
 pub trait FoldersService {
@@ -11,7 +20,7 @@ pub trait FoldersService {
     #[result]
     async fn delete_folder(&self, folder_id: folders::Id) -> bool;
 
-    #[result]
+    #[result(RenameFolderError)]
     async fn rename_folder(&self, folder_id: folders::Id, new_name: folders::FolderName) -> Option<folders::Model>;
 
     #[result]

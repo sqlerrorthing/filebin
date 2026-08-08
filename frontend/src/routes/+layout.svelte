@@ -23,7 +23,7 @@
 <div class="flex justify-center p-4">
     <div class="bg-card sm:min-w-lg min-w-full shadow">
         <div class="flex flex-col items-center justify-center sm:flex-row gap-4 text-center sm:text-left border-b-2 border-dashed border-muted pb-2 p-4">
-            <img src={favicon} class="sm:w-24 w-32 h-auto object-cover" alt="">
+            <img src={favicon} class="sm:w-24 sm:min-w-24 min-w-32 w-32 h-auto object-cover" alt="">
             <h2 class="whitespace-pre-line text-md">{m['head.title']()}</h2>
         </div>
         <div class="p-4">

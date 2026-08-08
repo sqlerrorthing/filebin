@@ -7,6 +7,7 @@
     import {goto} from "$app/navigation";
     import {onMount} from "svelte";
     import {activeFolder} from "$lib/stores/folder.svelte";
+    import {localizeHref} from "$lib/paraglide/runtime";
 
     let loading = $state(false);
     let error = $state<string | null>(null);
@@ -19,14 +20,14 @@
             const key = await generateCryptoKey();
             const folder = await createFolder(key, m["folders.base-name"]());
 
-            activeFolder.set(
+            await activeFolder.set(
                 folder.folder!!,
                 key,
                 folder.token!!
             )
 
             const exportedKey = await exportKey(key);
-            await goto(`${folder?.folder?.id?.value!!}#${exportedKey}`)
+            await goto(`${localizeHref(folder?.folder?.id?.value!!)}#${exportedKey}`)
         } catch (e: any) {
             error = e.toString();
         } finally {

@@ -13,7 +13,7 @@ macro_rules! idents {
 }
 
 fn basic_idents() -> Vec<Ident> {
-    idents![Debug, PartialEq, Eq, Clone, Serialize, Deserialize, Deref]
+    idents![Debug, PartialEq, Eq, Clone, Serialize, Deserialize, Deref, AsRef]
 }
 
 pub struct NewtypeMeta {

@@ -4,8 +4,3 @@ plugins:
     out: src/lib/grpc/gen
     opt:
       - target=ts
-
-  - local: protoc-gen-connect-es
-    out: src/lib/grpc/gen
-    opt:
-      - target=ts

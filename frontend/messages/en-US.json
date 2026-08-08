@@ -4,10 +4,16 @@
   "head": {
     "title": "Anonymous E2EE File storage.\nWe respect your privacy!"
   },
+  "crypt": {
+    "errors": {
+      "decrypt": "Decryption error"
+    }
+  },
   "error": "Error: {error}",
   "folders": {
     "base-name": "Folder",
-    "not-fount": "Folder not found"
+    "not-found": "Folder not found",
+    "incorrect-id": "Folder id is incorrect"
   },
   "files": {
     "upload": "Upload",
