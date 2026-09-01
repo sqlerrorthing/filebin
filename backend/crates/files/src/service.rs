@@ -1,15 +1,20 @@
 pub mod basic;
 
-use std::fmt::Debug;
+use crate::storage::{
+    HasRawMultipartUploadHandle, IntoRawMultipartUploadHandle, MultipartUploadHandle,
+};
 use bytes::Bytes;
+use domain::models::files::UploadFileData;
 use domain::models::{encrypted_blobs, encrypted_vault, files, folders};
 use futures_core::Stream;
 use service::service;
+use std::fmt::Debug;
 
 #[service]
 pub trait FilesService {
     type Error;
     type GetFileStream: Stream<Item = Result<Bytes, Self::Error>> + Debug;
+    type MultipartUploadHandle: MultipartUploadHandle;
 
     fn min_upload_chunk_size(&self) -> i64;
 
@@ -43,14 +48,39 @@ pub trait FilesService {
         E: Send + 'static;
 
     #[result]
+    async fn initiate_storage_upload(&self) -> Self::MultipartUploadHandle;
+
+    #[result]
+    async fn upload_file_chunk<H>(&self, chunk: Bytes, handle: H)
+    where
+        H: IntoRawMultipartUploadHandle<
+            Raw = <Self::MultipartUploadHandle as HasRawMultipartUploadHandle>::Raw,
+        >;
+
+    #[result]
+    async fn complete_multipart_upload<H>(
+        &self,
+        upload_file: UploadFileData,
+        handle: H,
+    ) -> files::Model
+    where
+        H: IntoRawMultipartUploadHandle<
+            Raw = <Self::MultipartUploadHandle as HasRawMultipartUploadHandle>::Raw,
+        >;
+
+    #[result]
     async fn get_file_by_storage_path(
         &self,
-        storage_path: files::StoragePath
+        storage_path: files::StoragePath,
     ) -> Option<Self::GetFileStream>;
-    
+
     #[result]
     async fn delete_file(&self, file_id: files::Id) -> Option<files::Model>;
-    
+
     #[result]
-    async fn delete_file_from_folder_by_public_id(&self, folder_id: folders::Id, public_id: files::PublicId) -> Option<files::Model>;
+    async fn delete_file_from_folder_by_public_id(
+        &self,
+        folder_id: folders::Id,
+        public_id: files::PublicId,
+    ) -> Option<files::Model>;
 }

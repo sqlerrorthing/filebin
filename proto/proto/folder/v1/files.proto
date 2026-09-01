@@ -9,32 +9,39 @@ import "google/protobuf/empty.proto";
 
 service FilesService {
   rpc ListFiles(ListFilesRequest) returns (ListFilesResponse);
-  rpc UploadFile(stream UploadFileRequest) returns (UploadFileResponse);
   rpc Download(DownloadRequest) returns (stream Blob);
   rpc Delete(DeleteRequest) returns (google.protobuf.Empty);
+
+  rpc InitiateUpload(InitiateUploadRequest) returns (InitiateUploadResponse);
+  rpc UploadChunk(UploadChunkRequest) returns (UploadChunkResponse);
 }
 
-message DeleteRequest {
-  required OwnedFolderRef folder = 1;
-  required FileId file_id = 2;
-}
-
-message UploadFileRequest {
-  oneof data {
-    InitiateUpload initiate = 1;
-    bytes chunk_data = 2;
-  }
-}
-
-message InitiateUpload {
-  // Encryption meta used to encrypt entire file
+message InitiateUploadRequest {
   required EncryptedVault vault = 3;
   required FileMetadata metadata = 1;
   required OwnedFolderRef folder = 2;
 }
 
-message UploadFileResponse {
-  required FileId id = 1;
+message UploadChunkRequest {
+  required string upload_id = 1;
+  required bytes chunk_data = 3;
+}
+
+message InitiateUploadResponse {
+  required string upload_id = 1;
+  required uint32 chunk_size = 2;
+}
+
+message UploadChunkResponse {
+  oneof result {
+    google.protobuf.Empty continue = 1;
+    FileId file_id = 2;
+  }
+}
+
+message DeleteRequest {
+  required OwnedFolderRef folder = 1;
+  required FileId file_id = 2;
 }
 
 message DownloadRequest {

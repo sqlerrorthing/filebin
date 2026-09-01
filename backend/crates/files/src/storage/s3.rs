@@ -1,7 +1,11 @@
-use crate::storage::{FILES_PREFIX, FilesStorage};
+use crate::storage::{
+    LockRawMultipartUploadHandle, FILES_PREFIX, FilesStorage, HasRawMultipartUploadHandle,
+    IntoRawMultipartUploadHandle,
+};
 use aws_sdk_s3::error::SdkError;
 use aws_sdk_s3::operation::complete_multipart_upload::CompleteMultipartUploadError;
 use aws_sdk_s3::operation::create_multipart_upload::CreateMultipartUploadError;
+use aws_sdk_s3::operation::delete_object::DeleteObjectError;
 use aws_sdk_s3::operation::delete_objects::DeleteObjectsError;
 use aws_sdk_s3::operation::get_object::GetObjectError;
 use aws_sdk_s3::operation::upload_part::UploadPartError;
@@ -15,11 +19,12 @@ use domain::models::files;
 use domain::sync::shared_string::SharedString;
 use futures_core::Stream;
 use futures_util::{TryStreamExt, stream};
+use parking_lot::lock_api::{RwLockReadGuard, RwLockWriteGuard};
+use parking_lot::{RawRwLock, RwLock};
+use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use std::hint::cold_path;
-use std::sync::Mutex;
-use std::sync::atomic::{AtomicI32, Ordering};
-use aws_sdk_s3::operation::delete_object::DeleteObjectError;
+use std::sync::atomic::AtomicI32;
 use thiserror::Error;
 use tokio::spawn;
 use tracing::error;
@@ -65,38 +70,104 @@ pub enum Error {
     Stream(#[from] byte_stream::error::Error),
 }
 
-#[derive(Debug)]
-pub struct S3MultipartFileUpload {
-    client: Client,
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct RawCompletedPart {
+    part_number: i32,
+    e_tag: String,
+}
+
+impl From<RawCompletedPart> for CompletedPart {
+    fn from(value: RawCompletedPart) -> Self {
+        CompletedPart::builder()
+            .part_number(value.part_number)
+            .e_tag(value.e_tag)
+            .build()
+    }
+}
+
+impl From<CompletedPart> for RawCompletedPart {
+    fn from(p: CompletedPart) -> Self {
+        Self {
+            part_number: p.part_number().unwrap_or_default(),
+            e_tag: p.e_tag().map(ToString::to_string).unwrap_or_default(),
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct RawS3MultipartFileUpload {
     bucket: SharedString,
     key: files::StoragePath,
     upload_id: SharedString,
-    next_part_number: AtomicI32,
-    completed_parts: Mutex<Vec<CompletedPart>>,
+    next_part_number: i32,
+    completed_parts: Vec<RawCompletedPart>,
+}
+
+#[derive(Debug)]
+pub struct S3MultipartFileUploadInner {
+    client: Client,
+    inner: RwLock<RawS3MultipartFileUpload>,
 }
 
 #[derive(Debug)]
 pub struct S3MultipartUploadHandle {
-    inner: Option<S3MultipartFileUpload>,
+    inner: Option<S3MultipartFileUploadInner>,
 }
 
 impl Drop for S3MultipartUploadHandle {
     fn drop(&mut self) {
         if let Some(inner) = self.inner.take() {
             cold_path();
+
+            let handle = inner.inner.into_inner();
             spawn(async move {
                 if let Err(e) = inner
                     .client
                     .abort_multipart_upload()
-                    .bucket(inner.bucket)
-                    .key(format!("{FILES_PREFIX}/{}", inner.key))
-                    .upload_id(inner.upload_id)
+                    .bucket(handle.bucket)
+                    .key(format!("{FILES_PREFIX}/{}", handle.key))
+                    .upload_id(handle.upload_id)
                     .send()
                     .await
                 {
                     error!("Abort multipart upload caught an error: {e}")
                 }
             });
+        }
+    }
+}
+
+impl HasRawMultipartUploadHandle for S3MultipartUploadHandle {
+    type Raw = RawS3MultipartFileUpload;
+}
+
+impl LockRawMultipartUploadHandle for S3MultipartUploadHandle {
+    type ReadRaw<'a> = RwLockReadGuard<'a, RawRwLock, Self::Raw>;
+    type WriteRaw<'a> = RwLockWriteGuard<'a, RawRwLock, Self::Raw>;
+
+    async fn read_raw(&self) -> Option<Self::ReadRaw<'_>> {
+        self.inner.as_ref().map(|i| i.inner.read())
+    }
+
+    async fn write_raw(&self) -> Option<Self::WriteRaw<'_>> {
+        self.inner.as_ref().map(|i| i.inner.write())
+    }
+}
+
+impl IntoRawMultipartUploadHandle for S3MultipartUploadHandle {
+    type Rest = Client;
+
+    async fn into_raw(mut self) -> Option<(Self::Raw, Self::Rest)> {
+        let inner = self.inner.take()?;
+        Some((inner.inner.into_inner(), inner.client))
+    }
+
+    fn from_raw(raw: Self::Raw, rest: Self::Rest) -> Self {
+        Self {
+            inner: Some(S3MultipartFileUploadInner {
+                client: rest,
+                inner: RwLock::new(raw),
+            }),
         }
     }
 }
@@ -121,58 +192,72 @@ impl FilesStorage for S3FilesStorage {
         let upload_id = res.upload_id.ok_or(Error::MissingUploadId)?;
 
         Ok(S3MultipartUploadHandle {
-            inner: Some(S3MultipartFileUpload {
+            inner: Some(S3MultipartFileUploadInner {
                 client: self.client.clone(),
-                bucket: self.bucket.clone(),
-                key,
-                upload_id: upload_id.into(),
-                next_part_number: AtomicI32::new(1),
-                completed_parts: Default::default(),
+                inner: RwLock::new(RawS3MultipartFileUpload {
+                    bucket: self.bucket.clone(),
+                    key,
+                    upload_id: upload_id.into(),
+                    next_part_number: 1,
+                    completed_parts: Default::default(),
+                }),
             }),
         })
     }
 
     async fn upload_part(
         &self,
-        handle: &Self::MultipartUploadHandle,
+        handle: &impl LockRawMultipartUploadHandle<
+            Raw = <Self::MultipartUploadHandle as HasRawMultipartUploadHandle>::Raw,
+        >,
         part: Bytes,
     ) -> Result<(), Self::Error> {
-        let handle = handle
-            .inner
-            .as_ref()
-            .ok_or(Error::MultipartHandlerDropped)?;
+        let (part_number, bucket, upload_id, key) = handle
+            .with_write(|h| {
+                let part = h.next_part_number;
+                h.next_part_number += 1;
 
-        let part_number = handle.next_part_number.fetch_add(1, Ordering::SeqCst);
+                (part, h.bucket.clone(), h.upload_id.clone(), h.key.clone())
+            })
+            .await
+            .ok_or(Error::MultipartHandlerDropped)?;
 
         let res = self
             .client
             .upload_part()
-            .bucket(handle.bucket.clone())
-            .key(format!("{FILES_PREFIX}/{}", handle.key))
-            .upload_id(handle.upload_id.clone())
+            .bucket(bucket.clone())
+            .key(format!("{FILES_PREFIX}/{}", key))
+            .upload_id(upload_id.clone())
             .part_number(part_number)
             .body(part.into())
             .send()
             .await?;
 
-        let completed_part = CompletedPart::builder()
-            .e_tag(res.e_tag.unwrap_or_default())
-            .part_number(part_number)
-            .build();
+        let completed_part = RawCompletedPart {
+            e_tag: res.e_tag.unwrap_or_default(),
+            part_number,
+        };
 
-        let mut parts = handle.completed_parts.lock().unwrap();
-        parts.push(completed_part);
+        handle.with_write(|h| h.completed_parts.push(completed_part))
+            .await
+            .ok_or(Error::MultipartHandlerDropped)?;
 
         Ok(())
     }
 
-    async fn complete_multipart_upload(
+    async fn complete_multipart_upload<H>(
         &self,
-        mut handle: Self::MultipartUploadHandle,
-    ) -> Result<files::StoragePath, Self::Error> {
-        let handle_inner = handle.inner.take().ok_or(Error::MultipartHandlerDropped)?;
-        let mut parts = handle_inner.completed_parts.lock().unwrap().clone();
+        handle: H,
+    ) -> Result<files::StoragePath, Self::Error>
+    where
+        H: IntoRawMultipartUploadHandle<
+            Raw = <Self::MultipartUploadHandle as HasRawMultipartUploadHandle>::Raw,
+        >
+    {
+        let (handle_inner, rest) = handle.into_raw().await.ok_or(Error::MultipartHandlerDropped)?;
+        let mut parts = handle_inner.completed_parts.clone();
         parts.sort_by_key(|p| p.part_number);
+        let parts = parts.into_iter().map(Into::into).collect();
 
         if let Err(e) = self
             .client
@@ -189,7 +274,7 @@ impl FilesStorage for S3FilesStorage {
             .await
         {
             cold_path();
-            handle.inner = Some(handle_inner);
+            H::from_raw(handle_inner, rest); // trigger RAII cleanup
             return Err(e.into());
         }
 
@@ -223,12 +308,13 @@ impl FilesStorage for S3FilesStorage {
     }
 
     async fn delete(&self, id: files::StoragePath) -> Result<(), Self::Error> {
-        self.client.delete_object()
+        self.client
+            .delete_object()
             .key(format!("{FILES_PREFIX}/{id}"))
             .bucket(self.bucket.clone())
             .send()
             .await?;
-        
+
         Ok(())
     }
 

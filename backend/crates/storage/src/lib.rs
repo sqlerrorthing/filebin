@@ -5,7 +5,7 @@ use serde::Serialize;
 use service::service;
 
 #[service]
-pub trait Storage {
+pub trait Storage: Clone {
     type Error;
 
     #[result]
@@ -18,6 +18,15 @@ pub trait Storage {
     where
         K: Into<String> + Send,
         V: Serialize + Sync;
+
+    #[result]
+    async fn set_ex<K>(
+        &self,
+        key: K,
+        ttl: Option<u32>
+    ) -> bool
+    where
+        K: Into<String> + Send;
 
     #[result]
     async fn get<K, V>(

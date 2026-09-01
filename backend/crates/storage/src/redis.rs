@@ -1,5 +1,5 @@
 use crate::Storage;
-use deadpool_redis::redis::AsyncCommands;
+use deadpool_redis::redis::{AsyncCommands, RedisResult};
 use deadpool_redis::{Pool, PoolError};
 use serde::Serialize;
 use serde::de::DeserializeOwned;
@@ -41,6 +41,25 @@ impl Storage for Pool {
         }
 
         Ok(())
+    }
+
+    async fn set_ex<K>(&self, key: K, ttl: Option<u32>) -> Result<bool, Self::Error>
+    where
+        K: Into<String> + Send
+    {
+        let mut conn = self.get().await?;
+        let key = key.into();
+
+        let result: RedisResult<i32> = match ttl {
+            Some(seconds) => {
+                conn.expire(&key, seconds as i64).await
+            }
+            None => {
+                conn.persist(&key).await
+            }
+        };
+
+        Ok(matches!(result, Ok(1)))
     }
 
     async fn get<K, V>(&self, key: K) -> Result<Option<V>, Self::Error>
