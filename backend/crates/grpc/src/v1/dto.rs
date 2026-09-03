@@ -1,3 +1,5 @@
+use std::error::Error;
+use std::str::FromStr;
 use crate::schema::ServiceErrorExt;
 use crate::schema::api::folder::v1::folder_update::Update;
 use crate::schema::api::folder::v1::{Algorithm, EncryptedBlobs, EncryptedVault, FileDeleted, FileId, FileMetadata, FileView, Folder, FolderId, FolderName, FolderNameChanged, FolderToken, NewFile, Version};
@@ -208,3 +210,24 @@ pub fn prost_duration_to_std_duration(
 
     Ok(Duration::new(secs, nanos))
 }
+
+pub trait FromStrExt: FromStr
+where
+    <Self as FromStr>::Err: Error
+{
+    fn from_str_or_invalid_argument<'a>(s: &str, value_name: impl Into<Option<&'a str>>) -> Result<Self, Status> {
+        let mut msg = "invalid value".to_string();
+
+        if let Some(value_name) = value_name.into() {
+            msg.push_str(&format!(": {value_name}"));
+        }
+
+        Self::from_str(s)
+            .ok_or_invalid_argument(msg)
+    }
+}
+
+impl<T: FromStr> FromStrExt for T
+where
+    <Self as FromStr>::Err: Error
+{}

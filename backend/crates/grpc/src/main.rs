@@ -180,9 +180,11 @@ async fn main() -> color_eyre::Result<()> {
         folders_service,
         token_service,
         updates_service,
+        redis,
         LimitsBuilder::default()
             .max_filesize(CONFIG.limits.max_filesize.as_u64())
             .max_files_per_folder(CONFIG.limits.max_files_per_folder)
+            .max_chunck_size(512)
             .build()?,
     );
 

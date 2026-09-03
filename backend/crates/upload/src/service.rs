@@ -1,7 +1,7 @@
 pub mod basic;
 
 use std::error::Error;
-use std::fmt::Display;
+use std::fmt::{Debug, Display};
 use std::ops::ControlFlow;
 use std::str::FromStr;
 use bytes::Bytes;
@@ -45,9 +45,12 @@ pub enum ConsumeChunkError {
 }
 
 #[service]
-pub trait UploadService {
+pub trait UploadService
+{
     type Error;
-    type UploadId: Serialize + DeserializeOwned + FromStr + Display;
+    
+    type UploadIdFromStrErr: std::error::Error;
+    type UploadId: Serialize + DeserializeOwned + FromStr<Err = Self::UploadIdFromStrErr> + Display;
 
     #[result(StreamUploadFileError<E>)]
     async fn stream_upload_file_by_public_folder_id<E>(

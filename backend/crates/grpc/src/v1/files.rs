@@ -1,5 +1,6 @@
+use std::ops::ControlFlow;
 use crate::schema::api::folder::v1::files_service_server::FilesService;
-use crate::schema::api::folder::v1::{Blob, DeleteRequest, DownloadRequest, ListFilesRequest, ListFilesResponse, InitiateUploadRequest, InitiateUploadResponse, UploadChunkRequest, UploadChunkResponse};
+use crate::schema::api::folder::v1::{Blob, DeleteRequest, DownloadRequest, ListFilesRequest, ListFilesResponse, InitiateUploadRequest, InitiateUploadResponse, UploadChunkRequest, UploadChunkResponse, upload_chunk_response};
 use crate::schema::{BoolExt, IntoInternal, ServiceErrorExt, ServiceResultExt};
 use async_trait::async_trait;
 use auth::service::TokenService;
@@ -12,7 +13,9 @@ use pbjson_types::Empty;
 use tonic::codegen::tokio_stream::StreamExt;
 use tonic::{Request, Response, Status, Streaming};
 use domain::models::{encrypted_blobs, encrypted_vault};
-use upload::service::{InitiateUploadError, StreamUploadFileError, UploadService};
+use domain::models::files::Model;
+use upload::service::{ConsumeChunkError, InitiateUploadError, StreamUploadFileError, UploadService};
+use crate::v1::dto::FromStrExt;
 
 #[derive(Debug, Clone, new)]
 pub struct BasicGrpcFilesService<FilesS, FoldersS, DS, US, TS> {
@@ -184,6 +187,25 @@ where
 
     async fn upload_chunk(&self, request: Request<UploadChunkRequest>) -> Result<Response<UploadChunkResponse>, Status> {
         let request = request.into_inner();
-        todo!("UPload!!!!!!!!!!!!!!!!!!")
+
+        let result: Result<_, _> = self.upload_service.consume_chunk(
+            <US as UploadService>::UploadId::from_str_or_invalid_argument(&request.upload_id, "upload_id")?,
+            request.chunk_data
+        ).await.ok_or_internal()?;
+
+        let flow = result.map_err(|e|
+            Status::aborted(e.to_string())
+        )?;
+
+        use upload_chunk_response::Result as UCRResult;
+
+        Ok(Response::new(UploadChunkResponse {
+            result: Some(
+                match flow {
+                    ControlFlow::Continue(_) => UCRResult::Continue(Empty {}),
+                    ControlFlow::Break(file) => UCRResult::FileId(file.public_id.into())
+                }
+            ),
+        }))
     }
 }

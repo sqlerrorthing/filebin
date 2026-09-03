@@ -24,6 +24,7 @@ use service::error::{OptionExt, ResultExt, ServiceError};
 use std::borrow::Cow;
 use std::marker::PhantomData;
 use std::ops::{ControlFlow, Deref, DerefMut};
+use std::str::FromStr;
 use storage::Storage;
 use thiserror::Error;
 use tokio::spawn;
@@ -245,6 +246,7 @@ where
     SS: Storage,
 {
     type Error = Error<FilesS, FoldersS, TS, SS>;
+    type UploadIdFromStrErr = <UploadId as FromStr>::Err;
     type UploadId = UploadId;
 
     async fn stream_upload_file_by_public_folder_id<E: std::error::Error>(
