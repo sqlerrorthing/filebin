@@ -25,7 +25,7 @@ use std::borrow::Cow;
 use std::marker::PhantomData;
 use std::ops::{ControlFlow, Deref, DerefMut};
 use std::str::FromStr;
-use storage::Storage;
+use storage::{SetTtl, Storage};
 use thiserror::Error;
 use tokio::spawn;
 use tracing::error;
@@ -38,7 +38,7 @@ const MIN_BYTES_PER_SEC: usize = 10 * 1024;
 pub struct Limits {
     max_filesize: u64,
     max_files_per_folder: u32,
-    max_chunck_size: usize,
+    max_chunk_size: usize,
 }
 
 #[derive(Debug, Clone, new)]
@@ -105,7 +105,7 @@ where
 
 impl<FilesS, FoldersS, TS, US, SS> BasicUploadService<FilesS, FoldersS, TS, US, SS> {
     fn upload_ttl(&self) -> u32 {
-        (self.limits.max_chunck_size / MIN_BYTES_PER_SEC) as u32 * 2
+        (self.limits.max_chunk_size / MIN_BYTES_PER_SEC) as u32 * 2
     }
 }
 
@@ -246,7 +246,6 @@ where
     SS: Storage,
 {
     type Error = Error<FilesS, FoldersS, TS, SS>;
-    type UploadIdFromStrErr = <UploadId as FromStr>::Err;
     type UploadId = UploadId;
 
     async fn stream_upload_file_by_public_folder_id<E: std::error::Error>(
@@ -321,7 +320,7 @@ where
             .await
             .map_err(Error::Storage)?;
 
-        Ok((upload_id, self.limits.max_chunck_size))
+        Ok((upload_id, self.limits.max_chunk_size))
     }
 
     async fn consume_chunk(
@@ -331,7 +330,7 @@ where
     ) -> Result<ControlFlow<Model>, ServiceError<ConsumeChunkError, Self::Error>> {
         let len = bytes.len();
 
-        if len > self.limits.max_chunck_size {
+        if len > self.limits.max_chunk_size {
             return Err(business!(ConsumeChunkError::ChunkTooLarge));
         }
 
@@ -349,7 +348,7 @@ where
             marker: PhantomData,
         };
 
-        if len as i64 + upload.bytes_received >= self.limits.max_filesize as _ {
+        if len as i64 + upload.bytes_received > self.limits.max_filesize as _ {
             _ = self
                 .storage
                 .bulk_delete([upload_key(&upload_id), handle_key(&upload_id)])
@@ -358,18 +357,21 @@ where
             return Err(business!(ConsumeChunkError::FileTooLarge));
         }
 
-        upload.bytes_received += len as i64;
-
-        self.storage.set(upload_key(&upload_id), &upload, Some(self.upload_ttl()))
+        self.storage.set_ex(upload_key(&upload_id), Some(self.upload_ttl()))
             .await
             .map_err(Error::Storage)?;
+
 
         if !bytes.is_empty() {
             self.files_service.upload_file_chunk(bytes, handle.clone()).await
                 .map_err(Error::Files)?;
+
+            upload.bytes_received += len as i64;
+            self.storage.set(upload_key(&upload_id), &upload, SetTtl::Keep).await
+                .map_err(Error::Storage)?;
         }
 
-        if len == self.limits.max_chunck_size {
+        if len == self.limits.max_chunk_size {
             return Ok(ControlFlow::Continue(()))
         }
 

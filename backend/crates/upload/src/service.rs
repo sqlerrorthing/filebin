@@ -49,8 +49,7 @@ pub trait UploadService
 {
     type Error;
     
-    type UploadIdFromStrErr: std::error::Error;
-    type UploadId: Serialize + DeserializeOwned + FromStr<Err = Self::UploadIdFromStrErr> + Display;
+    type UploadId: Serialize + DeserializeOwned + FromStr<Err: std::error::Error> + Display;
 
     #[result(StreamUploadFileError<E>)]
     async fn stream_upload_file_by_public_folder_id<E>(
