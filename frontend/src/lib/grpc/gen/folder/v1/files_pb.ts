@@ -8,7 +8,7 @@ import type { FileId, FolderId, OwnedFolderRef } from "./common_pb";
 import { file_folder_v1_common } from "./common_pb";
 import type { EncryptedBlobs, EncryptedVault } from "./encryption_pb";
 import { file_folder_v1_encryption } from "./encryption_pb";
-import type { EmptySchema } from "@bufbuild/protobuf/wkt";
+import type { Empty, EmptySchema } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_empty } from "@bufbuild/protobuf/wkt";
 import type { Message } from "@bufbuild/protobuf";
 
@@ -16,7 +16,107 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file folder/v1/files.proto.
  */
 export const file_folder_v1_files: GenFile = /*@__PURE__*/
-  fileDesc("ChVmb2xkZXIvdjEvZmlsZXMucHJvdG8SCWZvbGRlci52MSJeCg1EZWxldGVSZXF1ZXN0EikKBmZvbGRlchgBIAIoCzIZLmZvbGRlci52MS5Pd25lZEZvbGRlclJlZhIiCgdmaWxlX2lkGAIgAigLMhEuZm9sZGVyLnYxLkZpbGVJZCJgChFVcGxvYWRGaWxlUmVxdWVzdBItCghpbml0aWF0ZRgBIAEoCzIZLmZvbGRlci52MS5Jbml0aWF0ZVVwbG9hZEgAEhQKCmNodW5rX2RhdGEYAiABKAxIAEIGCgRkYXRhIpABCg5Jbml0aWF0ZVVwbG9hZBIoCgV2YXVsdBgDIAIoCzIZLmZvbGRlci52MS5FbmNyeXB0ZWRWYXVsdBIpCghtZXRhZGF0YRgBIAIoCzIXLmZvbGRlci52MS5GaWxlTWV0YWRhdGESKQoGZm9sZGVyGAIgAigLMhkuZm9sZGVyLnYxLk93bmVkRm9sZGVyUmVmIjMKElVwbG9hZEZpbGVSZXNwb25zZRIdCgJpZBgBIAIoCzIRLmZvbGRlci52MS5GaWxlSWQiVwoPRG93bmxvYWRSZXF1ZXN0EiMKBmZvbGRlchgCIAIoCzITLmZvbGRlci52MS5Gb2xkZXJJZBIfCgRmaWxlGAEgAigLMhEuZm9sZGVyLnYxLkZpbGVJZCIUCgRCbG9iEgwKBHBhcnQYASACKAwiNwoQTGlzdEZpbGVzUmVxdWVzdBIjCgZmb2xkZXIYASACKAsyEy5mb2xkZXIudjEuRm9sZGVySWQiNwoRTGlzdEZpbGVzUmVzcG9uc2USIgoFZmlsZXMYASADKAsyEy5mb2xkZXIudjEuRmlsZVZpZXciYgoIRmlsZVZpZXcSHQoCaWQYAyACKAsyES5mb2xkZXIudjEuRmlsZUlkEikKCG1ldGFkYXRhGAEgAigLMhcuZm9sZGVyLnYxLkZpbGVNZXRhZGF0YRIMCgRzaXplGAIgAigSIjgKDEZpbGVNZXRhZGF0YRIoCgV2YWx1ZRgBIAIoCzIZLmZvbGRlci52MS5FbmNyeXB0ZWRCbG9iczKaAgoMRmlsZXNTZXJ2aWNlEkYKCUxpc3RGaWxlcxIbLmZvbGRlci52MS5MaXN0RmlsZXNSZXF1ZXN0GhwuZm9sZGVyLnYxLkxpc3RGaWxlc1Jlc3BvbnNlEksKClVwbG9hZEZpbGUSHC5mb2xkZXIudjEuVXBsb2FkRmlsZVJlcXVlc3QaHS5mb2xkZXIudjEuVXBsb2FkRmlsZVJlc3BvbnNlKAESOQoIRG93bmxvYWQSGi5mb2xkZXIudjEuRG93bmxvYWRSZXF1ZXN0Gg8uZm9sZGVyLnYxLkJsb2IwARI6CgZEZWxldGUSGC5mb2xkZXIudjEuRGVsZXRlUmVxdWVzdBoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eQ", [file_folder_v1_common, file_folder_v1_encryption, file_google_protobuf_empty]);
+  fileDesc("ChVmb2xkZXIvdjEvZmlsZXMucHJvdG8SCWZvbGRlci52MSKXAQoVSW5pdGlhdGVVcGxvYWRSZXF1ZXN0EigKBXZhdWx0GAMgAigLMhkuZm9sZGVyLnYxLkVuY3J5cHRlZFZhdWx0EikKCG1ldGFkYXRhGAEgAigLMhcuZm9sZGVyLnYxLkZpbGVNZXRhZGF0YRIpCgZmb2xkZXIYAiACKAsyGS5mb2xkZXIudjEuT3duZWRGb2xkZXJSZWYiOwoSVXBsb2FkQ2h1bmtSZXF1ZXN0EhEKCXVwbG9hZF9pZBgBIAIoCRISCgpjaHVua19kYXRhGAMgAigMIj8KFkluaXRpYXRlVXBsb2FkUmVzcG9uc2USEQoJdXBsb2FkX2lkGAEgAigJEhIKCmNodW5rX3NpemUYAiACKA0icQoTVXBsb2FkQ2h1bmtSZXNwb25zZRIqCghjb250aW51ZRgBIAEoCzIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eUgAEiQKB2ZpbGVfaWQYAiABKAsyES5mb2xkZXIudjEuRmlsZUlkSABCCAoGcmVzdWx0Il4KDURlbGV0ZVJlcXVlc3QSKQoGZm9sZGVyGAEgAigLMhkuZm9sZGVyLnYxLk93bmVkRm9sZGVyUmVmEiIKB2ZpbGVfaWQYAiACKAsyES5mb2xkZXIudjEuRmlsZUlkIlcKD0Rvd25sb2FkUmVxdWVzdBIjCgZmb2xkZXIYAiACKAsyEy5mb2xkZXIudjEuRm9sZGVySWQSHwoEZmlsZRgBIAIoCzIRLmZvbGRlci52MS5GaWxlSWQiFAoEQmxvYhIMCgRwYXJ0GAEgAigMIjcKEExpc3RGaWxlc1JlcXVlc3QSIwoGZm9sZGVyGAEgAigLMhMuZm9sZGVyLnYxLkZvbGRlcklkIjcKEUxpc3RGaWxlc1Jlc3BvbnNlEiIKBWZpbGVzGAEgAygLMhMuZm9sZGVyLnYxLkZpbGVWaWV3ImIKCEZpbGVWaWV3Eh0KAmlkGAMgAigLMhEuZm9sZGVyLnYxLkZpbGVJZBIpCghtZXRhZGF0YRgBIAIoCzIXLmZvbGRlci52MS5GaWxlTWV0YWRhdGESDAoEc2l6ZRgCIAIoEiI4CgxGaWxlTWV0YWRhdGESKAoFdmFsdWUYASACKAsyGS5mb2xkZXIudjEuRW5jcnlwdGVkQmxvYnMy8gIKDEZpbGVzU2VydmljZRJGCglMaXN0RmlsZXMSGy5mb2xkZXIudjEuTGlzdEZpbGVzUmVxdWVzdBocLmZvbGRlci52MS5MaXN0RmlsZXNSZXNwb25zZRI5CghEb3dubG9hZBIaLmZvbGRlci52MS5Eb3dubG9hZFJlcXVlc3QaDy5mb2xkZXIudjEuQmxvYjABEjoKBkRlbGV0ZRIYLmZvbGRlci52MS5EZWxldGVSZXF1ZXN0GhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5ElUKDkluaXRpYXRlVXBsb2FkEiAuZm9sZGVyLnYxLkluaXRpYXRlVXBsb2FkUmVxdWVzdBohLmZvbGRlci52MS5Jbml0aWF0ZVVwbG9hZFJlc3BvbnNlEkwKC1VwbG9hZENodW5rEh0uZm9sZGVyLnYxLlVwbG9hZENodW5rUmVxdWVzdBoeLmZvbGRlci52MS5VcGxvYWRDaHVua1Jlc3BvbnNl", [file_folder_v1_common, file_folder_v1_encryption, file_google_protobuf_empty]);
+
+/**
+ * @generated from message folder.v1.InitiateUploadRequest
+ */
+export type InitiateUploadRequest = Message<"folder.v1.InitiateUploadRequest"> & {
+  /**
+   * @generated from field: required folder.v1.EncryptedVault vault = 3;
+   */
+  vault?: EncryptedVault | undefined;
+
+  /**
+   * @generated from field: required folder.v1.FileMetadata metadata = 1;
+   */
+  metadata?: FileMetadata | undefined;
+
+  /**
+   * @generated from field: required folder.v1.OwnedFolderRef folder = 2;
+   */
+  folder?: OwnedFolderRef | undefined;
+};
+
+/**
+ * Describes the message folder.v1.InitiateUploadRequest.
+ * Use `create(InitiateUploadRequestSchema)` to create a new message.
+ */
+export const InitiateUploadRequestSchema: GenMessage<InitiateUploadRequest> = /*@__PURE__*/
+  messageDesc(file_folder_v1_files, 0);
+
+/**
+ * @generated from message folder.v1.UploadChunkRequest
+ */
+export type UploadChunkRequest = Message<"folder.v1.UploadChunkRequest"> & {
+  /**
+   * @generated from field: required string upload_id = 1;
+   */
+  uploadId: string;
+
+  /**
+   * @generated from field: required bytes chunk_data = 3;
+   */
+  chunkData: Uint8Array;
+};
+
+/**
+ * Describes the message folder.v1.UploadChunkRequest.
+ * Use `create(UploadChunkRequestSchema)` to create a new message.
+ */
+export const UploadChunkRequestSchema: GenMessage<UploadChunkRequest> = /*@__PURE__*/
+  messageDesc(file_folder_v1_files, 1);
+
+/**
+ * @generated from message folder.v1.InitiateUploadResponse
+ */
+export type InitiateUploadResponse = Message<"folder.v1.InitiateUploadResponse"> & {
+  /**
+   * @generated from field: required string upload_id = 1;
+   */
+  uploadId: string;
+
+  /**
+   * @generated from field: required uint32 chunk_size = 2;
+   */
+  chunkSize: number;
+};
+
+/**
+ * Describes the message folder.v1.InitiateUploadResponse.
+ * Use `create(InitiateUploadResponseSchema)` to create a new message.
+ */
+export const InitiateUploadResponseSchema: GenMessage<InitiateUploadResponse> = /*@__PURE__*/
+  messageDesc(file_folder_v1_files, 2);
+
+/**
+ * @generated from message folder.v1.UploadChunkResponse
+ */
+export type UploadChunkResponse = Message<"folder.v1.UploadChunkResponse"> & {
+  /**
+   * @generated from oneof folder.v1.UploadChunkResponse.result
+   */
+  result: {
+    /**
+     * @generated from field: google.protobuf.Empty continue = 1;
+     */
+    value: Empty;
+    case: "continue";
+  } | {
+    /**
+     * @generated from field: folder.v1.FileId file_id = 2;
+     */
+    value: FileId;
+    case: "fileId";
+  } | { case: undefined; value?: undefined };
+};
+
+/**
+ * Describes the message folder.v1.UploadChunkResponse.
+ * Use `create(UploadChunkResponseSchema)` to create a new message.
+ */
+export const UploadChunkResponseSchema: GenMessage<UploadChunkResponse> = /*@__PURE__*/
+  messageDesc(file_folder_v1_files, 3);
 
 /**
  * @generated from message folder.v1.DeleteRequest
@@ -38,82 +138,7 @@ export type DeleteRequest = Message<"folder.v1.DeleteRequest"> & {
  * Use `create(DeleteRequestSchema)` to create a new message.
  */
 export const DeleteRequestSchema: GenMessage<DeleteRequest> = /*@__PURE__*/
-  messageDesc(file_folder_v1_files, 0);
-
-/**
- * @generated from message folder.v1.UploadFileRequest
- */
-export type UploadFileRequest = Message<"folder.v1.UploadFileRequest"> & {
-  /**
-   * @generated from oneof folder.v1.UploadFileRequest.data
-   */
-  data: {
-    /**
-     * @generated from field: folder.v1.InitiateUpload initiate = 1;
-     */
-    value: InitiateUpload;
-    case: "initiate";
-  } | {
-    /**
-     * @generated from field: bytes chunk_data = 2;
-     */
-    value: Uint8Array;
-    case: "chunkData";
-  } | { case: undefined; value?: undefined };
-};
-
-/**
- * Describes the message folder.v1.UploadFileRequest.
- * Use `create(UploadFileRequestSchema)` to create a new message.
- */
-export const UploadFileRequestSchema: GenMessage<UploadFileRequest> = /*@__PURE__*/
-  messageDesc(file_folder_v1_files, 1);
-
-/**
- * @generated from message folder.v1.InitiateUpload
- */
-export type InitiateUpload = Message<"folder.v1.InitiateUpload"> & {
-  /**
-   * Encryption meta used to encrypt entire file
-   *
-   * @generated from field: required folder.v1.EncryptedVault vault = 3;
-   */
-  vault?: EncryptedVault | undefined;
-
-  /**
-   * @generated from field: required folder.v1.FileMetadata metadata = 1;
-   */
-  metadata?: FileMetadata | undefined;
-
-  /**
-   * @generated from field: required folder.v1.OwnedFolderRef folder = 2;
-   */
-  folder?: OwnedFolderRef | undefined;
-};
-
-/**
- * Describes the message folder.v1.InitiateUpload.
- * Use `create(InitiateUploadSchema)` to create a new message.
- */
-export const InitiateUploadSchema: GenMessage<InitiateUpload> = /*@__PURE__*/
-  messageDesc(file_folder_v1_files, 2);
-
-/**
- * @generated from message folder.v1.UploadFileResponse
- */
-export type UploadFileResponse = Message<"folder.v1.UploadFileResponse"> & {
-  /**
-   * @generated from field: required folder.v1.FileId id = 1;
-   */
-  id?: FileId | undefined;
-};
-
-/**
- * Describes the message folder.v1.UploadFileResponse.
- * Use `create(UploadFileResponseSchema)` to create a new message.
- */
-export const UploadFileResponseSchema: GenMessage<UploadFileResponse> = /*@__PURE__*/
-  messageDesc(file_folder_v1_files, 3);
+  messageDesc(file_folder_v1_files, 4);
 
 /**
  * @generated from message folder.v1.DownloadRequest
@@ -135,7 +160,7 @@ export type DownloadRequest = Message<"folder.v1.DownloadRequest"> & {
  * Use `create(DownloadRequestSchema)` to create a new message.
  */
 export const DownloadRequestSchema: GenMessage<DownloadRequest> = /*@__PURE__*/
-  messageDesc(file_folder_v1_files, 4);
+  messageDesc(file_folder_v1_files, 5);
 
 /**
  * @generated from message folder.v1.Blob
@@ -152,7 +177,7 @@ export type Blob = Message<"folder.v1.Blob"> & {
  * Use `create(BlobSchema)` to create a new message.
  */
 export const BlobSchema: GenMessage<Blob> = /*@__PURE__*/
-  messageDesc(file_folder_v1_files, 5);
+  messageDesc(file_folder_v1_files, 6);
 
 /**
  * @generated from message folder.v1.ListFilesRequest
@@ -169,7 +194,7 @@ export type ListFilesRequest = Message<"folder.v1.ListFilesRequest"> & {
  * Use `create(ListFilesRequestSchema)` to create a new message.
  */
 export const ListFilesRequestSchema: GenMessage<ListFilesRequest> = /*@__PURE__*/
-  messageDesc(file_folder_v1_files, 6);
+  messageDesc(file_folder_v1_files, 7);
 
 /**
  * @generated from message folder.v1.ListFilesResponse
@@ -186,7 +211,7 @@ export type ListFilesResponse = Message<"folder.v1.ListFilesResponse"> & {
  * Use `create(ListFilesResponseSchema)` to create a new message.
  */
 export const ListFilesResponseSchema: GenMessage<ListFilesResponse> = /*@__PURE__*/
-  messageDesc(file_folder_v1_files, 7);
+  messageDesc(file_folder_v1_files, 8);
 
 /**
  * @generated from message folder.v1.FileView
@@ -213,7 +238,7 @@ export type FileView = Message<"folder.v1.FileView"> & {
  * Use `create(FileViewSchema)` to create a new message.
  */
 export const FileViewSchema: GenMessage<FileView> = /*@__PURE__*/
-  messageDesc(file_folder_v1_files, 8);
+  messageDesc(file_folder_v1_files, 9);
 
 /**
  * Encrypted json payload
@@ -233,7 +258,7 @@ export type FileMetadata = Message<"folder.v1.FileMetadata"> & {
  * Use `create(FileMetadataSchema)` to create a new message.
  */
 export const FileMetadataSchema: GenMessage<FileMetadata> = /*@__PURE__*/
-  messageDesc(file_folder_v1_files, 9);
+  messageDesc(file_folder_v1_files, 10);
 
 /**
  * @generated from service folder.v1.FilesService
@@ -246,14 +271,6 @@ export const FilesService: GenService<{
     methodKind: "unary";
     input: typeof ListFilesRequestSchema;
     output: typeof ListFilesResponseSchema;
-  },
-  /**
-   * @generated from rpc folder.v1.FilesService.UploadFile
-   */
-  uploadFile: {
-    methodKind: "client_streaming";
-    input: typeof UploadFileRequestSchema;
-    output: typeof UploadFileResponseSchema;
   },
   /**
    * @generated from rpc folder.v1.FilesService.Download
@@ -270,6 +287,22 @@ export const FilesService: GenService<{
     methodKind: "unary";
     input: typeof DeleteRequestSchema;
     output: typeof EmptySchema;
+  },
+  /**
+   * @generated from rpc folder.v1.FilesService.InitiateUpload
+   */
+  initiateUpload: {
+    methodKind: "unary";
+    input: typeof InitiateUploadRequestSchema;
+    output: typeof InitiateUploadResponseSchema;
+  },
+  /**
+   * @generated from rpc folder.v1.FilesService.UploadChunk
+   */
+  uploadChunk: {
+    methodKind: "unary";
+    input: typeof UploadChunkRequestSchema;
+    output: typeof UploadChunkResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_folder_v1_files, 0);

@@ -14,6 +14,8 @@
     import FolderName from "./FolderName.svelte";
     import { goto } from "$app/navigation";
     import {localizeHref} from "$lib/paraglide/runtime";
+    import FileList from "./FileList.svelte";
+    import Upload from "./Upload.svelte";
 
     const getFolder = useGrpc(folderClient.getFolder);
     const updatesStream = useStreamGrpc(folderClient.updates);
@@ -94,4 +96,8 @@
     <ErrorBanner error={errorMessage}/>
 {:else if activeFolder.decrypted}
     <FolderName/>
+    <FileList />
+    {#if activeFolder.token}
+        <Upload/>
+    {/if}
 {/if}

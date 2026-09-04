@@ -24,7 +24,7 @@ use std::any::type_name_of_val;
 use tonic::codegen::http::{HeaderName, Method, header};
 use tonic::transport::Server;
 use tonic_web::GrpcWebLayer;
-use tower_http::cors::{AllowOrigin, CorsLayer};
+use tower_http::cors::CorsLayer;
 use tracing::info;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
@@ -32,7 +32,7 @@ use tracing_subscriber::{EnvFilter, fmt};
 use updates::service::DynUpdatesService;
 use updates::service::basic::LocalUpdatesService;
 use updates::service::rabbitmq::RabbitMQUpdatesService;
-use upload::service::basic::{BasicUploadService, Limits, LimitsBuilder};
+use upload::service::basic::{BasicUploadService, LimitsBuilder};
 
 pub mod config;
 pub mod schema;

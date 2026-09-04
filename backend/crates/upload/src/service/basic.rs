@@ -16,15 +16,13 @@ use files::storage::{
     RawMultipartUploadHandle,
 };
 use folders::service::FoldersService;
-use futures::{Stream, StreamExt, TryStreamExt};
+use futures::{Stream, TryStreamExt};
 use nutype::nutype;
 use serde::{Deserialize, Serialize};
 use service::business;
 use service::error::{OptionExt, ResultExt, ServiceError};
-use std::borrow::Cow;
 use std::marker::PhantomData;
 use std::ops::{ControlFlow, Deref, DerefMut};
-use std::str::FromStr;
 use storage::{SetTtl, Storage};
 use thiserror::Error;
 use tokio::spawn;

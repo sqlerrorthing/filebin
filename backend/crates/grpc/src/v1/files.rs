@@ -10,11 +10,9 @@ use download::service::DownloadService;
 use futures::Stream;
 use futures_util::TryStreamExt;
 use pbjson_types::Empty;
-use tonic::codegen::tokio_stream::StreamExt;
-use tonic::{Request, Response, Status, Streaming};
+use tonic::{Request, Response, Status};
 use domain::models::{encrypted_blobs, encrypted_vault};
-use domain::models::files::Model;
-use upload::service::{ConsumeChunkError, InitiateUploadError, StreamUploadFileError, UploadService};
+use upload::service::{InitiateUploadError, UploadService};
 use crate::v1::dto::FromStrExt;
 
 #[derive(Debug, Clone, new)]

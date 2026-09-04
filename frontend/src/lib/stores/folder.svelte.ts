@@ -10,7 +10,7 @@ export interface DecryptedFolder {
     expiredAt: DateTime
 }
 
-class ActiveFolderStore {
+class ActiveFolder {
     id = $state<FolderId | null>(null);
     key = $state<CryptoKey | null>(null);
     token = $state<FolderToken | null>(null);
@@ -118,4 +118,4 @@ class ActiveFolderStore {
     }
 }
 
-export const activeFolder = new ActiveFolderStore();
+export const activeFolder = new ActiveFolder();

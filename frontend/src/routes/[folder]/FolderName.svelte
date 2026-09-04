@@ -64,7 +64,7 @@
                         type="text"
                         bind:value={activeFolder.decrypted.name}
                         oninput={handleInput}
-                        class="text-2xl font-bold bg-transparent border-b-2 border-transparent hover:border-gray-300 focus:border-blue-500 outline-none transition-colors px-1"
+                        class="text-2xl font-bold bg-transparent border-b-2 hover:border-gray-300 focus:border-blue-500 outline-none transition-colors px-1"
                 />
 
                 {#if isSyncing}
