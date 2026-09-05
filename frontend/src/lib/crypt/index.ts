@@ -10,13 +10,15 @@ export async function generateCryptoKey(): Promise<CryptoKey> {
 }
 
 export async function exportKey(key: CryptoKey): Promise<string> {
-    const exportedKey = await window.crypto.subtle.exportKey("raw", key);
-    const bytes = new Uint8Array(exportedKey);
-
-    return bytes.toBase64({ alphabet: "base64url", omitPadding: true });
+    return (await exportKeyToArray(key)).toBase64({ alphabet: "base64url", omitPadding: true });
 }
 
-function bufferToBase64(buffer: ArrayBuffer | Uint8Array): string {
+export async function exportKeyToArray(key: CryptoKey): Promise<Uint8Array> {
+    const exportedKey = await window.crypto.subtle.exportKey("raw", key);
+    return new Uint8Array(exportedKey);
+}
+
+export function bufferToBase64(buffer: ArrayBuffer | Uint8Array): string {
     const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
     let binary = "";
     for (let i = 0; i < bytes.byteLength; i++) {
@@ -37,9 +39,10 @@ export async function importKeyFromUrlSafe(urlSafeString: string): Promise<Crypt
     );
 }
 
+
 export async function encryptBlob(
     key: CryptoKey,
-    array: Uint8Array<ArrayBuffer>
+    array: Uint8Array<ArrayBuffer>,
 ): Promise<EncryptedBlobs> {
     const iv = window.crypto.getRandomValues(new Uint8Array(12));
 

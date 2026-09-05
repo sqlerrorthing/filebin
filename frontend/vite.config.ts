@@ -21,6 +21,10 @@ export default defineConfig({
             adapter: adapter()
         }),
     ], ssr: {
-        noExternal: ['@lucide/svelte', '@inlang/paraglide-js-svelte']
+        noExternal: ['@lucide/svelte', '@inlang/paraglide-js-svelte'],
+        external: ['@noble/ciphers', '@noble/hashes']
+    },
+    optimizeDeps: {
+        exclude: ['@noble/ciphers', '@noble/hashes']
     }
 });

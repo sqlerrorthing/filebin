@@ -18,10 +18,16 @@ export function useGrpc<Req, Res>(
         abortController = controller;
         const currentSignal = controller.signal;
 
+        if (options?.signal) {
+            options.signal.addEventListener('abort', () => {
+                controller.abort(options.signal?.reason);
+            }, { once: true });
+        }
+
         const mergedOptions: CallOptions = {
             ...options,
             signal: currentSignal
-        }
+        };
 
         loading = true;
         error = null;

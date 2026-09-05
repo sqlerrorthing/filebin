@@ -1,5 +1,5 @@
 <script lang="ts">
-    import Upload from "./Upload.svelte";
+    import Upload from "$lib/components/upload/Upload.svelte";
     import {limitsStore} from "$lib/stores/limits.svelte";
     import * as m from "$lib/paraglide/messages";
     import {formatBytes} from "$lib/utils";

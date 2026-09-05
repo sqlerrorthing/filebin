@@ -17,7 +17,10 @@
   },
   "files": {
     "upload": "Upload",
-    "limit": "Up to {limit}"
+    "limit": "Up to {limit}",
+    "drop-here": "Drop files here",
+    "delete-confirm": "Confirm",
+    "files": "{count} of {max}"
   },
   "footer": {
     "made": "Made with ♥\uFE0F\uD83C\uDFF3\uFE0F\u200D\uD83C\uDF08 by {#link to=$authorUrl}{author}{/link}",

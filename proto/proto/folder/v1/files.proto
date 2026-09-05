@@ -17,13 +17,17 @@ service FilesService {
 }
 
 message InitiateUploadRequest {
-  required EncryptedVault vault = 3;
   required FileMetadata metadata = 1;
   required OwnedFolderRef folder = 2;
 }
 
+// UploadChunk rules:
+// 1. All intermediate chunks MUST equal chunk_size.
+// 2. A chunk with EncryptedVault marks the final chunk.
+// 3. If chunk_data < chunk_size without EncryptedVault, upload fails.pnpm store prune
 message UploadChunkRequest {
   required string upload_id = 1;
+  optional EncryptedVault vault = 2;
   required bytes chunk_data = 3;
 }
 
@@ -35,7 +39,7 @@ message InitiateUploadResponse {
 message UploadChunkResponse {
   oneof result {
     google.protobuf.Empty continue = 1;
-    FileId file_id = 2;
+    FileView file = 2;
   }
 }
 
@@ -68,7 +72,7 @@ message FileView {
 }
 
 // Encrypted json payload
-// Contains only path: string, mime: string and hash (of original file): string
+// Contains only path: string, type: string
 message FileMetadata {
   required EncryptedBlobs value = 1;
 }

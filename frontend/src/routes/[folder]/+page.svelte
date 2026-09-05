@@ -6,19 +6,28 @@
     import * as m from "$lib/paraglide/messages";
     import {exportKey, importKeyFromUrlSafe} from "$lib/crypt";
     import ErrorBanner from "$lib/components/error/ErrorBanner.svelte";
-    import {LoaderCircle} from "@lucide/svelte";
+    import {Check, LoaderCircle} from "@lucide/svelte";
     import {create} from "@bufbuild/protobuf";
-    import {GetFolderRequestSchema} from "$lib/grpc/gen/folder/v1/folder_pb";
+    import {DeleteFolderRequestSchema, GetFolderRequestSchema} from "$lib/grpc/gen/folder/v1/folder_pb";
     import {FolderIdSchema} from "$lib/grpc/gen/folder/v1/common_pb";
     import {Code, ConnectError} from "@connectrpc/connect";
     import FolderName from "./FolderName.svelte";
-    import { goto } from "$app/navigation";
+    import {goto} from "$app/navigation";
     import {localizeHref} from "$lib/paraglide/runtime";
     import FileList from "./FileList.svelte";
-    import Upload from "./Upload.svelte";
+    import {uploadStore} from "$lib/stores/upload.svelte";
+    import {limitsStore} from "$lib/stores/limits.svelte";
+    import Upload from "$lib/components/upload/Upload.svelte";
+    import {Trash} from "@lucide/svelte";
+    import {cn} from "$lib/utils";
 
-    const getFolder = useGrpc(folderClient.getFolder);
+    const useGetFolder = useGrpc(folderClient.getFolder);
+    const useDeleteFolder = useGrpc(folderClient.deleteFolder);
+
     const updatesStream = useStreamGrpc(folderClient.updates);
+
+    let filesCount = $state(0);
+    let filesList: FileList | null = $state(null);
 
     let localLoading = $state(true);
     let localError = $state<string | null>(null);
@@ -27,6 +36,7 @@
     const errorMessage = $derived(localError || activeFolder.error);
 
     const routeFolderId = $derived(page.params.folder);
+
     onMount(async () => {
         const keyString = page.url.hash.replace("#", "");
 
@@ -42,25 +52,25 @@
             localLoading = true;
             const key = await importKeyFromUrlSafe(keyString);
 
-            await getFolder.call(create(GetFolderRequestSchema, {
+            await useGetFolder.call(create(GetFolderRequestSchema, {
                 id: create(FolderIdSchema, {
                     value: routeFolderId
                 })
             }));
 
-            if (getFolder.error instanceof ConnectError) {
-                if (getFolder.error.code === Code.NotFound) {
+            if (useGetFolder.error instanceof ConnectError) {
+                if (useGetFolder.error.code === Code.NotFound) {
                     localError = m["folders.not-found"]()
-                } else if (getFolder.error.code === Code.InvalidArgument) {
+                } else if (useGetFolder.error.code === Code.InvalidArgument) {
                     localError = m["folders.incorrect-id"]()
                 } else {
-                    localError = getFolder.error.toString()
+                    localError = useGetFolder.error.toString()
                 }
             }
 
-            if (getFolder.data) {
+            if (useGetFolder.data) {
                 await activeFolder.set(
-                    getFolder.data,
+                    useGetFolder.data,
                     key,
                     undefined
                 )
@@ -81,10 +91,88 @@
             const update = updateMsg.update;
             switch (update.case) {
                 case "folderDeleted": {
-                    await goto(localizeHref("/"))
+                    activeFolder.clear();
+                    await goto(localizeHref("/"), {replaceState: true});
+                    break
+                }
+                case "folderNameChanged": {
+                    break
+                }
+                case "newFile": {
+                    if (filesList) {
+                        await filesList.addFile(update.value)
+                    }
+
+                    break
                 }
             }
         }
+    }
+
+    async function deleteFolder() {
+        if (!activeFolder.ownedRef) {
+            return
+        }
+
+        localLoading = true;
+
+        try {
+            let resp = await useDeleteFolder.call(create(DeleteFolderRequestSchema, {ownedFolder: activeFolder.ownedRef}));
+
+            if (resp) {
+                activeFolder.clear();
+                await goto(localizeHref("/"), {replaceState: true});
+            }
+        } finally {
+            localLoading = false;
+        }
+    }
+
+    let isConfirming = $state(false);
+    let canConfirm = $state(false);
+
+    let cooldownTimer: number | null = null;
+    let totalTimer: number | null = null;
+
+    function startCooldown() {
+        canConfirm = false;
+        if (cooldownTimer) clearTimeout(cooldownTimer);
+
+        cooldownTimer = setTimeout(() => {
+            canConfirm = true;
+        }, 500);
+    }
+
+    function handleDeleteClick() {
+        if (!isConfirming) {
+            isConfirming = true;
+            startCooldown();
+
+            totalTimer = setTimeout(() => {
+                resetState();
+            }, 2000);
+        } else {
+            if (!canConfirm) {
+                startCooldown();
+            } else {
+                clearAllTimers();
+                resetState();
+                deleteFolder();
+            }
+        }
+    }
+
+    function resetState() {
+        isConfirming = false;
+        canConfirm = false;
+        clearAllTimers();
+    }
+
+    function clearAllTimers() {
+        if (cooldownTimer) clearTimeout(cooldownTimer);
+        if (totalTimer) clearTimeout(totalTimer);
+        cooldownTimer = null;
+        totalTimer = null;
     }
 </script>
 
@@ -95,9 +183,45 @@
 {:else if errorMessage}
     <ErrorBanner error={errorMessage}/>
 {:else if activeFolder.decrypted}
-    <FolderName/>
-    <FileList />
-    {#if activeFolder.token}
-        <Upload/>
-    {/if}
+    <div class="flex gap-3 flex-col">
+        <div class="flex">
+            <div class="flex-1 min-w-0">
+                <FolderName/>
+            </div>
+            {#if activeFolder.token}
+                <button
+                        class={cn(
+                            "cursor-pointer flex items-center gap-2 px-3 py-2",
+                            isConfirming ? "bg-destructive text-primary-foreground" : "hover:bg-muted",
+                            isConfirming && !canConfirm && "pointer-events-none bg-muted text-muted-foreground"
+                        )}
+                        onclick={handleDeleteClick}
+                        disabled={isConfirming && !canConfirm}
+                >
+                    {#if isConfirming}
+                        <Check class="w-4 h-4" />
+                        <span class="text-sm/2">{m["files.delete-confirm"]()}</span>
+                    {:else}
+                        <Trash class="w-4 h-4" />
+                    {/if}
+                </button>
+            {/if}
+        </div>
+        <div>
+            <FileList
+                    bind:id={activeFolder.id!!}
+                    bind:uploading={uploadStore.items}
+                    bind:key={activeFolder.key!!}
+                    bind:token={activeFolder.token}
+                    bind:filesCount
+                    bind:this={filesList}
+            />
+        </div>
+
+        {#if activeFolder.token && filesCount < (limitsStore.data?.maxFilesPerFolder ?? 0)}
+            <div class="flex justify-center">
+                <Upload/>
+            </div>
+        {/if}
+    </div>
 {/if}

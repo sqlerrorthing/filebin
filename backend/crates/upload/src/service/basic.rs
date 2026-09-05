@@ -69,6 +69,14 @@ where
     US: UpdatesService,
     SS: Storage,
 {
+    async fn is_folder_full(&self, folder_id: models::folders::Id) -> Result<bool, <Self as UploadService>::Error> {
+        Ok(self.files_service
+            .files_count(folder_id)
+            .await
+            .map_err(Error::Files)?
+            >= self.limits.max_files_per_folder as u64)
+    }
+
     async fn initiate_upload(
         &self,
         public_id: models::folders::PublicId,
@@ -90,11 +98,7 @@ where
             .map_err(Error::Folders)?
             .ok_or_business(InitiateUploadError::FolderNotFound)?;
 
-        self.files_service
-            .files_count(folder.id)
-            .await
-            .map_err(Error::Files)?
-            .lt(&(self.limits.max_files_per_folder as u64))
+        (!self.is_folder_full(folder.id).await?)
             .ok_or_business(InitiateUploadError::FolderIsFull)?;
 
         Ok(folder)
@@ -114,17 +118,16 @@ pub struct UploadId(Uuid);
 struct ActiveUpload {
     bytes_received: i64,
     folder_id: models::folders::Id,
-    data_meta: encrypted_vault::Model,
     file_meta: encrypted_blobs::Model,
 }
 
-impl From<ActiveUpload> for UploadFileData {
-    fn from(value: ActiveUpload) -> Self {
-        Self {
-            file_size: value.bytes_received,
-            meta: value.file_meta,
-            data_meta: value.data_meta,
-            folder_id: value.folder_id,
+impl ActiveUpload {
+    fn into_upload_file_data(self, data_meta: encrypted_vault::Model) -> UploadFileData {
+        UploadFileData {
+            file_size: self.bytes_received,
+            meta: self.file_meta,
+            data_meta,
+            folder_id: self.folder_id,
         }
     }
 }
@@ -284,7 +287,6 @@ where
         &self,
         public_id: models::folders::PublicId,
         token: String,
-        data_meta: encrypted_vault::Model,
         file_meta: encrypted_blobs::Model,
     ) -> Result<(Self::UploadId, usize), ServiceError<InitiateUploadError, Self::Error>> {
         let folder = self.initiate_upload(public_id, token).await?;
@@ -302,7 +304,6 @@ where
         let upload = ActiveUpload {
             bytes_received: 0,
             folder_id: folder.id,
-            data_meta,
             file_meta,
         };
 
@@ -324,9 +325,14 @@ where
     async fn consume_chunk(
         &self,
         upload_id: Self::UploadId,
+        data_meta: Option<encrypted_vault::Model>,
         bytes: Bytes,
     ) -> Result<ControlFlow<Model>, ServiceError<ConsumeChunkError, Self::Error>> {
         let len = bytes.len();
+
+        if len == 0 && data_meta.is_none() {
+            return Err(business!(ConsumeChunkError::EmptyChunk));
+        }
 
         if len > self.limits.max_chunk_size {
             return Err(business!(ConsumeChunkError::ChunkTooLarge));
@@ -339,6 +345,12 @@ where
             .map_err(Error::Storage)?
             .ok_or_business(ConsumeChunkError::NotFound)?;
 
+        let cleanup_keys = async |storage: &SS, upload_id: Self::UploadId| {
+            storage
+                .bulk_delete([upload_key(&upload_id), handle_key(&upload_id)])
+                .await
+        };
+
         let handle = StorageSyncUploadHandle {
             upload_id: upload_id.clone(),
             storage: self.storage.clone(),
@@ -347,43 +359,56 @@ where
         };
 
         if len as i64 + upload.bytes_received > self.limits.max_filesize as _ {
-            _ = self
-                .storage
-                .bulk_delete([upload_key(&upload_id), handle_key(&upload_id)])
-                .await;
-
+            _ = cleanup_keys(&self.storage, upload_id).await;
             return Err(business!(ConsumeChunkError::FileTooLarge));
         }
 
-        self.storage.set_ex(upload_key(&upload_id), Some(self.upload_ttl()))
+        if self.is_folder_full(upload.folder_id).await? {
+            _ = cleanup_keys(&self.storage, upload_id).await;
+            return Err(business!(ConsumeChunkError::FolderIsFull));
+        }
+
+        self.storage
+            .set_ex(upload_key(&upload_id), Some(self.upload_ttl()))
             .await
             .map_err(Error::Storage)?;
 
-
         if !bytes.is_empty() {
-            self.files_service.upload_file_chunk(bytes, handle.clone()).await
+            self.files_service
+                .upload_file_chunk(bytes, handle.clone())
+                .await
                 .map_err(Error::Files)?;
 
             upload.bytes_received += len as i64;
-            self.storage.set(upload_key(&upload_id), &upload, SetTtl::Keep).await
+            self.storage
+                .set(upload_key(&upload_id), &upload, SetTtl::Keep)
+                .await
                 .map_err(Error::Storage)?;
         }
 
-        if len == self.limits.max_chunk_size {
-            return Ok(ControlFlow::Continue(()))
+        match (len == self.limits.max_chunk_size, data_meta) {
+            (true, None) => Ok(ControlFlow::Continue(())),
+            (_, Some(meta)) => {
+                if upload.bytes_received == 0 {
+                    _ = cleanup_keys(&self.storage, upload_id).await;
+                    return Err(business!(ConsumeChunkError::EmptyChunk));
+                }
+
+                let file = self
+                    .files_service
+                    .complete_multipart_upload(upload.into_upload_file_data(meta), handle)
+                    .await
+                    .map_err(Error::Files)?;
+
+                _ = cleanup_keys(&self.storage, upload_id).await;
+                self.updates_service.fire_file_uploaded(file.clone());
+                Ok(ControlFlow::Break(file))
+            }
+            (false, None) => {
+                _ = cleanup_keys(&self.storage, upload_id).await;
+                Err(business!(ConsumeChunkError::InvalidFinalChunk))
+            }
         }
-
-        let file = self.files_service.complete_multipart_upload(
-            upload.into(),
-            handle
-        ).await.map_err(Error::Files)?;
-
-        _ = self
-            .storage
-            .bulk_delete([upload_key(&upload_id), handle_key(&upload_id)])
-            .await;
-
-        Ok(ControlFlow::Break(file))
     }
 }
 

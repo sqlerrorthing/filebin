@@ -184,7 +184,7 @@ async fn main() -> color_eyre::Result<()> {
         LimitsBuilder::default()
             .max_filesize(CONFIG.limits.max_filesize.as_u64())
             .max_files_per_folder(CONFIG.limits.max_files_per_folder)
-            .max_chunk_size(512)
+            .max_chunk_size(1024 * 1024 * 6) // 6 MB, at least 5 required by S3
             .build()?,
     );
 
@@ -197,13 +197,17 @@ async fn main() -> color_eyre::Result<()> {
             token_service,
             updates_service,
         )))
-        .add_service(FilesServiceServer::new(BasicGrpcFilesService::new(
-            files_service,
-            folders_service,
-            download_service,
-            upload_service,
-            token_service,
-        )))
+        .add_service(
+            FilesServiceServer::new(BasicGrpcFilesService::new(
+                files_service,
+                folders_service,
+                download_service,
+                upload_service,
+                token_service,
+            ))
+            .max_decoding_message_size(16 * 1024 * 1024)
+            .max_encoding_message_size(16 * 1024 * 1024),
+        )
         .serve("0.0.0.0:50051".parse()?)
         .await?;
 

@@ -39,13 +39,13 @@ pub struct S3FilesStorage {
 
 #[derive(Debug, Error)]
 pub enum Error {
-    #[error("create multipart upload error: {0}")]
+    #[error("create multipart upload error: {0:?}")]
     CreateMultipartUpload(#[from] SdkError<CreateMultipartUploadError>),
 
     #[error("upload multipart part error: {0}")]
     UploadPart(#[from] SdkError<UploadPartError>),
 
-    #[error("complete multipart upload error: {0}")]
+    #[error("complete multipart upload error: {0:?}")]
     CompleteMultipartUpload(#[from] SdkError<CompleteMultipartUploadError>),
 
     #[error("missing `uplodad_id` after create multipart upload")]

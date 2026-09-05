@@ -9,6 +9,7 @@ use futures::Stream;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use thiserror::Error;
+use domain::models;
 use domain::models::{encrypted_blobs, encrypted_vault, files, folders};
 use service::service;
 
@@ -40,8 +41,14 @@ pub enum ConsumeChunkError {
     FileTooLarge,
     #[error("the chunk is too large")]
     ChunkTooLarge,
+    #[error("the folder is full")]
+    FolderIsFull,
     #[error("the upload is not found")]
-    NotFound
+    NotFound,
+    #[error("chunk is empty")]
+    EmptyChunk,
+    #[error("invalid final chunk")]
+    InvalidFinalChunk
 }
 
 #[service]
@@ -69,7 +76,6 @@ pub trait UploadService
         &self,
         public_id: folders::PublicId,
         token: String,
-        data_meta: encrypted_vault::Model,
         file_meta: encrypted_blobs::Model
     ) -> (Self::UploadId, usize);
 
@@ -77,6 +83,7 @@ pub trait UploadService
     async fn consume_chunk(
         &self,
         upload_id: Self::UploadId,
+        data_meta: Option<models::encrypted_vault::Model>,
         bytes: Bytes
     ) -> ControlFlow<files::Model>;
 }
