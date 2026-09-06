@@ -1,14 +1,13 @@
 use crate::repository::FilesRepository;
 use crate::service::FilesService;
-use crate::storage::FilesStorage;
+use crate::storage::{FilesStorage, HasRawMultipartUploadHandle, IntoRawMultipartUploadHandle};
 use bytes::Bytes;
 use derive_new::new;
-use domain::models::files::NewFile;
+use domain::models::files::{NewFile, UploadFileData};
 use domain::models::{encrypted_blobs, encrypted_vault, files, folders};
 use futures_core::Stream;
 use futures_util::{StreamExt, TryStreamExt};
 use id_generator::service::IdGeneratorService;
-use sea_orm::Set;
 use service::business;
 use service::error::ServiceError;
 use std::fmt::Debug;
@@ -41,6 +40,7 @@ where
 {
     type Error = Error<FS, FR>;
     type GetFileStream = impl Stream<Item = Result<Bytes, Self::Error>> + Debug;
+    type MultipartUploadHandle = FS::MultipartUploadHandle;
 
     fn min_upload_chunk_size(&self) -> i64 {
         5 * 1024 * 1024
@@ -103,14 +103,8 @@ where
     where
         E: Send + 'static,
     {
-        let storage_path = self.id_generator_service.next_file_storage_path();
+        let handle = self.initiate_storage_upload().await?;
         tokio::pin!(chunks);
-
-        let handle = self
-            .files_storage
-            .create_multipart_upload(storage_path)
-            .await
-            .map_err(Error::Storage)?;
 
         let mut total_bytes_received = 0_u64;
 
@@ -135,16 +129,71 @@ where
             .await
             .map_err(Error::Storage)?;
 
-        let model = self.files_repository.new_file(NewFile {
-            public_id: self.id_generator_service.next_public_file_id(),
-            folder_id,
-            data_meta,
-            meta: file_meta,
-            storage_path,
-            file_size: total_bytes_received as _,
-        }).await.map_err(Error::Repository)?;
+        let file = self
+            .files_repository
+            .new_file(NewFile {
+                public_id: self.id_generator_service.next_public_file_id(),
+                folder_id,
+                data_meta,
+                meta: file_meta,
+                storage_path,
+                file_size: total_bytes_received as _,
+            })
+            .await
+            .map_err(Error::Repository)?;
 
-        Ok(model)
+        Ok(file)
+    }
+
+    async fn initiate_storage_upload(&self) -> Result<Self::MultipartUploadHandle, Self::Error> {
+        self.files_storage
+            .create_multipart_upload(self.id_generator_service.next_file_storage_path())
+            .await
+            .map_err(Error::Storage)
+    }
+
+    async fn upload_file_chunk<H>(&self, chunk: Bytes, handle: H) -> Result<(), Self::Error>
+    where
+        H: IntoRawMultipartUploadHandle<
+            Raw = <Self::MultipartUploadHandle as HasRawMultipartUploadHandle>::Raw,
+        >,
+    {
+        self.files_storage
+            .upload_part(&handle, chunk)
+            .await
+            .map_err(Error::Storage)
+    }
+
+    async fn complete_multipart_upload<H>(
+        &self,
+        upload_file: UploadFileData,
+        handle: H,
+    ) -> Result<files::Model, Self::Error>
+    where
+        H: IntoRawMultipartUploadHandle<
+            Raw = <Self::MultipartUploadHandle as HasRawMultipartUploadHandle>::Raw,
+        >,
+    {
+        let storage_path = self
+            .files_storage
+            .complete_multipart_upload(handle)
+            .await
+            .map_err(Error::Storage)?;
+
+        let file = self
+            .files_repository
+            .new_file(NewFile {
+                public_id: self.id_generator_service.next_public_file_id(),
+                folder_id: upload_file.folder_id,
+                data_meta: upload_file.data_meta,
+                meta: upload_file.meta,
+                storage_path,
+                file_size: upload_file.file_size,
+            })
+            .await
+            .map_err(Error::Repository)?;
+
+        Ok(file)
     }
 
     async fn get_file_by_storage_path(

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "language": "English",
+  "head": {
+    "title": "Anonymous E2EE File storage.\nWe respect your privacy!"
+  },
+  "crypt": {
+    "errors": {
+      "decrypt": "Decryption error"
+    }
+  },
+  "error": "Error: {error}",
+  "folders": {
+    "base-name": "Folder",
+    "not-found": "Folder not found",
+    "incorrect-id": "Folder id is incorrect"
+  },
+  "files": {
+    "upload": "Upload",
+    "limit": "Up to {limit}",
+    "drop-here": "Drop files here",
+    "delete-confirm": "Confirm",
+    "files": "{count} of {max}"
+  },
+  "footer": {
+    "made": "Made with ♥\uFE0F\uD83C\uDFF3\uFE0F\u200D\uD83C\uDF08 by {#link to=$authorUrl}{author}{/link}",
+    "source": "Source code available on {#link to=$url}{platform}{/link}"
+  }
+}

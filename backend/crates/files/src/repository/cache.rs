@@ -93,6 +93,13 @@ where
     }
 
     async fn new_file(&self, new_file: files::NewFile) -> Result<files::Model, Self::Error> {
-        self.repository().new_file(new_file).await
+        let folder_files_key = folder_files_key(new_file.folder_id);
+        let folder_files_count_key = folder_files_count_key(new_file.folder_id);
+
+        let res = self.repository().new_file(new_file).await?;
+        self.clear_cache_keys([folder_files_key, folder_files_count_key])
+            .await;
+
+        Ok(res)
     }
 }

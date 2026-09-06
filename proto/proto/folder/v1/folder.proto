@@ -12,6 +12,8 @@ package folder.v1;
 service FolderService {
   rpc CreateFolder(CreateFolderRequest) returns (OwnedFolder);
 
+  rpc GetFolder(GetFolderRequest) returns (Folder);
+
   rpc DeleteFolder(DeleteFolderRequest) returns (google.protobuf.Empty);
 
   rpc Limits(google.protobuf.Empty) returns (LimitsResponse);
@@ -19,6 +21,10 @@ service FolderService {
   rpc Rename(RenameRequest) returns (google.protobuf.Empty);
 
   rpc Updates(UpdatesRequest) returns (stream FolderUpdate);
+}
+
+message GetFolderRequest {
+  required FolderId id = 1;
 }
 
 message RenameRequest {

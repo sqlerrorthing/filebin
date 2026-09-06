@@ -1,26 +1,41 @@
 {
-  "name": "frontend",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
-  },
-  "dependencies": {
-    "next": "16.2.6",
-    "react": "19.2.4",
-    "react-dom": "19.2.4"
-  },
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.2.6",
-    "tailwindcss": "^4",
-    "typescript": "^5"
-  }
+	"name": "frontend",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview",
+		"prepare": "svelte-kit sync",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"proto:generate": "buf generate ../proto"
+	},
+	"devDependencies": {
+		"@bufbuild/buf": "^1.72.0",
+		"@bufbuild/protoc-gen-es": "^2.13.0",
+		"@connectrpc/protoc-gen-connect-es": "^1.7.0",
+		"@inlang/paraglide-js": "^2.23.0",
+		"@sveltejs/adapter-auto": "^7.0.1",
+		"@sveltejs/kit": "^2.63.0",
+		"@sveltejs/vite-plugin-svelte": "^7.1.2",
+		"@tailwindcss/vite": "^4.3.0",
+		"rollup-plugin-visualizer": "^7.0.1",
+		"svelte": "^5.56.1",
+		"svelte-check": "^4.6.0",
+		"tailwindcss": "^4.3.0",
+		"typescript": "^6.0.3",
+		"vite": "^8.0.16"
+	},
+	"dependencies": {
+		"@bufbuild/protobuf": "^2.13.0",
+		"@connectrpc/connect": "^2.1.2",
+		"@connectrpc/connect-web": "^2.1.2",
+		"@inlang/paraglide-js-svelte": "^1.0.3",
+		"@lucide/svelte": "^1.28.0",
+		"@noble/ciphers": "^2.4.0",
+		"clsx": "^2.1.1",
+		"tailwind-merge": "^3.6.0"
+	}
 }

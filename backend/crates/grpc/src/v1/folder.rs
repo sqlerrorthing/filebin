@@ -1,11 +1,7 @@
 use crate::config::CONFIG;
 use crate::schema::api::folder::v1::folder_service_server::FolderService;
-use crate::schema::api::folder::v1::{
-    CreateFolderRequest, DeleteFolderRequest, FolderNameChanged, FolderUpdate,
-    LimitsResponse, NewFile, OwnedFolder, RenameRequest, UpdatesRequest, UploadFileRequest,
-    UploadFileResponse, folder_update, upload_file_request,
-};
-use crate::schema::{BoolExt, ServiceErrorExt, ServiceResultExt};
+use crate::schema::api::folder::v1::{CreateFolderRequest, DeleteFolderRequest, Folder, FolderUpdate, GetFolderRequest, LimitsResponse, OwnedFolder, RenameRequest, UpdatesRequest};
+use crate::schema::{BoolExt, ServiceErrorExt, ServiceResultExt, SplitBusinessResultExt};
 use crate::v1::dto::prost_duration_to_std_duration;
 use async_trait::async_trait;
 use auth::service::TokenService;
@@ -13,11 +9,11 @@ use derive_new::new;
 use domain::models;
 use futures::Stream;
 use pbjson_types::Empty;
-use std::ops::Deref;
-use std::sync::Arc;
 use tonic::codegen::tokio_stream::StreamExt;
 use tonic::{Request, Response, Status};
 use domain::models::encrypted_blobs;
+use folders::service::RenameFolderError;
+use service::error::{OptionExt, ServiceError};
 use updates::service::UpdatesService;
 
 #[derive(new)]
@@ -64,6 +60,19 @@ where
             folder: folder.into(),
             token: token.into(),
         }))
+    }
+
+    async fn get_folder(&self, request: Request<GetFolderRequest>) -> Result<Response<Folder>, Status> {
+        let id: models::folders::PublicId = request.into_inner().id.try_into()?;
+
+        let folder = self
+            .folders_service
+            .find_folder_by_public_id(id)
+            .await
+            .ok_or_internal()?
+            .ok_or_not_found("folder not found")?;
+
+        Ok(Response::new(folder.into()))
     }
 
     async fn delete_folder(
@@ -114,7 +123,6 @@ where
         let id: models::folders::PublicId = payload.owned_folder.folder_id.try_into()?;
         let token = payload.owned_folder.token.value;
         let new_name = encrypted_blobs::Model::try_from(payload.name.value)?;
-
         self
             .token_service
             .is_token_valid_for_folder(&id, token)
@@ -129,12 +137,24 @@ where
             .ok_or_internal()?
             .ok_or_not_found("folder not found")?;
 
-        self.folders_service
+        let result = self.folders_service
             .rename_folder(folder.id, models::folders::FolderName::new(new_name))
             .await
-            .ok_or_internal()?
+            .split_business()?
+            .transpose()
             .ok_or_not_found("folder not found")?;
-        
+
+        if let Err(e) = result {
+            return Err(match e {
+                RenameFolderError::Empty => {
+                    Status::invalid_argument("name is empty")
+                }
+                RenameFolderError::TooLong => {
+                    Status::invalid_argument("name is too long")
+                }
+            });
+        }
+
         Ok(Response::new(Empty {}))
     }
 

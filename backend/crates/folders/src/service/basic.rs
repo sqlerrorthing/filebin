@@ -1,17 +1,20 @@
 use crate::repository::FoldersRepository;
-use crate::service::FoldersService;
+use crate::service::{FoldersService, RenameFolderError};
 use derive_new::new;
+use domain::models::{encrypted_blobs, folders};
 use files::service::FilesService;
 use id_generator::service::IdGeneratorService;
 use sea_orm::sea_query::prelude::Utc;
+use service::business;
+use service::error::ServiceError;
 use std::hint::cold_path;
 use std::time::Duration;
 use thiserror::Error;
 use tokio::spawn;
 use tracing::{error, info};
-use domain::models::ActiveValue::{NotSet, Set};
-use domain::models::{encrypted_blobs, folders};
 use updates::service::UpdatesService;
+
+const MAX_FOLDER_NAME_SIZE: usize = 32;
 
 #[derive(Debug, Clone, new)]
 pub struct BasicFoldersService<FR, FS, IGS, US> {
@@ -42,7 +45,7 @@ where
     fn delete_if_expired(&self, folder: &folders::Model) -> bool {
         if folder.expired_at.is_some_and(|exp| Utc::now() > exp) {
             cold_path();
-            
+
             info!("expired folder found, deleting");
             let folder_id = folder.id;
             let this = self.clone();
@@ -92,7 +95,13 @@ where
         &self,
         folder_id: folders::Id,
         new_name: folders::FolderName,
-    ) -> Result<Option<folders::Model>, Self::Error> {
+    ) -> Result<Option<folders::Model>, ServiceError<RenameFolderError, Self::Error>> {
+        match new_name.as_ref().data.len() {
+            0 => return Err(business!(RenameFolderError::Empty)),
+            MAX_FOLDER_NAME_SIZE.. => return Err(business!(RenameFolderError::TooLong)),
+            _ => {}
+        };
+
         let model = self
             .folder_repository
             .rename(folder_id, new_name.clone())
@@ -101,7 +110,7 @@ where
 
         if let Some(folder) = &model {
             if self.delete_if_expired(folder) {
-                return Ok(None)
+                return Ok(None);
             }
 
             self.updates_service

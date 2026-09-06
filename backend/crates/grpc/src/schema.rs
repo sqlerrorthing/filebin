@@ -18,6 +18,12 @@ pub mod api {
     }
 }
 
+pub trait ServiceOptionErrorExt<T> {
+    type OkOrNotFound;
+    
+    fn ok_or_not_found(self) -> Self::OkOrNotFound;
+}
+
 pub trait ServiceErrorExt<T> {
     fn ok_or_invalid_argument(self, msg: impl IntoOptionalString) -> Result<T, Status>;
 
@@ -155,5 +161,15 @@ impl<T, B: Error + 'static, I: Error + 'static> ServiceResultExt<Result<T, B>>
             Err(ServiceError::Business(b)) => Ok(Err(b)),
             Err(ServiceError::Internal(i)) => Err(i.into_internal()),
         }
+    }
+}
+
+pub trait SplitBusinessResultExt<T, B> {
+    fn split_business(self) -> Result<Result<T, B>, Status>;
+}
+
+impl<T, B: Error + 'static, I: Error + 'static> SplitBusinessResultExt<T, B> for Result<T, ServiceError<B, I>> {
+    fn split_business(self) -> Result<Result<T, B>, Status> {
+        self.ok_or_internal()
     }
 }

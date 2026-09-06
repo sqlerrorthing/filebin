@@ -15,7 +15,7 @@ CREATE TABLE files
 (
     id           BIGSERIAL PRIMARY KEY,
     public_id    VARCHAR(16)                                   NOT NULL UNIQUE,
-    folder_id    INT REFERENCES folders (id) ON DELETE CASCADE NOT NULL,
+    folder_id    BIGINT REFERENCES folders (id) ON DELETE CASCADE NOT NULL,
 
     -- encryption metadata about file, file stored in storage by `storage_path`
     data_meta    JSONB                                         NOT NULL,

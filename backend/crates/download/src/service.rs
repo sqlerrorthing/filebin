@@ -16,5 +16,5 @@ pub trait DownloadService {
         &self,
         folder_id: folders::PublicId,
         file_id: files::PublicId,
-    ) -> Option<Self::DownloadFileByPublicIdsStream>;
+    ) -> Option<(files::Model, Self::DownloadFileByPublicIdsStream)>;
 }

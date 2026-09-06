@@ -11,6 +11,12 @@ use uuid::Uuid;
         StoragePath(Uuid),
     ),
     inputs(
+        UploadFileData(
+            folder_id,
+            data_meta,
+            meta,
+            file_size
+        ),
         NewFile(
             public_id, 
             folder_id, 

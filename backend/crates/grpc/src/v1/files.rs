@@ -1,8 +1,6 @@
+use std::ops::ControlFlow;
 use crate::schema::api::folder::v1::files_service_server::FilesService;
-use crate::schema::api::folder::v1::{
-    Blob, DeleteRequest, DownloadRequest, ListFilesRequest, ListFilesResponse, UploadFileRequest,
-    UploadFileResponse, upload_file_request,
-};
+use crate::schema::api::folder::v1::{Blob, DeleteRequest, DownloadRequest, ListFilesRequest, ListFilesResponse, InitiateUploadRequest, InitiateUploadResponse, UploadChunkRequest, UploadChunkResponse, upload_chunk_response, DownloadStream};
 use crate::schema::{BoolExt, IntoInternal, ServiceErrorExt, ServiceResultExt};
 use async_trait::async_trait;
 use auth::service::TokenService;
@@ -12,10 +10,10 @@ use download::service::DownloadService;
 use futures::Stream;
 use futures_util::TryStreamExt;
 use pbjson_types::Empty;
-use tonic::codegen::tokio_stream::StreamExt;
-use tonic::{Request, Response, Status, Streaming};
+use tonic::{Request, Response, Status};
 use domain::models::{encrypted_blobs, encrypted_vault};
-use upload::service::{UploadFileError, UploadService};
+use upload::service::{InitiateUploadError, UploadService};
+use crate::v1::dto::FromStrExt;
 
 #[derive(Debug, Clone, new)]
 pub struct BasicGrpcFilesService<FilesS, FoldersS, DS, US, TS> {
@@ -61,56 +59,7 @@ where
         }))
     }
 
-    async fn upload_file(
-        &self,
-        request: Request<Streaming<UploadFileRequest>>,
-    ) -> Result<Response<UploadFileResponse>, Status> {
-        use upload_file_request as ufr;
-
-        let mut stream = request.into_inner();
-
-        let Some(Ok(UploadFileRequest {
-            data: Some(ufr::Data::Initiate(initiate)),
-        })) = stream.next().await
-        else {
-            return Err(Status::invalid_argument("invalid initial request"));
-        };
-
-        let public_id = models::folders::PublicId::try_from(initiate.folder.folder_id)?;
-        let data_meta = encrypted_vault::Model::try_from(initiate.vault)?;
-        let file_meta = encrypted_blobs::Model::try_from(initiate.metadata.value)?;
-        
-        let result: Result<_, _> = self
-            .upload_service
-            .upload_file_by_public_folder_id(
-                public_id,
-                initiate.folder.token.value,
-                data_meta,
-                file_meta,
-                stream.map(|item| match item {
-                    Ok(UploadFileRequest {
-                        data: Some(ufr::Data::ChunkData(bytes)),
-                    }) => Ok(bytes),
-                    _ => Err(Status::aborted("aborted")),
-                }),
-            )
-            .await
-            .ok_or_internal()?;
-
-        let file = result.map_err(|e| match e {
-            UploadFileError::FileTooLarge => Status::invalid_argument("file too large"),
-            UploadFileError::FolderNotFound => Status::not_found("folder not found"),
-            UploadFileError::NoPermissions => Status::unauthenticated("no permissions"),
-            UploadFileError::FolderIsFull => Status::aborted("folder is full"),
-            UploadFileError::Stream(_) => Status::cancelled("stream cancelled"),
-        })?;
-
-        Ok(Response::new(UploadFileResponse {
-            id: file.public_id.into(),
-        }))
-    }
-
-    type DownloadStream = impl Stream<Item = Result<Blob, Status>>;
+    type DownloadStream = impl Stream<Item = Result<DownloadStream, Status>>;
 
     async fn download(
         &self,
@@ -120,17 +69,24 @@ where
         let folder_id = models::folders::PublicId::try_from(inner.folder)?;
         let file_id = models::files::PublicId::try_from(inner.file)?;
 
-        let stream = self
+        let (file, stream) = self
             .download_service
             .download_file_stream_by_public_ids(folder_id, file_id)
             .await
             .ok_or_internal()?
             .ok_or_not_found(None::<&str>)?;
 
+        let mut vault = Some(file.data_meta);
+
         Ok(Response::new(
             stream
                 .map_err(IntoInternal::into_internal)
-                .map_ok(|part| Blob { part }),
+                .map_ok(move |part| {
+                    DownloadStream {
+                        vault: vault.take().map(Into::into),
+                        blob: Blob { part }
+                    }
+                }),
         ))
     }
 
@@ -161,5 +117,51 @@ where
             .ok_or_not_found("file not found")?;
         
         Ok(Response::new(Empty {}))
+    }
+
+    async fn initiate_upload(&self, request: Request<InitiateUploadRequest>) -> Result<Response<InitiateUploadResponse>, Status> {
+        let request = request.into_inner();
+
+        let result: Result<_, _> = self.upload_service.initiate_upload(
+            models::folders::PublicId::try_from(request.folder.folder_id)?,
+            request.folder.token.value,
+            encrypted_blobs::Model::try_from(request.metadata.value)?
+        ).await.ok_or_internal()?;
+
+        let (upload_id, chunk_size) = result.map_err(|e| match e {
+            InitiateUploadError::FolderNotFound => Status::not_found("folder not found"),
+            InitiateUploadError::NoPermissions => Status::unauthenticated("no permissions"),
+            InitiateUploadError::FolderIsFull => Status::aborted("folder is full"),
+        })?;
+
+        Ok(Response::new(InitiateUploadResponse {
+            upload_id: upload_id.to_string(),
+            chunk_size: chunk_size as u32,
+        }))
+    }
+
+    async fn upload_chunk(&self, request: Request<UploadChunkRequest>) -> Result<Response<UploadChunkResponse>, Status> {
+        let request = request.into_inner();
+
+        let result: Result<_, _> = self.upload_service.consume_chunk(
+            <US as UploadService>::UploadId::from_str_or_invalid_argument(&request.upload_id, "upload_id")?,
+            request.vault.map(encrypted_vault::Model::try_from).transpose()?,
+            request.chunk_data,
+        ).await.ok_or_internal()?;
+
+        let flow = result.map_err(|e|
+            Status::aborted(e.to_string())
+        )?;
+
+        use upload_chunk_response::Result as UCRResult;
+
+        Ok(Response::new(UploadChunkResponse {
+            result: Some(
+                match flow {
+                    ControlFlow::Continue(_) => UCRResult::Continue(Empty {}),
+                    ControlFlow::Break(file) => UCRResult::File(file.into())
+                }
+            ),
+        }))
     }
 }

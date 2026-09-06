@@ -11,7 +11,7 @@ bytes.workspace = true
 aws-sdk-s3.workspace = true
 thiserror.workspace = true
 tracing.workspace = true
-id_generator.path = "../id_generator"
+id-generator.path = "../id-generator"
 sea-orm.workspace = true
 derive-new.workspace = true
 tokio-util = { workspace = true, features = ["futures-io"] }
@@ -22,3 +22,5 @@ storage.path = "../storage"
 futures-core.workspace = true
 futures-util.workspace = true
 updates.path = "../updates"
+serde.workspace = true
+parking_lot.workspace = true

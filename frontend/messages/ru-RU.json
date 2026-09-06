@@ -1,0 +1,9 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "head": {
+    "title": "Анонимное файловое хранилище.\nМы уважаем вашу приватность!"
+  },
+  "footer": {
+    "made": "Сделал {#link to=$authorUrl}{author}{/link} с ♥\uFE0F\uD83C\uDFF3\uFE0F\u200D\uD83C\uDF08"
+  }
+}

@@ -5,6 +5,9 @@ edition.workspace = true
 
 [dependencies]
 tonic = "0.14.6"
+tonic-web = "0.14.6"
+tonic-prost = "0.14.6"
+tower-http = { version = "0.7.0", features = ["cors"] }
 tracing.workspace = true
 tracing-subscriber = "0.3.23"
 derive-new.workspace = true
@@ -19,13 +22,12 @@ sea-orm-migration.workspace = true
 migration.path = "../migration"
 color-eyre.workspace = true
 folders.path = "../folders"
-id_generator.path = "../id_generator"
+id-generator.path = "../id-generator"
 auth.path = "../auth"
 domain.path = "../domain"
 chrono.workspace = true
 humantime-serde = "1.1.1"
 prost = "0.14.4"
-tonic-prost = "0.14.6"
 prost-types = "0.14.4"
 thiserror.workspace = true
 files.path = "../files"
@@ -46,6 +48,7 @@ download.path = "../download"
 upload.path = "../upload"
 updates.path = "../updates"
 amqprs.workspace = true
+wildmatch = "2.6.1"
 
 [features]
 default = []

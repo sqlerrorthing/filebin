@@ -1,0 +1,11 @@
+[package]
+name = "id-generator"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+service.path = "../service"
+domain.path = "../domain"
+rand.workspace = true
+tinystr.workspace = true
+uuid.workspace = true

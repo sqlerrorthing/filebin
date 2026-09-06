@@ -54,7 +54,8 @@ b64_encoded_exact_size!(IV(16) Tag(24));
 #[from_str(rename_all = "kebab-case")]
 #[display(rename_all = "kebab-case")]
 pub enum EncryptionAlgo {
-    Aes256Gcm
+    Aes256Gcm,
+    Aes128Gcm
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize, Model, FromJsonQueryResult)]
