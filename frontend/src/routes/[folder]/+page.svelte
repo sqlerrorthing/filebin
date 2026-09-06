@@ -6,7 +6,8 @@
     import * as m from "$lib/paraglide/messages";
     import {exportKey, importKeyFromUrlSafe} from "$lib/crypt";
     import ErrorBanner from "$lib/components/error/ErrorBanner.svelte";
-    import {Check, LoaderCircle} from "@lucide/svelte";
+    import {Check, LoaderCircle, Share2} from "@lucide/svelte";
+    import ShareModal from "$lib/components/share/ShareModal.svelte";
     import {create} from "@bufbuild/protobuf";
     import {DeleteFolderRequestSchema, GetFolderRequestSchema} from "$lib/grpc/gen/folder/v1/folder_pb";
     import {FolderIdSchema} from "$lib/grpc/gen/folder/v1/common_pb";
@@ -131,6 +132,7 @@
 
     let isConfirming = $state(false);
     let canConfirm = $state(false);
+    let isSharing = $state(false);
 
     let cooldownTimer: number | null = null;
     let totalTimer: number | null = null;
@@ -189,24 +191,34 @@
             <div class="flex-1 min-w-0">
                 <FolderName/>
             </div>
-            {#if activeFolder.token}
+
+            <div class="flex items-center gap-1">
                 <button
-                        class={cn(
-                            "cursor-pointer flex items-center gap-2 px-3 py-2",
-                            isConfirming ? "bg-destructive text-primary-foreground" : "hover:bg-muted",
-                            isConfirming && !canConfirm && "pointer-events-none bg-muted text-muted-foreground"
-                        )}
-                        onclick={handleDeleteClick}
-                        disabled={isConfirming && !canConfirm}
+                        class="cursor-pointer flex items-center gap-2 px-3 py-2 hover:bg-muted"
+                        onclick={() => isSharing = true}
+                        title="Share folder"
                 >
-                    {#if isConfirming}
-                        <Check class="w-4 h-4" />
-                        <span class="text-sm/2">{m["files.delete-confirm"]()}</span>
-                    {:else}
-                        <Trash class="w-4 h-4" />
-                    {/if}
+                    <Share2 class="w-4 h-4" />
                 </button>
-            {/if}
+                {#if activeFolder.token}
+                    <button
+                            class={cn(
+                                "cursor-pointer flex items-center gap-2 px-3 py-2",
+                                isConfirming ? "bg-destructive text-primary-foreground" : "hover:bg-muted",
+                                isConfirming && !canConfirm && "pointer-events-none bg-muted text-muted-foreground"
+                            )}
+                            onclick={handleDeleteClick}
+                            disabled={isConfirming && !canConfirm}
+                    >
+                        {#if isConfirming}
+                            <Check class="w-4 h-4" />
+                            <span class="text-sm/2">{m["files.delete-confirm"]()}</span>
+                        {:else}
+                            <Trash class="w-4 h-4" />
+                        {/if}
+                    </button>
+                {/if}
+            </div>
         </div>
         <div>
             <FileList
@@ -225,4 +237,8 @@
             </div>
         {/if}
     </div>
+
+    {#if isSharing}
+        <ShareModal onClose={() => isSharing = false}/>
+    {/if}
 {/if}

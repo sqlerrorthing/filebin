@@ -6,7 +6,7 @@
 cors: "*"
 
 share:
-  code_ttl: "5m"
+  code_ttl: "10s"
 
 limits:
   max_filesize: 10 MiB
