@@ -16,7 +16,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file folder/v1/files.proto.
  */
 export const file_folder_v1_files: GenFile = /*@__PURE__*/
-  fileDesc("ChVmb2xkZXIvdjEvZmlsZXMucHJvdG8SCWZvbGRlci52MSJtChVJbml0aWF0ZVVwbG9hZFJlcXVlc3QSKQoIbWV0YWRhdGEYASACKAsyFy5mb2xkZXIudjEuRmlsZU1ldGFkYXRhEikKBmZvbGRlchgCIAIoCzIZLmZvbGRlci52MS5Pd25lZEZvbGRlclJlZiJlChJVcGxvYWRDaHVua1JlcXVlc3QSEQoJdXBsb2FkX2lkGAEgAigJEigKBXZhdWx0GAIgASgLMhkuZm9sZGVyLnYxLkVuY3J5cHRlZFZhdWx0EhIKCmNodW5rX2RhdGEYAyACKAwiPwoWSW5pdGlhdGVVcGxvYWRSZXNwb25zZRIRCgl1cGxvYWRfaWQYASACKAkSEgoKY2h1bmtfc2l6ZRgCIAIoDSJwChNVcGxvYWRDaHVua1Jlc3BvbnNlEioKCGNvbnRpbnVlGAEgASgLMhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5SAASIwoEZmlsZRgCIAEoCzITLmZvbGRlci52MS5GaWxlVmlld0gAQggKBnJlc3VsdCJeCg1EZWxldGVSZXF1ZXN0EikKBmZvbGRlchgBIAIoCzIZLmZvbGRlci52MS5Pd25lZEZvbGRlclJlZhIiCgdmaWxlX2lkGAIgAigLMhEuZm9sZGVyLnYxLkZpbGVJZCJXCg9Eb3dubG9hZFJlcXVlc3QSIwoGZm9sZGVyGAIgAigLMhMuZm9sZGVyLnYxLkZvbGRlcklkEh8KBGZpbGUYASACKAsyES5mb2xkZXIudjEuRmlsZUlkIhQKBEJsb2ISDAoEcGFydBgBIAIoDCI3ChBMaXN0RmlsZXNSZXF1ZXN0EiMKBmZvbGRlchgBIAIoCzITLmZvbGRlci52MS5Gb2xkZXJJZCI3ChFMaXN0RmlsZXNSZXNwb25zZRIiCgVmaWxlcxgBIAMoCzITLmZvbGRlci52MS5GaWxlVmlldyJiCghGaWxlVmlldxIdCgJpZBgDIAIoCzIRLmZvbGRlci52MS5GaWxlSWQSKQoIbWV0YWRhdGEYASACKAsyFy5mb2xkZXIudjEuRmlsZU1ldGFkYXRhEgwKBHNpemUYAiACKBIiOAoMRmlsZU1ldGFkYXRhEigKBXZhbHVlGAEgAigLMhkuZm9sZGVyLnYxLkVuY3J5cHRlZEJsb2JzMvICCgxGaWxlc1NlcnZpY2USRgoJTGlzdEZpbGVzEhsuZm9sZGVyLnYxLkxpc3RGaWxlc1JlcXVlc3QaHC5mb2xkZXIudjEuTGlzdEZpbGVzUmVzcG9uc2USOQoIRG93bmxvYWQSGi5mb2xkZXIudjEuRG93bmxvYWRSZXF1ZXN0Gg8uZm9sZGVyLnYxLkJsb2IwARI6CgZEZWxldGUSGC5mb2xkZXIudjEuRGVsZXRlUmVxdWVzdBoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRJVCg5Jbml0aWF0ZVVwbG9hZBIgLmZvbGRlci52MS5Jbml0aWF0ZVVwbG9hZFJlcXVlc3QaIS5mb2xkZXIudjEuSW5pdGlhdGVVcGxvYWRSZXNwb25zZRJMCgtVcGxvYWRDaHVuaxIdLmZvbGRlci52MS5VcGxvYWRDaHVua1JlcXVlc3QaHi5mb2xkZXIudjEuVXBsb2FkQ2h1bmtSZXNwb25zZQ", [file_folder_v1_common, file_folder_v1_encryption, file_google_protobuf_empty]);
+  fileDesc("ChVmb2xkZXIvdjEvZmlsZXMucHJvdG8SCWZvbGRlci52MSJtChVJbml0aWF0ZVVwbG9hZFJlcXVlc3QSKQoIbWV0YWRhdGEYASACKAsyFy5mb2xkZXIudjEuRmlsZU1ldGFkYXRhEikKBmZvbGRlchgCIAIoCzIZLmZvbGRlci52MS5Pd25lZEZvbGRlclJlZiJlChJVcGxvYWRDaHVua1JlcXVlc3QSEQoJdXBsb2FkX2lkGAEgAigJEigKBXZhdWx0GAIgASgLMhkuZm9sZGVyLnYxLkVuY3J5cHRlZFZhdWx0EhIKCmNodW5rX2RhdGEYAyACKAwiPwoWSW5pdGlhdGVVcGxvYWRSZXNwb25zZRIRCgl1cGxvYWRfaWQYASACKAkSEgoKY2h1bmtfc2l6ZRgCIAIoDSJwChNVcGxvYWRDaHVua1Jlc3BvbnNlEioKCGNvbnRpbnVlGAEgASgLMhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5SAASIwoEZmlsZRgCIAEoCzITLmZvbGRlci52MS5GaWxlVmlld0gAQggKBnJlc3VsdCJeCg1EZWxldGVSZXF1ZXN0EikKBmZvbGRlchgBIAIoCzIZLmZvbGRlci52MS5Pd25lZEZvbGRlclJlZhIiCgdmaWxlX2lkGAIgAigLMhEuZm9sZGVyLnYxLkZpbGVJZCJXCg9Eb3dubG9hZFJlcXVlc3QSIwoGZm9sZGVyGAIgAigLMhMuZm9sZGVyLnYxLkZvbGRlcklkEh8KBGZpbGUYASACKAsyES5mb2xkZXIudjEuRmlsZUlkIlkKDkRvd25sb2FkU3RyZWFtEigKBXZhdWx0GAIgASgLMhkuZm9sZGVyLnYxLkVuY3J5cHRlZFZhdWx0Eh0KBGJsb2IYASACKAsyDy5mb2xkZXIudjEuQmxvYiIUCgRCbG9iEgwKBHBhcnQYASACKAwiNwoQTGlzdEZpbGVzUmVxdWVzdBIjCgZmb2xkZXIYASACKAsyEy5mb2xkZXIudjEuRm9sZGVySWQiNwoRTGlzdEZpbGVzUmVzcG9uc2USIgoFZmlsZXMYASADKAsyEy5mb2xkZXIudjEuRmlsZVZpZXciYgoIRmlsZVZpZXcSHQoCaWQYAyACKAsyES5mb2xkZXIudjEuRmlsZUlkEikKCG1ldGFkYXRhGAEgAigLMhcuZm9sZGVyLnYxLkZpbGVNZXRhZGF0YRIMCgRzaXplGAIgAigSIjgKDEZpbGVNZXRhZGF0YRIoCgV2YWx1ZRgBIAIoCzIZLmZvbGRlci52MS5FbmNyeXB0ZWRCbG9iczL8AgoMRmlsZXNTZXJ2aWNlEkYKCUxpc3RGaWxlcxIbLmZvbGRlci52MS5MaXN0RmlsZXNSZXF1ZXN0GhwuZm9sZGVyLnYxLkxpc3RGaWxlc1Jlc3BvbnNlEkMKCERvd25sb2FkEhouZm9sZGVyLnYxLkRvd25sb2FkUmVxdWVzdBoZLmZvbGRlci52MS5Eb3dubG9hZFN0cmVhbTABEjoKBkRlbGV0ZRIYLmZvbGRlci52MS5EZWxldGVSZXF1ZXN0GhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5ElUKDkluaXRpYXRlVXBsb2FkEiAuZm9sZGVyLnYxLkluaXRpYXRlVXBsb2FkUmVxdWVzdBohLmZvbGRlci52MS5Jbml0aWF0ZVVwbG9hZFJlc3BvbnNlEkwKC1VwbG9hZENodW5rEh0uZm9sZGVyLnYxLlVwbG9hZENodW5rUmVxdWVzdBoeLmZvbGRlci52MS5VcGxvYWRDaHVua1Jlc3BvbnNl", [file_folder_v1_common, file_folder_v1_encryption, file_google_protobuf_empty]);
 
 /**
  * @generated from message folder.v1.InitiateUploadRequest
@@ -168,6 +168,30 @@ export const DownloadRequestSchema: GenMessage<DownloadRequest> = /*@__PURE__*/
   messageDesc(file_folder_v1_files, 5);
 
 /**
+ * @generated from message folder.v1.DownloadStream
+ */
+export type DownloadStream = Message<"folder.v1.DownloadStream"> & {
+  /**
+   * sent with first chunk
+   *
+   * @generated from field: optional folder.v1.EncryptedVault vault = 2;
+   */
+  vault?: EncryptedVault | undefined;
+
+  /**
+   * @generated from field: required folder.v1.Blob blob = 1;
+   */
+  blob?: Blob | undefined;
+};
+
+/**
+ * Describes the message folder.v1.DownloadStream.
+ * Use `create(DownloadStreamSchema)` to create a new message.
+ */
+export const DownloadStreamSchema: GenMessage<DownloadStream> = /*@__PURE__*/
+  messageDesc(file_folder_v1_files, 6);
+
+/**
  * @generated from message folder.v1.Blob
  */
 export type Blob = Message<"folder.v1.Blob"> & {
@@ -182,7 +206,7 @@ export type Blob = Message<"folder.v1.Blob"> & {
  * Use `create(BlobSchema)` to create a new message.
  */
 export const BlobSchema: GenMessage<Blob> = /*@__PURE__*/
-  messageDesc(file_folder_v1_files, 6);
+  messageDesc(file_folder_v1_files, 7);
 
 /**
  * @generated from message folder.v1.ListFilesRequest
@@ -199,7 +223,7 @@ export type ListFilesRequest = Message<"folder.v1.ListFilesRequest"> & {
  * Use `create(ListFilesRequestSchema)` to create a new message.
  */
 export const ListFilesRequestSchema: GenMessage<ListFilesRequest> = /*@__PURE__*/
-  messageDesc(file_folder_v1_files, 7);
+  messageDesc(file_folder_v1_files, 8);
 
 /**
  * @generated from message folder.v1.ListFilesResponse
@@ -216,7 +240,7 @@ export type ListFilesResponse = Message<"folder.v1.ListFilesResponse"> & {
  * Use `create(ListFilesResponseSchema)` to create a new message.
  */
 export const ListFilesResponseSchema: GenMessage<ListFilesResponse> = /*@__PURE__*/
-  messageDesc(file_folder_v1_files, 8);
+  messageDesc(file_folder_v1_files, 9);
 
 /**
  * @generated from message folder.v1.FileView
@@ -243,7 +267,7 @@ export type FileView = Message<"folder.v1.FileView"> & {
  * Use `create(FileViewSchema)` to create a new message.
  */
 export const FileViewSchema: GenMessage<FileView> = /*@__PURE__*/
-  messageDesc(file_folder_v1_files, 9);
+  messageDesc(file_folder_v1_files, 10);
 
 /**
  * Encrypted json payload
@@ -263,7 +287,7 @@ export type FileMetadata = Message<"folder.v1.FileMetadata"> & {
  * Use `create(FileMetadataSchema)` to create a new message.
  */
 export const FileMetadataSchema: GenMessage<FileMetadata> = /*@__PURE__*/
-  messageDesc(file_folder_v1_files, 10);
+  messageDesc(file_folder_v1_files, 11);
 
 /**
  * @generated from service folder.v1.FilesService
@@ -283,7 +307,7 @@ export const FilesService: GenService<{
   download: {
     methodKind: "server_streaming";
     input: typeof DownloadRequestSchema;
-    output: typeof BlobSchema;
+    output: typeof DownloadStreamSchema;
   },
   /**
    * @generated from rpc folder.v1.FilesService.Delete

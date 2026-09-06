@@ -9,7 +9,7 @@ import "google/protobuf/empty.proto";
 
 service FilesService {
   rpc ListFiles(ListFilesRequest) returns (ListFilesResponse);
-  rpc Download(DownloadRequest) returns (stream Blob);
+  rpc Download(DownloadRequest) returns (stream DownloadStream);
   rpc Delete(DeleteRequest) returns (google.protobuf.Empty);
 
   rpc InitiateUpload(InitiateUploadRequest) returns (InitiateUploadResponse);
@@ -51,6 +51,12 @@ message DeleteRequest {
 message DownloadRequest {
   required FolderId folder = 2;
   required FileId file = 1;
+}
+
+message DownloadStream {
+  // sent with first chunk
+  optional EncryptedVault vault = 2;
+  required Blob blob = 1;
 }
 
 message Blob {

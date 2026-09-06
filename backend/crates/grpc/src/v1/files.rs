@@ -1,6 +1,6 @@
 use std::ops::ControlFlow;
 use crate::schema::api::folder::v1::files_service_server::FilesService;
-use crate::schema::api::folder::v1::{Blob, DeleteRequest, DownloadRequest, ListFilesRequest, ListFilesResponse, InitiateUploadRequest, InitiateUploadResponse, UploadChunkRequest, UploadChunkResponse, upload_chunk_response};
+use crate::schema::api::folder::v1::{Blob, DeleteRequest, DownloadRequest, ListFilesRequest, ListFilesResponse, InitiateUploadRequest, InitiateUploadResponse, UploadChunkRequest, UploadChunkResponse, upload_chunk_response, DownloadStream};
 use crate::schema::{BoolExt, IntoInternal, ServiceErrorExt, ServiceResultExt};
 use async_trait::async_trait;
 use auth::service::TokenService;
@@ -59,7 +59,7 @@ where
         }))
     }
 
-    type DownloadStream = impl Stream<Item = Result<Blob, Status>>;
+    type DownloadStream = impl Stream<Item = Result<DownloadStream, Status>>;
 
     async fn download(
         &self,
@@ -69,17 +69,24 @@ where
         let folder_id = models::folders::PublicId::try_from(inner.folder)?;
         let file_id = models::files::PublicId::try_from(inner.file)?;
 
-        let stream = self
+        let (file, stream) = self
             .download_service
             .download_file_stream_by_public_ids(folder_id, file_id)
             .await
             .ok_or_internal()?
             .ok_or_not_found(None::<&str>)?;
 
+        let mut vault = Some(file.data_meta);
+
         Ok(Response::new(
             stream
                 .map_err(IntoInternal::into_internal)
-                .map_ok(|part| Blob { part }),
+                .map_ok(move |part| {
+                    DownloadStream {
+                        vault: vault.take().map(Into::into),
+                        blob: Blob { part }
+                    }
+                }),
         ))
     }
 

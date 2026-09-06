@@ -40,7 +40,7 @@ where
         &self,
         folder_id: models::folders::PublicId,
         file_id: models::files::PublicId,
-    ) -> Result<Option<Self::DownloadFileByPublicIdsStream>, Self::Error> {
+    ) -> Result<Option<(models::files::Model, Self::DownloadFileByPublicIdsStream)>, Self::Error> {
         let Some(folder) = self
             .folders_service
             .find_folder_by_public_id(folder_id)
@@ -64,7 +64,7 @@ where
             .get_file_by_storage_path(file.storage_path)
             .await
             .map_err(Error::Files)?
-            .map(|s| s.map_err(Error::Files))
+            .map(|s| (file, s.map_err(Error::Files)))
         )
     }
 }
