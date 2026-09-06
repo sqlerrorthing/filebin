@@ -10,6 +10,19 @@ uuid.workspace = true
 nutype.workspace = true
 serde.workspace = true
 bytes.workspace = true
-
-domain.path = "../domain"
+tokio = { workspace = true, features = ["macros", "sync", "time"] }
+rand = "0.10.1"
+storage.path = "../storage"
+folders.path = "../folders"
+updates.path = "../updates"
+amqprs = { workspace = true }
+postcard = { workspace = true }
+tracing.workspace = true
+derive-new.workspace = true
 service.path = "../service"
+tokio-stream = { workspace = true }
+pin-project.workspace = true
+parking_lot.workspace = true
+domain.path = "../domain"
+utils.path = "../utils"
+derivative.workspace = true

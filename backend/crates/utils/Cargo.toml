@@ -1,0 +1,9 @@
+[package]
+name = "utils"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+pin-project.workspace = true
+futures.workspace = true
+derive-new.workspace = true

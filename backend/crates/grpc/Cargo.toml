@@ -47,6 +47,7 @@ service.path = "../service"
 download.path = "../download"
 upload.path = "../upload"
 updates.path = "../updates"
+share.path = "../share"
 amqprs.workspace = true
 wildmatch = "2.6.1"
 

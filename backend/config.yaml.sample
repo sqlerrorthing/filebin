@@ -5,6 +5,9 @@
 # Use `*` for mirror
 cors: "*"
 
+share:
+  code_ttl: "5m"
+
 limits:
   max_filesize: 10 MiB
   max_files_per_folder: 100

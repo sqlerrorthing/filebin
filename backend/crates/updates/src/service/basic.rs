@@ -4,35 +4,12 @@ use domain::models::{files, folders};
 use futures::Stream;
 use futures::StreamExt;
 use parking_lot::Mutex;
-use pin_project::pin_project;
 use std::collections::HashMap;
-use std::fmt::{Debug, Formatter};
-use std::pin::Pin;
+use std::fmt::Debug;
 use std::sync::Arc;
-use std::task::{Context, Poll};
 use tokio::sync::broadcast;
 use tokio_stream::wrappers::BroadcastStream;
-
-#[pin_project]
-#[derive(new)]
-struct DebugStream<S> {
-    #[pin]
-    inner: S,
-}
-
-impl<S> Debug for DebugStream<S> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("DebugStream")
-    }
-}
-
-impl<S: Stream> Stream for DebugStream<S> {
-    type Item = S::Item;
-
-    fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
-        self.project().inner.poll_next(cx)
-    }
-}
+use utils::stream::DebugStream;
 
 #[derive(Debug, new)]
 pub struct LocalUpdatesService {

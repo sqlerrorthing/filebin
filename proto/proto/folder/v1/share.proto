@@ -13,7 +13,7 @@ service ShareService {
 }
 
 message ShareRequest {
-  required string folder_id = 1;
+  required FolderId folder_id = 1;
   required bytes public_key = 2;
 }
 
@@ -62,7 +62,7 @@ message SessionConnectedEvent {
 
 message EncryptedKeyReceivedEvent {
   required bytes encrypted_folder_key = 1;
-  required FolderId folder = 2;
+  required FolderId folder_id = 2;
 }
 
 message SessionFailedEvent {

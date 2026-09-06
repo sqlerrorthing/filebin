@@ -147,6 +147,10 @@ config! {
             #[serde(with = "humantime_serde")]
             pub files: Duration,
         },
+        pub share: {
+            #[serde(with = "humantime_serde")]
+            pub code_ttl: Duration,
+        },
         pub redis: {
             pub url: String
         },
