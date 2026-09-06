@@ -1,0 +1,70 @@
+syntax = "proto2";
+
+import "folder/v1/common.proto";
+
+package folder.v1;
+
+service ShareService {
+  rpc Share (ShareRequest) returns (stream ShareEvent);
+
+  rpc Join (JoinRequest) returns (stream ShareEvent);
+
+  rpc SendKey (SendKeyRequest) returns (SendKeyResponse);
+}
+
+message ShareRequest {
+  required string folder_id = 1;
+  required bytes public_key = 2;
+}
+
+message JoinRequest {
+  required string code = 1;
+  required bytes public_key = 2;
+}
+
+message SendKeyRequest {
+  required string session_id = 1;
+  required bytes encrypted_folder_key = 2;
+}
+
+message SendKeyResponse {
+  required bool success = 1;
+}
+
+message ShareEvent {
+  required string session_id = 1;
+
+  oneof event {
+    CodeRotatedEvent code_rotated = 2;
+
+    ReceiverJoinedEvent receiver_joined = 3;
+
+    SessionConnectedEvent session_connected = 4;
+
+    EncryptedKeyReceivedEvent key_received = 5;
+
+    SessionFailedEvent session_failed = 6;
+  }
+}
+
+message CodeRotatedEvent {
+  required string code = 1;
+  required int32 ttl_seconds = 2;
+}
+
+message ReceiverJoinedEvent {
+  required bytes receiver_public_key = 1;
+}
+
+message SessionConnectedEvent {
+  required bytes sender_public_key = 1;
+}
+
+message EncryptedKeyReceivedEvent {
+  required bytes encrypted_folder_key = 1;
+  required FolderId folder = 2;
+}
+
+message SessionFailedEvent {
+  required string error_message = 1;
+}

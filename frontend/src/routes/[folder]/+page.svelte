@@ -43,7 +43,8 @@
         if (
             activeFolder.key !== null
             && activeFolder?.id?.value === routeFolderId
-            && await exportKey(activeFolder.key) === keyString) {
+            && await exportKey(activeFolder.key) === keyString)
+        {
             localLoading = false;
             return;
         }

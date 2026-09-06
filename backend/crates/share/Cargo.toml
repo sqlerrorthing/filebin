@@ -1,0 +1,15 @@
+[package]
+name = "share"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+futures.workspace = true
+thiserror.workspace = true
+uuid.workspace = true
+nutype.workspace = true
+serde.workspace = true
+bytes.workspace = true
+
+domain.path = "../domain"
+service.path = "../service"
