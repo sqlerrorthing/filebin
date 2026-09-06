@@ -78,6 +78,8 @@
     }
 </script>
 
+<!-- fixme: pasting the code causes upload. -->
+
 <div class="bg-card border rounded-lg shadow p-4 w-full flex flex-col gap-3">
     <h3 class="font-semibold flex items-center gap-2 text-md">
         <KeyRound class="w-5 h-5 text-primary"/>
