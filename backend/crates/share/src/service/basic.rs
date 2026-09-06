@@ -27,6 +27,9 @@ use tokio_stream::wrappers::BroadcastStream;
 use utils::stream::DebugStream;
 use uuid::Uuid;
 
+// todo: 1. cleanup!!!!!!!!!!!!!!!!!!!!!!
+// todo: 2. rabbitmq instances sync
+// todo: 3. allow cancel the session
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SessionState {
     pub session_id: SessionId,
