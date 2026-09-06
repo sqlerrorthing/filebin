@@ -65,6 +65,7 @@ struct ParsedMethod {
     orig_ret: ReturnType,
     /// Erased return type
     ret: ReturnType,
+    un_erased_ret: Type,
     async_kw: Option<Token![async]>,
     meta: TransformMeta,
 }
@@ -236,6 +237,11 @@ impl DynGeneratorContext {
                 let inputs = orig_fn.sig.inputs.clone();
 
                 let (is_async, mut ret) = self.sugar_async(orig_fn)?;
+                let un_erased_ret = if let ReturnType::Type(_, ty) = &ret {
+                    (**ty).clone()
+                } else {
+                    parse_quote!(())
+                };
                 let mut meta = TransformMeta::default();
 
                 if let ReturnType::Type(_, ty) = &ret
@@ -253,6 +259,7 @@ impl DynGeneratorContext {
                     inputs,
                     orig_ret: orig_fn.sig.output.clone(),
                     ret,
+                    un_erased_ret,
                     async_kw: is_async.then_some(parse_quote!(async)),
                     meta,
                 });
@@ -429,19 +436,16 @@ impl ParsedGeneratorContext {
             let mut res_expr = quote!(#call #await_call);
 
             if m.meta.is_result {
-                if let Some(boxing) = m.meta.into_box {
-                    let ident = format_ident!("x");
-                    let boxed = boxing.into_box(&ident);
-                    res_expr = quote!(#res_expr.map(|#ident| #boxed))
+                if let Some(ok_ty) = extract_ok_ty(&m.un_erased_ret) {
+                    let transformed_ok = transform_type_expr(&ok_ty, quote!(__ok), &self.assoc_types);
+                    res_expr = quote!(#res_expr.map(|__ok| #transformed_ok));
                 }
 
                 if m.meta.map_err_into {
                     res_expr = quote!(#res_expr.map_err(#root::error::FromError::from_error));
                 }
             } else {
-                if let Some(boxing) = m.meta.into_box {
-                    res_expr = boxing.into_box(&res_expr);
-                }
+                res_expr = transform_type_expr(&m.un_erased_ret, res_expr, &self.assoc_types);
             }
 
             quote! {
@@ -598,4 +602,53 @@ impl VisitMut for RetTypeDynSignatureEraser<'_> {
 
         syn::visit_mut::visit_type_mut(self, i);
     }
+}
+
+fn extract_ok_ty(ty: &Type) -> Option<Type> {
+    if let Type::Path(TypePath { qself, path }) = ty
+        && qself.is_none()
+        && path.segments.last().is_some_and(|s| s.ident == "Result")
+        && let Some(PathArguments::AngleBracketed(args)) = &path.segments.last().map(|s| &s.arguments)
+        && let Some(GenericArgument::Type(ok_ty)) = args.args.first()
+    {
+        return Some(ok_ty.clone());
+    }
+    None
+}
+
+fn transform_type_expr(
+    ty: &Type,
+    expr: TokenStream,
+    assoc_types: &HashMap<Ident, ParsedAssocType>,
+) -> TokenStream {
+    if let Type::Path(TypePath { qself, path }) = ty
+        && qself.is_none()
+        && path.segments.first().is_some_and(|s| s.ident == "Self")
+        && let Some(segment) = path.segments.get(1)
+        && let Some(parsed) = assoc_types.get(&segment.ident)
+    {
+        return if let Some(boxing) = parsed.into_box {
+            boxing.into_box(&expr)
+        } else {
+            expr
+        }
+    }
+
+    if let Type::Tuple(type_tuple) = ty {
+        if type_tuple.elems.is_empty() {
+            return expr;
+        }
+        let elems: Vec<_> = type_tuple.elems.iter().collect();
+        let arg_idents: Vec<_> = (0..elems.len()).map(|i| format_ident!("__arg{}", i)).collect();
+        let transformed_elems = elems.iter().enumerate().map(|(i, elem_ty)| {
+            let ident = &arg_idents[i];
+            transform_type_expr(elem_ty, quote!(#ident), assoc_types)
+        });
+        return quote!({
+            let (#(#arg_idents),*) = #expr;
+            (#(#transformed_elems),*)
+        });
+    }
+
+    expr
 }
