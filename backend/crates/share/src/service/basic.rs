@@ -62,6 +62,10 @@ pub struct LocalShareService<S, FS> {
 
 fn generate_code() -> Code {
     let mut rng = rand::rng();
+
+    // todo: replace with this alphabet
+    // let alphabet = "234679ACDEFGHJKMNPQRTUVWXY";
+
     let code: u32 = rng.random_range(100000..=999999);
     code.to_string().into()
 }
