@@ -102,7 +102,7 @@
 </script>
 
 <div class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-    <div class="bg-card border rounded-lg shadow-lg p-6 max-w-md w-full relative flex flex-col gap-4">
+    <div class="bg-card border shadow-lg p-6 max-w-md w-full relative flex flex-col gap-4">
         <button class="absolute top-4 right-4 text-muted-foreground hover:text-foreground cursor-pointer" onclick={onClose}>
             <X class="w-5 h-5"/>
         </button>
@@ -122,9 +122,9 @@
                 <p class="text-sm text-muted-foreground text-center">
                     {m["share.share"]()}
                 </p>
-                <div class="bg-muted p-4 rounded-lg flex items-center gap-3">
+                <div class="bg-muted p-4 flex items-center gap-3">
                     <span class="text-3xl font-mono tracking-widest font-bold">{code}</span>
-                    <button class="p-2 hover:bg-background rounded border cursor-pointer" onclick={copyCode} title={m["share.copy-code"]()}>
+                    <button class="p-2 hover:bg-background border cursor-pointer" onclick={copyCode} title={m["share.copy-code"]()}>
                         {#if copied}
                             <Check class="w-5 h-5 text-green-500"/>
                         {:else}
@@ -139,10 +139,10 @@
             </div>
         {:else if step === "sas"}
             <div class="flex flex-col items-center justify-center py-4 gap-4">
-                <div class="bg-primary/10 text-primary p-3 rounded-lg text-sm text-center">
+                <div class="bg-primary/10 text-primary p-3 text-sm text-center">
                     {m["share.connected-and-verify"]()}
                 </div>
-                <div class="flex gap-4 p-4 bg-muted rounded-xl">
+                <div class="flex gap-4 p-4 bg-muted">
                     {#each emojis as emoji}
                         <span class="text-4xl">{emoji}</span>
                     {/each}
@@ -151,7 +151,7 @@
                     {m["share.if-match"]()}
                 </p>
                 <button
-                    class="w-full bg-primary text-primary-foreground py-2 rounded-lg font-medium hover:opacity-90 flex items-center justify-center gap-2 cursor-pointer"
+                    class="w-full bg-primary text-primary-foreground py-2 font-medium hover:opacity-90 flex items-center justify-center gap-2 cursor-pointer"
                     onclick={confirmAndSendKey}
                 >
                     <Check class="w-4 h-4"/>
@@ -160,12 +160,12 @@
             </div>
         {:else if step === "success"}
             <div class="flex flex-col items-center justify-center py-8 gap-4">
-                <div class="w-12 h-12 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center">
+                <div class="w-12 h-12 text-green-500 flex items-center justify-center">
                     <Check class="w-6 h-6"/>
                 </div>
                 <p class="font-medium text-center">{m["share.success"]()}</p>
                 <button
-                    class="px-4 py-2 bg-muted rounded-lg text-sm hover:bg-muted/80 cursor-pointer"
+                    class="px-4 py-2 bg-muted text-sm hover:bg-muted/80 cursor-pointer"
                     onclick={onClose}
                 >
                     {m["general.close"]()}
@@ -175,7 +175,7 @@
             <div class="flex flex-col items-center justify-center py-6 gap-4">
                 <p class="text-destructive text-center">{errorMessage || "An error occurred"}</p>
                 <button
-                    class="px-4 py-2 bg-muted rounded-lg text-sm hover:bg-muted/80 cursor-pointer"
+                    class="px-4 py-2 bg-muted text-sm hover:bg-muted/80 cursor-pointer"
                     onclick={onClose}
                 >
                     {m["general.close"]()}

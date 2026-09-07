@@ -89,7 +89,7 @@ services:
       MINIO_ROOT_USER: "admin"
       MINIO_ROOT_PASSWORD: "adminadmin"
     ports:
-      - "9000:900"
+      - "9000:9000"
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"

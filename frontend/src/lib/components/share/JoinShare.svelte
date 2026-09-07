@@ -1,13 +1,19 @@
 <script lang="ts">
-    import { shareClient } from "$lib/grpc";
-    import { create } from "@bufbuild/protobuf";
-    import { JoinRequestSchema } from "$lib/grpc/gen/folder/v1/share_pb";
-    import { generateEcdhKeyPair, exportPublicKey, deriveSharedSecretKey, generateSasEmojis, decryptFolderKey } from "$lib/crypt/share";
-    import { exportKey } from "$lib/crypt";
-    import { LoaderCircle, KeyRound } from "@lucide/svelte";
-    import { goto } from "$app/navigation";
-    import { localizeHref } from "$lib/paraglide/runtime";
-    import { onDestroy } from "svelte";
+    import {shareClient} from "$lib/grpc";
+    import {create} from "@bufbuild/protobuf";
+    import {JoinRequestSchema} from "$lib/grpc/gen/folder/v1/share_pb";
+    import {
+        generateEcdhKeyPair,
+        exportPublicKey,
+        deriveSharedSecretKey,
+        generateSasEmojis,
+        decryptFolderKey
+    } from "$lib/crypt/share";
+    import {exportKey} from "$lib/crypt";
+    import {LoaderCircle, KeyRound} from "@lucide/svelte";
+    import {goto} from "$app/navigation";
+    import {localizeHref} from "$lib/paraglide/runtime";
+    import {onDestroy} from "svelte";
     import * as m from "$lib/paraglide/messages";
 
     let code = $state("");
@@ -38,7 +44,7 @@
             const stream = shareClient.join(create(JoinRequestSchema, {
                 code: code.trim(),
                 publicKey: pubKeyBytes,
-            }), { signal: abortController.signal });
+            }), {signal: abortController.signal});
 
             let sharedSecretKey: CryptoKey | null = null;
 
@@ -80,23 +86,23 @@
 
 <!-- fixme: pasting the code causes upload. -->
 
-<div class="bg-card border rounded-lg shadow p-4 w-full flex flex-col gap-3">
+<div class="bg-card border-muted-foreground border border-dashed p-4 w-full flex flex-col gap-3">
     <h3 class="font-semibold flex items-center gap-2 text-md">
         <KeyRound class="w-5 h-5 text-primary"/>
         {m["share.title"]()}
     </h3>
 
     {#if step === "input" || step === "error"}
-        <form onsubmit={handleJoin} class="flex gap-2">
+        <form onsubmit={handleJoin} class="flex gap-2 flex-col sm:flex-row">
             <input
-                type="text"
-                placeholder={m["share.enter-code"]()}
-                bind:value={code}
-                class="flex-1 px-3 py-2 border rounded-lg bg-background text-foreground tracking-widest font-mono uppercase outline-none focus:border-primary"
+                    type="text"
+                    placeholder={m["share.enter-code"]()}
+                    bind:value={code}
+                    class="flex-1 px-3 py-2 border bg-background text-foreground tracking-widest font-mono uppercase outline-none focus:border-primary"
             />
             <button
-                type="submit"
-                class="px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 cursor-pointer"
+                    type="submit"
+                    class="px-4 py-2 bg-primary text-primary-foreground font-medium hover:bg-accent-foreground cursor-pointer"
             >
                 {m["share.join"]()}
             </button>
@@ -114,7 +120,7 @@
             <div class="text-xs text-muted-foreground text-center">
                 {m["share.verify-emojis"]()}
             </div>
-            <div class="flex gap-3 p-3 bg-muted rounded-lg">
+            <div class="flex gap-3 p-3 bg-muted">
                 {#each emojis as emoji}
                     <span class="text-3xl">{emoji}</span>
                 {/each}

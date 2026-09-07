@@ -26,9 +26,7 @@ pub enum ShareEvent {
         encrypted_folder_key: Bytes,
         folder_public_id: folders::PublicId,
     },
-    SessionFailed {
-        error_message: String,
-    },
+    SessionClosed
 }
 
 macro_rules! keys {

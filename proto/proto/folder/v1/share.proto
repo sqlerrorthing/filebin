@@ -1,6 +1,7 @@
 syntax = "proto2";
 
 import "folder/v1/common.proto";
+import "google/protobuf/empty.proto";
 
 package folder.v1;
 
@@ -43,7 +44,7 @@ message ShareEvent {
 
     EncryptedKeyReceivedEvent key_received = 5;
 
-    SessionFailedEvent session_failed = 6;
+    google.protobuf.Empty session_closed = 6;
   }
 }
 
@@ -63,8 +64,4 @@ message SessionConnectedEvent {
 message EncryptedKeyReceivedEvent {
   required bytes encrypted_folder_key = 1;
   required FolderId folder_id = 2;
-}
-
-message SessionFailedEvent {
-  required string error_message = 1;
 }

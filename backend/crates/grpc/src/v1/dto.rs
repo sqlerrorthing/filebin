@@ -1,6 +1,11 @@
 use crate::schema::ServiceErrorExt;
 use crate::schema::api::folder::v1::folder_update::Update;
-use crate::schema::api::folder::v1::{Algorithm, CodeRotatedEvent, EncryptedBlobs, EncryptedVault, FileDeleted, FileId, FileMetadata, FileView, Folder, FolderId, FolderName, FolderNameChanged, FolderToken, NewFile, ReceiverJoinedEvent, SessionConnectedEvent, ShareEvent, Version, share_event, EncryptedKeyReceivedEvent, SessionFailedEvent};
+use crate::schema::api::folder::v1::{
+    Algorithm, CodeRotatedEvent, EncryptedBlobs, EncryptedKeyReceivedEvent, EncryptedVault,
+    FileDeleted, FileId, FileMetadata, FileView, Folder, FolderId, FolderName, FolderNameChanged,
+    FolderToken, NewFile, ReceiverJoinedEvent, SessionConnectedEvent, ShareEvent, Version,
+    share_event,
+};
 use crate::schema::api::google;
 use bytes::Bytes;
 use chrono::{Datelike, Timelike};
@@ -34,7 +39,7 @@ impl From<&updates::service::FolderUpdateKind> for Update {
                 Update::FolderNameChanged(FolderNameChanged {
                     name: new_folder_name.clone().into_inner().into(),
                 })
-            },
+            }
             FolderUpdateKind::FolderDeleted { .. } => Update::FolderDeleted(Empty {}),
             FolderUpdateKind::FileDeleted { file } => Update::FileDeleted(FileDeleted {
                 file_id: file.public_id.clone().into(),
@@ -66,17 +71,11 @@ impl From<&share::service::ShareEvent> for share_event::Event {
             SE::KeyReceived {
                 encrypted_folder_key,
                 folder_public_id,
-            } => {
-                E::KeyReceived(EncryptedKeyReceivedEvent {
-                    encrypted_folder_key: encrypted_folder_key.clone(),
-                    folder_id: folder_public_id.clone().into()
-                })
-            }
-            SE::SessionFailed { error_message } => {
-                E::SessionFailed(SessionFailedEvent {
-                    error_message: error_message.clone()
-                })
-            }
+            } => E::KeyReceived(EncryptedKeyReceivedEvent {
+                encrypted_folder_key: encrypted_folder_key.clone(),
+                folder_id: folder_public_id.clone().into(),
+            }),
+            SE::SessionClosed => E::SessionClosed(Empty {}),
         }
     }
 }
