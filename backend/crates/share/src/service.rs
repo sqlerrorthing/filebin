@@ -53,8 +53,6 @@ pub struct Code(String);
 pub enum InitiateSessionError {
     #[error("folder not found")]
     FolderNotFound,
-    #[error("internal error: {0}")]
-    Internal(String),
 }
 
 #[derive(Debug, Error)]
@@ -63,8 +61,6 @@ pub enum JoinSessionError {
     InvalidCode,
     #[error("session not found")]
     SessionNotFound,
-    #[error("internal error: {0}")]
-    Internal(String),
 }
 
 #[derive(Debug, Error)]
@@ -73,8 +69,12 @@ pub enum SendKeyError {
     SessionNotFound,
     #[error("unauthorized")]
     Unauthorized,
-    #[error("internal error: {0}")]
-    Internal(String),
+}
+
+#[derive(Debug, Error)]
+pub enum CancelSessionError {
+    #[error("session not found")]
+    SessionNotFound,
 }
 
 #[service(dynamic)]
@@ -101,5 +101,11 @@ pub trait ShareService {
         &self,
         session_id: SessionId,
         folder_key: Bytes,
+    );
+
+    #[result(CancelSessionError)]
+    async fn cancel_session(
+        &self,
+        session_id: SessionId,
     );
 }

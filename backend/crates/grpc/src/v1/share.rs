@@ -47,7 +47,6 @@ where
                 share::service::InitiateSessionError::FolderNotFound => {
                     Status::not_found("folder not found")
                 }
-                share::service::InitiateSessionError::Internal(msg) => Status::internal(msg),
             })?;
 
         let (session_id, stream) = result;
@@ -86,7 +85,6 @@ where
                 share::service::JoinSessionError::SessionNotFound => {
                     Status::not_found("session not found")
                 }
-                share::service::JoinSessionError::Internal(msg) => Status::internal(msg),
             })?;
 
         let (session_id, stream) = result;
@@ -118,7 +116,6 @@ where
             .map_err(|e| match e {
                 SendKeyError::SessionNotFound => Status::not_found("session not found"),
                 SendKeyError::Unauthorized => Status::permission_denied("unauthorized"),
-                SendKeyError::Internal(msg) => Status::internal(msg),
             })?;
 
         Ok(Response::new(SendKeyResponse { success: true }))

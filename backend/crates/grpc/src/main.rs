@@ -35,7 +35,7 @@ use updates::service::DynUpdatesService;
 use updates::service::basic::LocalUpdatesService;
 use updates::service::rabbitmq::RabbitMQUpdatesService;
 use share::service::DynShareService;
-use share::service::basic::LocalShareService;
+use share::service::basic::BasicLocalShareService;
 use upload::service::basic::{BasicUploadService, LimitsBuilder};
 
 pub mod config;
@@ -192,7 +192,7 @@ async fn main() -> color_eyre::Result<()> {
             .build()?,
     );
 
-    let local_share_service = LocalShareService::new(
+    let local_share_service = BasicLocalShareService::new(
         redis,
         folders_service,
         CONFIG.share.code_ttl,

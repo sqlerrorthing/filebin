@@ -1,6 +1,9 @@
+pub mod stream;
+
+use crate::service::basic::stream::SessionStream;
 use crate::service::{
-    Code, InitiateSessionError, JoinSessionError, ReceiverPublicKey, SendKeyError, SenderPublicKey,
-    SessionId, ShareEvent, ShareService,
+    CancelSessionError, Code, InitiateSessionError, JoinSessionError, ReceiverPublicKey,
+    SendKeyError, SenderPublicKey, SessionId, ShareEvent, ShareService,
 };
 use bytes::Bytes;
 use derive_new::new;
@@ -27,9 +30,6 @@ use tokio_stream::wrappers::BroadcastStream;
 use utils::stream::DebugStream;
 use uuid::Uuid;
 
-// todo: 1. cleanup!!!!!!!!!!!!!!!!!!!!!!
-// todo: 2. rabbitmq instances sync
-// todo: 3. allow cancel the session
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SessionState {
     pub session_id: SessionId,
@@ -52,7 +52,7 @@ where
 }
 
 #[derive(Debug, Clone, new)]
-pub struct LocalShareService<S, FS> {
+pub struct BasicLocalShareService<S, FS> {
     storage: S,
     folders_service: FS,
     code_ttl: Duration,
@@ -78,7 +78,7 @@ fn code_key(code: &Code) -> String {
     format!("share:code:{code}")
 }
 
-impl<S, FS> LocalShareService<S, FS>
+impl<S, FS> BasicLocalShareService<S, FS>
 where
     S: Storage,
     FS: FoldersService,
@@ -148,16 +148,35 @@ where
         _ = self.storage.delete(&code_key(code)).await;
         Ok(())
     }
+
+    async fn cancel_session_internal(&self, session_id: &SessionId) -> Result<(), Error<S, FS>> {
+        let session = match self.get_session(session_id).await? {
+            Some(s) => s,
+            None => return Ok(()),
+        };
+
+        _ = self.delete_code_mapping(&session.code).await;
+        self.storage
+            .delete(&session_key(session_id))
+            .await
+            .map_err(Error::Storage)?;
+
+        self.broadcast_event(*session_id, ShareEvent::SessionClosed);
+
+        let mut map = self.sessions.lock();
+        map.remove(session_id);
+
+        Ok(())
+    }
 }
 
-fn debug_stream<T: Clone + Send + 'static>(rx: broadcast::Receiver<T>) -> impl Stream<Item = T> + Send + 'static {
-    DebugStream::new(
-        BroadcastStream::new(rx)
-            .filter_map(|res| async move { res.ok() })
-    )
+fn broadcast_strean<T: Clone + Send + 'static>(
+    rx: broadcast::Receiver<T>,
+) -> impl Stream<Item = T> + Send + 'static {
+    BroadcastStream::new(rx).filter_map(|res| async move { res.ok() })
 }
 
-impl<S, FS> ShareService for LocalShareService<S, FS>
+impl<S, FS> ShareService for BasicLocalShareService<S, FS>
 where
     S: Storage,
     FS: FoldersService + Clone,
@@ -247,7 +266,13 @@ where
             }
         });
 
-        Ok((session_id, debug_stream(rx)))
+        let stream = SessionStream {
+            inner: broadcast_strean(rx),
+            service: self.clone(),
+            session_id,
+        };
+
+        Ok((session_id, stream))
     }
 
     async fn join_session(
@@ -279,7 +304,13 @@ where
             sender_public_key: sender_pk,
         });
 
-        Ok((session_id, debug_stream(rx)))
+        let stream = SessionStream {
+            inner: broadcast_strean(rx),
+            service: self.clone(),
+            session_id,
+        };
+
+        Ok((session_id, stream))
     }
 
     async fn send_key(
@@ -299,6 +330,18 @@ where
             },
         );
 
+        Ok(())
+    }
+
+    async fn cancel_session(
+        &self,
+        session_id: SessionId,
+    ) -> Result<(), ServiceError<CancelSessionError, Self::Error>> {
+        let Some(session) = self.get_session(&session_id).await? else {
+            return Err(business!(CancelSessionError::SessionNotFound));
+        };
+
+        self.cancel_session_internal(&session.session_id).await?;
         Ok(())
     }
 }
