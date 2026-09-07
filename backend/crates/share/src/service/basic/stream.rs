@@ -5,26 +5,29 @@ use folders::service::FoldersService;
 use futures::Stream;
 use tokio::spawn;
 use storage::Storage;
-use crate::service::basic::BasicLocalShareService;
+use crate::service::sync::ShareSyncService;
+use crate::service::basic::BasicShareService;
 use crate::service::{SessionId, ShareEvent};
 
 #[pin_project(PinnedDrop)]
-pub(in super) struct SessionStream<St, S, FS>
+pub struct SessionStream<St, S, FS, SS>
 where
     S: Storage,
     FS: FoldersService + Clone,
+    SS: ShareSyncService + Clone,
 {
     #[pin]
-    pub(in super) inner: St,
-    pub(in super) service: BasicLocalShareService<S, FS>,
-    pub(in super) session_id: SessionId,
+    pub inner: St,
+    pub service: BasicShareService<S, FS, SS>,
+    pub session_id: SessionId,
 }
 
-impl<St, S, FS> Stream for SessionStream<St, S, FS>
+impl<St, S, FS, SS> Stream for SessionStream<St, S, FS, SS>
 where
     St: Stream<Item = ShareEvent>,
     S: Storage,
     FS: FoldersService + Clone,
+    SS: ShareSyncService + Clone,
 {
     type Item = ShareEvent;
 
@@ -37,10 +40,11 @@ where
 }
 
 #[pinned_drop]
-impl<St, S, FS> PinnedDrop for SessionStream<St, S, FS>
+impl<St, S, FS, SS> PinnedDrop for SessionStream<St, S, FS, SS>
 where
     S: Storage,
     FS: FoldersService + Clone,
+    SS: ShareSyncService + Clone,
 {
     fn drop(self: Pin<&mut Self>) {
         let service = self.service.clone();

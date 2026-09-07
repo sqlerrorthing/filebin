@@ -35,7 +35,10 @@ use updates::service::DynUpdatesService;
 use updates::service::basic::LocalUpdatesService;
 use updates::service::rabbitmq::RabbitMQUpdatesService;
 use share::service::DynShareService;
-use share::service::basic::BasicLocalShareService;
+use share::service::DynShareSyncService;
+use share::service::sync::basic::LocalShareSyncService;
+use share::service::sync::rabbitmq::RabbitMQShareSyncService;
+use share::service::basic::BasicShareService;
 use upload::service::basic::{BasicUploadService, LimitsBuilder};
 
 pub mod config;
@@ -141,10 +144,10 @@ async fn main() -> color_eyre::Result<()> {
         .await?
         .inspect(|_| info!("RabbitMQ connected"));
 
-    let updates_service: &dyn DynUpdatesService = if let Some(conn) = rabbitmq {
+    let updates_service: &dyn DynUpdatesService = if let Some(ref conn) = rabbitmq {
         RabbitMQUpdatesService::new(
             CONFIG.rabbitmq.exchange.clone(),
-            conn,
+            conn.clone(),
             LocalUpdatesService::new(100),
         )
         .leaked()
@@ -192,13 +195,24 @@ async fn main() -> color_eyre::Result<()> {
             .build()?,
     );
 
-    let local_share_service = BasicLocalShareService::new(
+    let share_sync_service: &dyn DynShareSyncService = if let Some(ref conn) = rabbitmq {
+        RabbitMQShareSyncService::new(
+            CONFIG.rabbitmq.exchange.clone(),
+            conn.clone(),
+            LocalShareSyncService::new(),
+        )
+        .leaked()
+    } else {
+        LocalShareSyncService::new().leaked()
+    };
+
+    let share_service = BasicShareService::new(
         redis,
         folders_service,
         CONFIG.share.code_ttl,
-    ).leaked();
-
-    let share_service = local_share_service; // add rabbitmq sync
+        share_sync_service,
+    )
+    .leaked();
     
     Server::builder()
         .accept_http1(true)

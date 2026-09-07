@@ -1,4 +1,8 @@
 pub mod basic;
+pub mod sync;
+
+pub use sync::DynShareSyncService;
+pub use sync::ShareSyncService;
 
 use bytes::Bytes;
 use service::service;
