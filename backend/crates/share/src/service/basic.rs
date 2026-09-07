@@ -21,13 +21,12 @@ use std::fmt::Debug;
 use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
-use storage::{SetTtl, Storage};
+use storage::Storage;
 use thiserror::Error;
 use tokio::spawn;
-use tokio::sync::broadcast;
+use tokio::sync::{broadcast, watch};
 use tokio::time::sleep;
 use tokio_stream::wrappers::BroadcastStream;
-use utils::stream::DebugStream;
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -37,6 +36,12 @@ pub struct SessionState {
     pub sender_public_key: SenderPublicKey,
     pub receiver_public_key: Option<ReceiverPublicKey>,
     pub code: Code,
+}
+
+#[derive(Debug, Clone)]
+pub struct SessionControl {
+    pub tx: broadcast::Sender<ShareEvent>,
+    pub cancel_tx: watch::Sender<()>,
 }
 
 #[derive(Debug, Error)]
@@ -57,7 +62,7 @@ pub struct BasicLocalShareService<S, FS> {
     folders_service: FS,
     code_ttl: Duration,
     #[new(default)]
-    sessions: Arc<Mutex<HashMap<SessionId, broadcast::Sender<ShareEvent>>>>,
+    sessions: Arc<Mutex<HashMap<SessionId, SessionControl>>>,
 }
 
 fn generate_code() -> Code {
@@ -84,18 +89,31 @@ where
     FS: FoldersService,
 {
     pub fn get_or_create_sender(&self, session_id: SessionId) -> broadcast::Sender<ShareEvent> {
-        let mut map = self.sessions.lock();
-        if let Some(tx) = map.get(&session_id) {
-            return tx.clone();
+        let mut sessions = self.sessions.lock();
+        if let Some(control) = sessions.get(&session_id) {
+            return control.tx.clone();
         }
         let (tx, _) = broadcast::channel(32);
-        map.insert(session_id, tx.clone());
+        let (cancel_tx, _) = watch::channel(());
+        sessions.insert(
+            session_id,
+            SessionControl {
+                tx: tx.clone(),
+                cancel_tx,
+            },
+        );
         tx
     }
 
+    pub fn stop_rotation(&self, session_id: &SessionId) {
+        if let Some(control) = self.sessions.lock().get(session_id) {
+            _ = control.cancel_tx.send(());
+        }
+    }
+
     pub fn broadcast_event(&self, session_id: SessionId, event: ShareEvent) {
-        if let Some(tx) = self.sessions.lock().get(&session_id) {
-            _ = tx.send(event);
+        if let Some(control) = self.sessions.lock().get(&session_id) {
+            _ = control.tx.send(event);
         }
     }
 
@@ -104,7 +122,7 @@ where
             .set(
                 &session_key(&state.session_id),
                 state,
-                SetTtl::Set(Some(3600)),
+                3600,
             )
             .await
             .map_err(Error::Storage)
@@ -129,7 +147,7 @@ where
             .set(
                 &code_key(code),
                 &session_id.to_string(),
-                SetTtl::Set(Some(self.code_ttl.as_secs() as u32)),
+                self.code_ttl.as_secs() as u32,
             )
             .await
             .map_err(Error::Storage)
@@ -152,10 +170,15 @@ where
     async fn cancel_session_internal(&self, session_id: &SessionId) -> Result<(), Error<S, FS>> {
         let session = match self.get_session(session_id).await? {
             Some(s) => s,
-            None => return Ok(()),
+            None => {
+                self.stop_rotation(session_id);
+                self.sessions.lock().remove(session_id);
+                return Ok(());
+            }
         };
 
         _ = self.delete_code_mapping(&session.code).await;
+        self.stop_rotation(session_id);
         self.storage
             .delete(&session_key(session_id))
             .await
@@ -163,8 +186,7 @@ where
 
         self.broadcast_event(*session_id, ShareEvent::SessionClosed);
 
-        let mut map = self.sessions.lock();
-        map.remove(session_id);
+        self.sessions.lock().remove(session_id);
 
         Ok(())
     }
@@ -217,6 +239,22 @@ where
         let tx = self.get_or_create_sender(session_id);
         let rx = tx.subscribe();
 
+        let (cancel_tx, mut cancel_rx) = watch::channel(());
+        {
+            let mut sessions = self.sessions.lock();
+            if let Some(control) = sessions.get_mut(&session_id) {
+                control.cancel_tx = cancel_tx;
+            } else {
+                sessions.insert(
+                    session_id,
+                    SessionControl {
+                        tx: tx.clone(),
+                        cancel_tx,
+                    },
+                );
+            }
+        }
+
         let ttl_secs = self.code_ttl.as_secs() as i32;
         _ = tx.send(ShareEvent::CodeRotated {
             code: code.clone(),
@@ -229,40 +267,46 @@ where
         spawn(async move {
             let mut current_code = code;
             loop {
-                sleep(code_ttl).await;
-                let mut session = match this.get_session(&session_id_cloned).await {
-                    Ok(Some(s)) => s,
-                    _ => break,
-                };
+                tokio::select! {
+                    _ = sleep(code_ttl) => {
+                        let mut session = match this.get_session(&session_id_cloned).await {
+                            Ok(Some(s)) => s,
+                            _ => break,
+                        };
 
-                if session.receiver_public_key.is_some() {
-                    break;
+                        if session.receiver_public_key.is_some() {
+                            break;
+                        }
+
+                        _ = this.delete_code_mapping(&current_code).await;
+
+                        let new_code = generate_code();
+                        session.code = new_code.clone();
+
+                        if this.save_session(&session).await.is_err() {
+                            break;
+                        }
+                        if this
+                            .set_code_mapping(&new_code, session_id_cloned)
+                            .await
+                            .is_err()
+                        {
+                            break;
+                        }
+
+                        current_code = new_code.clone();
+                        this.broadcast_event(
+                            session_id_cloned,
+                            ShareEvent::CodeRotated {
+                                code: new_code,
+                                ttl_seconds: code_ttl.as_secs() as i32,
+                            },
+                        );
+                    }
+                    _ = cancel_rx.changed() => {
+                        break;
+                    }
                 }
-
-                _ = this.delete_code_mapping(&current_code).await;
-
-                let new_code = generate_code();
-                session.code = new_code.clone();
-
-                if this.save_session(&session).await.is_err() {
-                    break;
-                }
-                if this
-                    .set_code_mapping(&new_code, session_id_cloned)
-                    .await
-                    .is_err()
-                {
-                    break;
-                }
-
-                current_code = new_code.clone();
-                this.broadcast_event(
-                    session_id_cloned,
-                    ShareEvent::CodeRotated {
-                        code: new_code,
-                        ttl_seconds: code_ttl.as_secs() as i32,
-                    },
-                );
             }
         });
 
@@ -287,6 +331,10 @@ where
         let Some(mut session) = self.get_session(&session_id).await? else {
             return Err(business!(JoinSessionError::SessionNotFound));
         };
+
+        _ = self.delete_code_mapping(&code).await;
+        _ = self.delete_code_mapping(&session.code).await;
+        self.stop_rotation(&session_id);
 
         let sender_pk = session.sender_public_key.clone();
 
