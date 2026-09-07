@@ -5,7 +5,6 @@ use service::service;
 use futures::Stream;
 use std::fmt::Debug;
 use crate::service::{SessionId, ShareEvent};
-use tokio::sync::watch;
 
 #[service(dynamic)]
 pub trait ShareSyncService {
@@ -15,5 +14,6 @@ pub trait ShareSyncService {
     fn broadcast_event(&self, session_id: SessionId, event: ShareEvent);
     fn session_created(&self, session_id: SessionId);
     fn session_closed(&self, session_id: SessionId);
-    fn set_cancel_tx(&self, session_id: SessionId, cancel_tx: watch::Sender<()>);
+    fn stop_rotation(&self, session_id: SessionId);
+    fn set_cancel_tx(&self, session_id: SessionId, cancel_tx: tokio::sync::watch::Sender<()>);
 }

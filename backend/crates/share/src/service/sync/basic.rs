@@ -57,9 +57,9 @@ impl LocalShareSyncService {
         }
     }
 
-    pub fn stop_rotation(&self, session_id: &SessionId) {
+    pub fn stop_rotation(&self, session_id: SessionId) {
         let map = self.sessions.lock();
-        if let Some(control) = map.get(session_id) {
+        if let Some(control) = map.get(&session_id) {
             _ = control.cancel_tx.send(());
         }
     }
@@ -91,8 +91,12 @@ impl ShareSyncService for LocalShareSyncService {
     }
 
     fn session_closed(&self, session_id: SessionId) {
-        self.stop_rotation(&session_id);
+        self.stop_rotation(session_id);
         self.remove_session(&session_id);
+    }
+
+    fn stop_rotation(&self, session_id: SessionId) {
+        LocalShareSyncService::stop_rotation(self, session_id);
     }
 
     fn set_cancel_tx(&self, session_id: SessionId, cancel_tx: tokio::sync::watch::Sender<()>) {

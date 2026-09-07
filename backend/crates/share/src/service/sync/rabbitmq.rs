@@ -270,6 +270,10 @@ impl ShareSyncService for RabbitMQShareSyncService {
         self.local_service.session_closed(session_id);
     }
 
+    fn stop_rotation(&self, session_id: SessionId) {
+        self.local_service.stop_rotation(session_id);
+    }
+
     fn set_cancel_tx(&self, session_id: SessionId, cancel_tx: tokio::sync::watch::Sender<()>) {
         self.local_service.set_cancel_tx(session_id, cancel_tx);
     }

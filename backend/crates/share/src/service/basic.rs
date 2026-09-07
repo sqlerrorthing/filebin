@@ -277,7 +277,7 @@ where
 
         _ = self.delete_code_mapping(&code).await;
         _ = self.delete_code_mapping(&session.code).await;
-        self.sync_service.session_closed(session_id); // stops rotation
+        self.sync_service.stop_rotation(session_id); // stops rotation without closing session
 
         let sender_pk = session.sender_public_key.clone();
 
