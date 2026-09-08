@@ -15,5 +15,4 @@ pub trait ShareSyncService {
     fn session_created(&self, session_id: SessionId);
     fn session_closed(&self, session_id: SessionId);
     fn stop_rotation(&self, session_id: SessionId);
-    fn set_cancel_tx(&self, session_id: SessionId, cancel_tx: tokio::sync::watch::Sender<()>);
 }

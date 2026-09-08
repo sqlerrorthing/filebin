@@ -163,9 +163,9 @@
                 <div class="bg-primary/10 text-primary p-3 text-sm text-center">
                     {m["share.connected-and-verify"]()}
                 </div>
-                <div class="flex gap-4 p-4 bg-muted">
+                <div class="flex flex-wrap justify-center items-center gap-2 sm:gap-4 p-4 bg-muted max-w-full">
                     {#each shareState.emojis as emoji}
-                        <span class="text-4xl">{emoji}</span>
+                        <span class="text-2xl sm:text-4xl select-none">{emoji}</span>
                     {/each}
                 </div>
                 <p class="text-xs text-muted-foreground text-center">

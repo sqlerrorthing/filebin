@@ -147,9 +147,9 @@
             <div class="text-xs text-muted-foreground text-center">
                 {m["share.verify-emojis"]()}
             </div>
-            <div class="flex gap-3 p-3 bg-muted">
+            <div class="flex flex-wrap justify-center items-center gap-2 sm:gap-4 p-4 bg-muted max-w-full">
                 {#each s.emojis as emoji}
-                    <span class="text-3xl">{emoji}</span>
+                    <span class="text-2xl sm:text-4xl select-none">{emoji}</span>
                 {/each}
             </div>
             <div class="flex items-center gap-2 text-xs text-primary">

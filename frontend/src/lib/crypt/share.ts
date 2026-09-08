@@ -2,9 +2,10 @@ import { exportKeyToArray } from "./index";
 
 const EMOJIS = [
     "🐶", "🐱", "🦊", "🐼", "🐨", "🦁", "🐯", "🐰",
-    "🦄", "🐙", "🦀", "🐬", "🐳", "🦅", "🦉", "🍏",
+    "🦄", "🐙", "🦀", "🐬", "🐳", "🦅", "🦉", "🐝",
+
     "🍎", "🍐", "🍊", "🍋", "🍌", "🍉", "🍇", "🍓",
-    "🍒", "🍑", "🍍", "🥥", "🥝", "🍅", "🍆", "🥕"
+    "🍒", "🥑", "🍍", "🥥", "🥝", "🍅", "🍆", "🌽"
 ];
 
 export async function generateEcdhKeyPair(): Promise<CryptoKeyPair> {
@@ -56,7 +57,7 @@ export async function generateSasEmojis(sharedSecretKey: CryptoKey): Promise<str
     const hashBytes = new Uint8Array(hashBuffer);
 
     const emojis: string[] = [];
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 6; i++) {
         const index = hashBytes[i] % EMOJIS.length;
         emojis.push(EMOJIS[index]);
     }

@@ -192,9 +192,6 @@ where
         self.sync_service.session_created(session_id);
         let inner_stream = self.sync_service.subscribe_session(session_id);
 
-        let (cancel_tx, mut cancel_rx) = tokio::sync::watch::channel(());
-        self.sync_service.set_cancel_tx(session_id, cancel_tx);
-
         let ttl_secs = self.code_ttl.as_secs() as i32;
         self.sync_service.broadcast_event(
             session_id,

@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::fmt::{Debug, Display};
 use std::hash::Hash;
 use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
@@ -9,13 +9,9 @@ pub(super) struct PublishCmd {
 }
 
 // todo: use trait aliases
-pub trait SessionId: Serialize + DeserializeOwned + Hash + Eq + PartialEq + Send + Sync + Clone + Display + 'static {}
-impl<S: Serialize + DeserializeOwned + Hash + Eq + PartialEq + Send + Sync + Clone + Display + 'static> SessionId for S {}
+pub trait SessionId: Debug + Serialize + DeserializeOwned + Hash + Eq + PartialEq + Send + Sync + Clone + Display + 'static {}
+impl<S: Serialize + Debug + DeserializeOwned + Hash + Eq + PartialEq + Send + Sync + Clone + Display + 'static> SessionId for S {}
 
-pub trait Message: Serialize + DeserializeOwned + 'static {
-    type SessionId: SessionId;
-
-    fn session_id(&self) -> Self::SessionId;
-
+pub trait Message: Serialize + DeserializeOwned + Clone + 'static {
     fn is_close(&self) -> bool;
 }

@@ -14,3 +14,6 @@ async-trait.workspace = true
 postcard.workspace = true
 amqprs.workspace = true
 tracing.workspace = true
+tokio-util.workspace = true
+tokio-stream.workspace = true
+derivative.workspace = true

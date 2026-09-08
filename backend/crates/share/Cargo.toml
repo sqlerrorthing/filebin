@@ -26,3 +26,4 @@ parking_lot.workspace = true
 domain.path = "../domain"
 utils.path = "../utils"
 derivative.workspace = true
+tokio-util.workspace = true

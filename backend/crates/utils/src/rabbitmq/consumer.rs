@@ -32,6 +32,12 @@ pub enum BindingCmdKind {
     Unbind
 }
 
+#[derive(Serialize, Deserialize)]
+pub(super) struct QueueMessage<L: Listener> {
+    pub session_id: L::SessionId,
+    pub message: L::Message
+}
+
 #[async_trait]
 impl<L> AsyncConsumer for InstanceRabbitMQConsumer<L>
 where
@@ -44,11 +50,11 @@ where
         _basic_properties: BasicProperties,
         content: Vec<u8>,
     ) {
-        if let Ok(update) = postcard::from_bytes::<L::Message>(&content) {
-            let session_id = update.session_id();
-            let is_close = update.is_close();
+        if let Ok(msg) = postcard::from_bytes::<QueueMessage<L>>(&content) {
+            let session_id = msg.session_id;
+            let is_close = msg.message.is_close();
 
-            self.listener.on_message(&session_id, update);
+            self.listener.on_message(&session_id, msg.message);
 
             if is_close {
                 let mut counts = self.counts.lock();
