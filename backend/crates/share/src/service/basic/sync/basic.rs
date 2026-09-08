@@ -1,4 +1,4 @@
-use crate::service::sync::ShareSyncService;
+use crate::service::basic::sync::ShareSyncService;
 use crate::service::{SessionId, ShareEvent};
 use derive_new::new;
 use futures::Stream;

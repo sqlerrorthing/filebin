@@ -32,47 +32,47 @@ struct PublishCmd {
     payload: Vec<u8>,
 }
 
-#[derive(Debug, new)]
-struct BindingCmd {
-    folder_id: folders::Id,
-    kind: BindingCmdKind
-}
+// #[derive(Debug, new)]
+// struct BindingCmd {
+//     folder_id: folders::Id,
+//     kind: BindingCmdKind
+// }
+//
+// #[derive(Debug)]
+// enum BindingCmdKind {
+//     Bind,
+//     Unbind
+// }
 
-#[derive(Debug)]
-enum BindingCmdKind {
-    Bind,
-    Unbind
-}
-
-struct InstanceRabbitMQConsumer {
-    local_service: Arc<LocalUpdatesService>,
-    counts: Arc<Mutex<HashMap<folders::Id, usize>>>,
-    binding_tx: UnboundedSender<BindingCmd>,
-}
-
-#[async_trait]
-impl AsyncConsumer for InstanceRabbitMQConsumer {
-    async fn consume(
-        &mut self,
-        _channel: &Channel,
-        _deliver: Deliver,
-        _basic_properties: BasicProperties,
-        content: Vec<u8>,
-    ) {
-        if let Ok(update) = postcard::from_bytes::<FolderUpdate>(&content) {
-            let folder_id = update.folder_id;
-            let is_delete = matches!(update.kind, FolderUpdateKind::FolderDeleted { .. });
-            self.local_service.send_update(folder_id, update.kind);
-
-            if is_delete {
-                let mut counts = self.counts.lock();
-                if counts.remove(&folder_id).is_some() {
-                    let _ = self.binding_tx.send(BindingCmd::new(folder_id, BindingCmdKind::Unbind));
-                }
-            }
-        }
-    }
-}
+// struct InstanceRabbitMQConsumer {
+//     local_service: Arc<LocalUpdatesService>,
+//     counts: Arc<Mutex<HashMap<folders::Id, usize>>>,
+//     binding_tx: UnboundedSender<BindingCmd>,
+// }
+//
+// #[async_trait]
+// impl AsyncConsumer for InstanceRabbitMQConsumer {
+//     async fn consume(
+//         &mut self,
+//         _channel: &Channel,
+//         _deliver: Deliver,
+//         _basic_properties: BasicProperties,
+//         content: Vec<u8>,
+//     ) {
+//         if let Ok(update) = postcard::from_bytes::<FolderUpdate>(&content) {
+//             let folder_id = update.folder_id;
+//             let is_delete = matches!(update.kind, FolderUpdateKind::FolderDeleted { .. });
+//             self.local_service.send_update(folder_id, update.kind);
+//
+//             if is_delete {
+//                 let mut counts = self.counts.lock();
+//                 if counts.remove(&folder_id).is_some() {
+//                     let _ = self.binding_tx.send(BindingCmd::new(folder_id, BindingCmdKind::Unbind));
+//                 }
+//             }
+//         }
+//     }
+// }
 
 /// Uses RabbitMQ to publish updates
 #[derive(Derivative, Clone)]

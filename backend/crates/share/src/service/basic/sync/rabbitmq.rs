@@ -1,10 +1,10 @@
 pub mod stream;
 pub mod subscription;
 
-use crate::service::sync::basic::LocalShareSyncService;
-use crate::service::sync::ShareSyncService;
-use crate::service::sync::rabbitmq::stream::SubscriptionGuardStream;
-use crate::service::sync::rabbitmq::subscription::SubscriptionGuard;
+use crate::service::basic::sync::ShareSyncService;
+use crate::service::basic::sync::basic::LocalShareSyncService;
+use crate::service::basic::sync::rabbitmq::stream::SubscriptionGuardStream;
+use crate::service::basic::sync::rabbitmq::subscription::SubscriptionGuard;
 use crate::service::{SessionId, ShareEvent};
 use amqprs::channel::{
     BasicConsumeArguments, BasicPublishArguments, Channel, ExchangeDeclareArguments,
@@ -14,71 +14,71 @@ use amqprs::connection::Connection;
 use amqprs::consumer::AsyncConsumer;
 use amqprs::{BasicProperties, Deliver};
 use derivative::Derivative;
+use derive_new::new;
 use futures::Stream;
 use parking_lot::Mutex;
+use serde::{Deserialize, Serialize};
 use service::async_trait::async_trait;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::sync::Arc;
-use derive_new::new;
-use serde::{Deserialize, Serialize};
 use tokio::spawn;
 use tokio::sync::mpsc;
 use tokio::sync::mpsc::UnboundedSender;
-use tracing::{debug, error, info, span, Level};
+use tracing::{Level, debug, error, info, span};
 
 struct PublishCmd {
     routing_key: String,
     payload: Vec<u8>,
 }
 
-#[derive(Debug, new)]
-pub struct BindingCmd {
-    pub session_id: SessionId,
-    pub kind: BindingCmdKind,
-}
+// #[derive(Debug, new)]
+// pub struct BindingCmd {
+//     pub session_id: SessionId,
+//     pub kind: BindingCmdKind,
+// }
+// 
+// #[derive(Debug, Clone, Copy)]
+// pub enum BindingCmdKind {
+//     Bind,
+//     Unbind,
+// }
+// 
+// #[derive(Serialize, Deserialize)]
+// struct ShareRabbitMessage {
+//     session_id: SessionId,
+//     event: ShareEvent,
+// }
+// 
+// struct InstanceRabbitMQConsumer {
+//     local_service: Arc<LocalShareSyncService>,
+//     counts: Arc<Mutex<HashMap<SessionId, usize>>>,
+//     binding_tx: UnboundedSender<BindingCmd>,
+// }
 
-#[derive(Debug, Clone, Copy)]
-pub enum BindingCmdKind {
-    Bind,
-    Unbind,
-}
-
-#[derive(Serialize, Deserialize)]
-struct ShareRabbitMessage {
-    session_id: SessionId,
-    event: ShareEvent,
-}
-
-struct InstanceRabbitMQConsumer {
-    local_service: Arc<LocalShareSyncService>,
-    counts: Arc<Mutex<HashMap<SessionId, usize>>>,
-    binding_tx: UnboundedSender<BindingCmd>,
-}
-
-#[async_trait]
-impl AsyncConsumer for InstanceRabbitMQConsumer {
-    async fn consume(
-        &mut self,
-        _channel: &Channel,
-        _deliver: Deliver,
-        _basic_properties: BasicProperties,
-        content: Vec<u8>,
-    ) {
-        if let Ok(msg) = postcard::from_bytes::<ShareRabbitMessage>(&content) {
-            let session_id = msg.session_id;
-            let is_close = matches!(msg.event, ShareEvent::SessionClosed);
-            self.local_service.broadcast_event(session_id, msg.event);
-
-            if is_close {
-                let mut counts = self.counts.lock();
-                if counts.remove(&session_id).is_some() {
-                    let _ = self.binding_tx.send(BindingCmd::new(session_id, BindingCmdKind::Unbind));
-                }
-            }
-        }
-    }
-}
+// #[async_trait]
+// impl AsyncConsumer for InstanceRabbitMQConsumer {
+//     async fn consume(
+//         &mut self,
+//         _channel: &Channel,
+//         _deliver: Deliver,
+//         _basic_properties: BasicProperties,
+//         content: Vec<u8>,
+//     ) {
+//         if let Ok(msg) = postcard::from_bytes::<ShareRabbitMessage>(&content) {
+//             let session_id = msg.session_id;
+//             let is_close = matches!(msg.event, ShareEvent::SessionClosed);
+//             self.local_service.broadcast_event(session_id, msg.event);
+// 
+//             if is_close {
+//                 let mut counts = self.counts.lock();
+//                 if counts.remove(&session_id).is_some() {
+//                     let _ = self.binding_tx.send(BindingCmd::new(session_id, BindingCmdKind::Unbind));
+//                 }
+//             }
+//         }
+//     }
+// }
 
 /// Uses RabbitMQ to publish and synchronize share session events
 #[derive(Derivative, Clone)]

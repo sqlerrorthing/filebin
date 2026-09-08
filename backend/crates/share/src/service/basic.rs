@@ -1,15 +1,13 @@
 pub mod stream;
+pub mod sync;
 
 use crate::service::basic::stream::SessionStream;
-use crate::service::sync::basic::LocalShareSyncService;
-use crate::service::sync::rabbitmq::RabbitMQShareSyncService;
-use crate::service::sync::ShareSyncService;
 use crate::service::{
     CancelSessionError, Code, InitiateSessionError, JoinSessionError, ReceiverPublicKey,
     SendKeyError, SenderPublicKey, SessionId, ShareEvent, ShareService,
 };
 use bytes::Bytes;
-use derivative::Derivative;
+use derive_new::new;
 use domain::models;
 use folders::service::FoldersService;
 use rand::{Rng, RngExt};
@@ -19,8 +17,10 @@ use service::error::ServiceError;
 use std::fmt::Debug;
 use std::str::FromStr;
 use std::time::Duration;
-use derive_new::new;
-use storage::{SetTtl, Storage};
+use storage::Storage;
+use sync::ShareSyncService;
+use sync::basic::LocalShareSyncService;
+use sync::rabbitmq::RabbitMQShareSyncService;
 use thiserror::Error;
 use tokio::spawn;
 use tokio::time::sleep;

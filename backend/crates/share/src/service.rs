@@ -1,18 +1,17 @@
 pub mod basic;
-pub mod sync;
 
-pub use sync::DynShareSyncService;
-pub use sync::ShareSyncService;
+pub use basic::sync::DynShareSyncService;
+pub use basic::sync::ShareSyncService;
 
 use bytes::Bytes;
-use service::service;
+use domain::models::folders;
 use futures::Stream;
 use nutype::nutype;
+use serde::{Deserialize, Serialize};
+use service::service;
+use std::fmt::Debug;
 use thiserror::Error;
 use uuid::Uuid;
-use domain::models::folders;
-use serde::{Deserialize, Serialize};
-use std::fmt::Debug;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ShareEvent {
@@ -84,7 +83,7 @@ pub enum CancelSessionError {
 #[service(dynamic)]
 pub trait ShareService {
     type Error;
-    type ShareStream: Stream<Item = ShareEvent> + Send + 'static;
+    type ShareStream: Stream<Item = ShareEvent> + 'static;
 
     #[result(InitiateSessionError)]
     async fn initiate_session(

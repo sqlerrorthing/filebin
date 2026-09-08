@@ -1,13 +1,13 @@
-use std::pin::Pin;
-use std::task::{Context, Poll};
-use pin_project::{pin_project, pinned_drop};
+use crate::service::basic::BasicShareService;
+use crate::service::basic::sync::ShareSyncService;
+use crate::service::{SessionId, ShareEvent};
 use folders::service::FoldersService;
 use futures::Stream;
-use tokio::spawn;
+use pin_project::{pin_project, pinned_drop};
+use std::pin::Pin;
+use std::task::{Context, Poll};
 use storage::Storage;
-use crate::service::sync::ShareSyncService;
-use crate::service::basic::BasicShareService;
-use crate::service::{SessionId, ShareEvent};
+use tokio::spawn;
 
 #[pin_project(PinnedDrop)]
 pub struct SessionStream<St, S, FS, SS>

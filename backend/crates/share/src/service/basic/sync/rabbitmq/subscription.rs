@@ -1,16 +1,16 @@
+use crate::service::SessionId;
+use crate::service::basic::sync::rabbitmq::{BindingCmd, BindingCmdKind};
+use parking_lot::Mutex;
 use std::collections::HashMap;
 use std::sync::Arc;
-use parking_lot::Mutex;
 use tokio::sync::mpsc::UnboundedSender;
-use tracing::{debug, span, Level};
-use crate::service::SessionId;
-use crate::service::sync::rabbitmq::{BindingCmd, BindingCmdKind};
+use tracing::{Level, debug, span};
 
 #[derive(Debug)]
 pub struct SubscriptionGuard {
-    pub(super) session_id: SessionId,
-    pub(super) binding_tx: UnboundedSender<BindingCmd>,
-    pub(super) counts: Arc<Mutex<HashMap<SessionId, usize>>>,
+    pub(in crate::service) session_id: SessionId,
+    pub(in crate::service) binding_tx: UnboundedSender<BindingCmd>,
+    pub(in crate::service) counts: Arc<Mutex<HashMap<SessionId, usize>>>,
 }
 
 impl Drop for SubscriptionGuard {
