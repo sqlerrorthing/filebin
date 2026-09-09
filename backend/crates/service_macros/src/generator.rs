@@ -6,7 +6,7 @@ use std::collections::{BTreeMap, HashMap};
 use std::ops::ControlFlow;
 use syn::visit_mut::VisitMut;
 use syn::{
-    GenericArgument, ItemTrait, PathArguments, PathSegment, Result, ReturnType, Token, TraitBound,
+    Attribute, Error, GenericArgument, ItemTrait, Meta, PathArguments, PathSegment, Result, ReturnType, Token, TraitBound,
     TraitItem, TraitItemFn, Type, TypeImplTrait, TypeParamBound, TypePath, parse_quote,
 };
 
@@ -43,6 +43,7 @@ struct TransformMeta {
     /// Is need to map the result to box
     into_box: Option<Boxing>,
     map_err_into: bool,
+    map_fn: Option<TokenStream>,
 }
 
 #[derive(Debug)]
@@ -77,7 +78,7 @@ pub(crate) struct DynGeneratorContext {
 }
 
 impl DynGeneratorContext {
-    pub(crate) fn gen_dyn_impl(self) -> Result<TokenStream> {
+    pub(crate) fn gen_dyn_impl(mut self) -> Result<TokenStream> {
         if !self.args.dynamic_dispatch {
             return Ok(TokenStream::new());
         }
@@ -121,7 +122,6 @@ impl DynGeneratorContext {
     }
 
     fn erase_ret(
-        &self,
         ret: &mut ReturnType,
         meta: &mut TransformMeta,
         assoc_types: &HashMap<Ident, ParsedAssocType>,
@@ -225,24 +225,38 @@ impl DynGeneratorContext {
     }
 
     fn parse_methods(
-        &self,
+        &mut self,
         assoc_types: &HashMap<Ident, ParsedAssocType>,
     ) -> Result<Vec<ParsedMethod>> {
         let mut parsed = Vec::new();
 
-        for item in &self.trait_def.items {
+        for item in &mut self.trait_def.items {
             if let TraitItem::Fn(orig_fn) = item {
                 let orig_ident = orig_fn.sig.ident.clone();
                 let dyn_ident = format_ident!("erased_{}", orig_ident);
                 let inputs = orig_fn.sig.inputs.clone();
 
-                let (is_async, mut ret) = self.sugar_async(orig_fn)?;
+                let (is_async, mut ret) = DynGeneratorContext::sugar_async(orig_fn)?;
                 let un_erased_ret = if let ReturnType::Type(_, ty) = &ret {
                     (**ty).clone()
                 } else {
                     parse_quote!(())
                 };
-                let mut meta = TransformMeta::default();
+                let map_fn = extract_and_remove_map_attr(&mut orig_fn.attrs)?;
+                let needs_map = requires_map(&un_erased_ret, assoc_types);
+                if needs_map && map_fn.is_none() {
+                    return Err(Error::new_spanned(
+                        orig_fn,
+                        "method return type uses Self:: associated types inside a generic/wrapper type; require #[map(...)] or #[map = ...] annotation with a mapping method (e.g. #[map(SubscribedSession::map)])"
+                    ));
+                }
+
+                let mut meta = TransformMeta {
+                    is_result: false,
+                    into_box: None,
+                    map_err_into: false,
+                    map_fn,
+                };
 
                 if let ReturnType::Type(_, ty) = &ret
                     && let Type::Path(tp) = &**ty
@@ -251,7 +265,7 @@ impl DynGeneratorContext {
                     meta.is_result = true;
                 }
 
-                self.erase_ret(&mut ret, &mut meta, assoc_types);
+                DynGeneratorContext::erase_ret(&mut ret, &mut meta, assoc_types);
 
                 parsed.push(ParsedMethod {
                     orig_ident,
@@ -269,7 +283,7 @@ impl DynGeneratorContext {
         Ok(parsed)
     }
 
-    fn sugar_async(&self, orig_fn: &TraitItemFn) -> Result<(bool, ReturnType)> {
+    fn sugar_async(orig_fn: &TraitItemFn) -> Result<(bool, ReturnType)> {
         if orig_fn.sig.asyncness.is_some() {
             return Ok((true, orig_fn.sig.output.clone()));
         }
@@ -435,7 +449,25 @@ impl ParsedGeneratorContext {
 
             let mut res_expr = quote!(#call #await_call);
 
-            if m.meta.is_result {
+            let needs_map = requires_map(&m.un_erased_ret, &self.assoc_types);
+            if needs_map {
+                if let Some(map_fn) = &m.meta.map_fn {
+                    let assoc_ident = find_used_assoc_type(&m.un_erased_ret, &self.assoc_types);
+                    let transformed_stream = if let Some(assoc_ident) = assoc_ident
+                        && let Some(parsed) = self.assoc_types.get(&assoc_ident)
+                    {
+                        let boxed = if let Some(boxing) = parsed.into_box {
+                            boxing.into_box(&quote!(__stream))
+                        } else {
+                            quote!(__stream)
+                        };
+                        boxed
+                    } else {
+                        quote!(__stream)
+                    };
+                    res_expr = quote!(#map_fn(#res_expr, |__stream| #transformed_stream));
+                }
+            } else if m.meta.is_result {
                 if let Some(ok_ty) = extract_ok_ty(&m.un_erased_ret) {
                     let transformed_ok = transform_type_expr(&ok_ty, quote!(__ok), &self.assoc_types);
                     res_expr = quote!(#res_expr.map(|__ok| #transformed_ok));
@@ -651,4 +683,107 @@ fn transform_type_expr(
     }
 
     expr
+}
+
+fn extract_and_remove_map_attr(attrs: &mut Vec<Attribute>) -> Result<Option<TokenStream>> {
+    let index = match attrs.iter().position(|attr| attr.path().is_ident("map")) {
+        Some(i) => i,
+        None => return Ok(None),
+    };
+    let attr = attrs.remove(index);
+    match attr.meta {
+        Meta::List(meta_list) => Ok(Some(meta_list.tokens)),
+        Meta::NameValue(meta_nv) => {
+            let expr = meta_nv.value;
+            Ok(Some(quote!(#expr)))
+        }
+        Meta::Path(_) => Err(Error::new_spanned(attr, "expected #[map(...)] or #[map = ...]")),
+    }
+}
+
+fn uses_self_assoc(ty: &Type, assoc_types: &HashMap<Ident, ParsedAssocType>) -> bool {
+    let mut uses = false;
+    struct Visitor<'a> {
+        assoc_types: &'a HashMap<Ident, ParsedAssocType>,
+        uses: &'a mut bool,
+    }
+    impl VisitMut for Visitor<'_> {
+        fn visit_type_mut(&mut self, i: &mut Type) {
+            erase!(i, |assoc_segment| => {
+                if self.assoc_types.contains_key(&assoc_segment.ident) {
+                    *self.uses = true;
+                }
+            });
+            syn::visit_mut::visit_type_mut(self, i);
+        }
+    }
+    let mut ty_clone = ty.clone();
+    Visitor { assoc_types, uses: &mut uses }.visit_type_mut(&mut ty_clone);
+    uses
+}
+
+fn is_direct_self_assoc(ty: &Type, assoc_types: &HashMap<Ident, ParsedAssocType>) -> bool {
+    if let Type::Path(TypePath { qself, path }) = ty
+        && qself.is_none()
+        && path.segments.first().is_some_and(|s| s.ident == "Self")
+        && let Some(segment) = path.segments.get(1)
+    {
+        assoc_types.contains_key(&segment.ident)
+    } else {
+        false
+    }
+}
+
+fn find_used_assoc_type(ty: &Type, assoc_types: &HashMap<Ident, ParsedAssocType>) -> Option<Ident> {
+    let mut found = None;
+    struct Finder<'a> {
+        assoc_types: &'a HashMap<Ident, ParsedAssocType>,
+        found: &'a mut Option<Ident>,
+    }
+    impl VisitMut for Finder<'_> {
+        fn visit_type_mut(&mut self, i: &mut Type) {
+            erase!(i, |assoc_segment| => {
+                if self.assoc_types.contains_key(&assoc_segment.ident) {
+                    *self.found = Some(assoc_segment.ident.clone());
+                }
+            });
+            syn::visit_mut::visit_type_mut(self, i);
+        }
+    }
+    let mut ty_clone = ty.clone();
+    Finder { assoc_types, found: &mut found }.visit_type_mut(&mut ty_clone);
+    found
+}
+
+fn requires_map(ty: &Type, assoc_types: &HashMap<Ident, ParsedAssocType>) -> bool {
+    match ty {
+        Type::Tuple(_) => false,
+        Type::Path(TypePath { qself, path }) if qself.is_none() => {
+            if path.segments.last().is_some_and(|s| s.ident == "Result") {
+                return false;
+            }
+            let mut has_generic_assoc = false;
+            struct CheckGenericAssoc<'a> {
+                assoc_types: &'a HashMap<Ident, ParsedAssocType>,
+                has_generic_assoc: &'a mut bool,
+            }
+            impl VisitMut for CheckGenericAssoc<'_> {
+                fn visit_type_mut(&mut self, i: &mut Type) {
+                    erase!(i, |assoc_segment| => {
+                        if self.assoc_types.contains_key(&assoc_segment.ident) {
+                            *self.has_generic_assoc = true;
+                        }
+                    });
+                    syn::visit_mut::visit_type_mut(self, i);
+                }
+            }
+            let mut ty_clone = ty.clone();
+            CheckGenericAssoc { assoc_types, has_generic_assoc: &mut has_generic_assoc }.visit_type_mut(&mut ty_clone);
+            
+            has_generic_assoc && !is_direct_self_assoc(ty, assoc_types)
+        }
+        _ => {
+            uses_self_assoc(ty, assoc_types) && !is_direct_self_assoc(ty, assoc_types)
+        }
+    }
 }
