@@ -25,7 +25,7 @@ struct SyncListener;
 
 impl Listener for SyncListener {
     type SessionId = folders::Id;
-    type LocalSessionControl = PhantomData<Self>;
+    type LocalSessionData = PhantomData<Self>;
     type Message = FolderUpdate;
     type StreamItem = Arc<FolderUpdate>;
 }
@@ -63,7 +63,7 @@ impl UpdatesService for RabbitMQUpdatesService {
     type FoldersUpdateStream = impl Stream<Item = Arc<FolderUpdate>> + Debug + 'static;
 
     fn subscribe_folder(&self, folder_id: folders::Id) -> Self::FoldersUpdateStream {
-        self.inner.subscribe_session(folder_id)
+        self.inner.subscribe_session(folder_id).session
     }
 
     fn fire_file_uploaded(&self, file: files::Model) {

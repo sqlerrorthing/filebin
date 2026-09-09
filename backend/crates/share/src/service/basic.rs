@@ -25,6 +25,7 @@ use thiserror::Error;
 use tokio::spawn;
 use tokio::time::sleep;
 use uuid::Uuid;
+use crate::service::basic::sync::SubscribedSession;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SessionState {
@@ -190,7 +191,11 @@ where
         self.set_code_mapping(&code, session_id).await?;
 
         self.sync_service.session_created(session_id);
-        let inner_stream = self.sync_service.subscribe_session(session_id);
+        let SubscribedSession {
+            stream: inner_stream,
+            code_rotate_cancel
+            
+        } = self.sync_service.subscribe_session(session_id);
 
         let ttl_secs = self.code_ttl.as_secs() as i32;
         self.sync_service.broadcast_event(
@@ -243,7 +248,7 @@ where
                             },
                         );
                     }
-                    _ = cancel_rx.changed() => {
+                    _ = code_rotate_cancel.cancelled() => {
                         break;
                     }
                 }
@@ -281,7 +286,10 @@ where
         session.receiver_public_key = Some(receiver_pk.clone());
         self.save_session(&session).await?;
 
-        let inner_stream = self.sync_service.subscribe_session(session_id);
+        let SubscribedSession {
+            stream: inner_stream,
+            ..
+        } = self.sync_service.subscribe_session(session_id);
 
         self.sync_service.broadcast_event(
             session_id,
@@ -302,7 +310,7 @@ where
             service: self.clone(),
             session_id,
         };
-
+        
         Ok((session_id, stream))
     }
 

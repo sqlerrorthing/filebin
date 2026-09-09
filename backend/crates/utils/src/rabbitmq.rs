@@ -1,24 +1,26 @@
-use crate::rabbitmq::consumer::{BindingCmd, BindingCmdKind, InstanceRabbitMQConsumer, QueueMessage};
+use crate::rabbitmq::consumer::{
+    BindingCmd, BindingCmdKind, InstanceRabbitMQConsumer, QueueMessage,
+};
 use crate::rabbitmq::listener::Listener;
 use crate::rabbitmq::message::{PublishCmd, SessionId};
+use crate::rabbitmq::session::{LocalSessions, SubscribedSession};
+use crate::rabbitmq::stream::SubscriptionGuardStream;
 use amqprs::BasicProperties;
 use amqprs::channel::{
     BasicConsumeArguments, BasicPublishArguments, Channel, ExchangeDeclareArguments,
     QueueBindArguments, QueueDeclareArguments, QueueUnbindArguments,
 };
 use amqprs::connection::Connection;
+use futures::Stream;
+use parking_lot::Mutex;
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::sync::Arc;
-use futures::Stream;
-use parking_lot::Mutex;
 use tokio::spawn;
 use tokio::sync::mpsc;
 use tokio::sync::mpsc::UnboundedSender;
-use tracing::{Level, error, info, span, debug_span, debug};
-use crate::rabbitmq::session::LocalSessions;
-use crate::rabbitmq::stream::SubscriptionGuardStream;
+use tracing::{Level, debug, debug_span, error, info, span};
 
 pub mod consumer;
 pub mod listener;
@@ -184,8 +186,10 @@ impl<L: Listener> RabbitMQSync<L> {
         }
     }
 
-
-    pub fn subscribe_session(&self, session_id: L::SessionId) -> impl Stream<Item = L::StreamItem> + Debug + 'static {
+    pub fn subscribe_session(
+        &self,
+        session_id: L::SessionId,
+    ) -> SubscribedSession<impl Stream<Item = L::StreamItem> + Debug + use<L>, L> {
         let _span = debug_span!("subscribing session", %session_id).entered();
 
         {
@@ -193,7 +197,9 @@ impl<L: Listener> RabbitMQSync<L> {
             let count = counts.entry(session_id.clone()).or_insert(0);
             if *count == 0 {
                 debug!("binding session");
-                _ = self.binding_tx.send(BindingCmd::new(session_id.clone(), BindingCmdKind::Bind));
+                _ = self
+                    .binding_tx
+                    .send(BindingCmd::new(session_id.clone(), BindingCmdKind::Bind));
             } else {
                 debug!(count = count, "this session is already bound")
             }
@@ -201,42 +207,47 @@ impl<L: Listener> RabbitMQSync<L> {
             *count += 1;
         }
 
-        let inner = self.local.subscribe_session(session_id.clone());
+        let inner = self.local.subscribe_session(&session_id);
 
-        SubscriptionGuardStream::<_, L>::new(
-            inner,
-            session_id,
-            self.binding_tx.clone(),
-            self.counts.clone()
-        )
+        inner.map_session(|inner| {
+            SubscriptionGuardStream::<_, L>::new(
+                inner,
+                session_id,
+                self.binding_tx.clone(),
+                self.counts.clone(),
+            )
+        })
     }
 
     pub fn with_local_session_control<R>(
         &self,
         session_id: &L::SessionId,
-        f: impl FnOnce(&L::LocalSessionControl) -> R
+        f: impl FnOnce(&L::LocalSessionData) -> R,
     ) -> Option<R> {
-        self.local.with_session_control(
-            session_id,
-            move |sess| f(&sess.inner)
-        )
+        self.local
+            .with_session_control(session_id, move |sess| f(&sess.data))
     }
 
     pub fn broadcast_message(&self, session_id: L::SessionId, message: L::Message) {
         self.local.broadcast_message(&session_id, message.clone());
 
         let routing_key = routing_key(self.routing_prefix.as_ref(), &session_id);
-        let msg = QueueMessage::<L> { session_id, message };
+        let msg = QueueMessage::<L> {
+            session_id,
+            message,
+        };
 
         _ = self.publish_tx.send(PublishCmd {
             routing_key,
-            payload: postcard::to_allocvec(&msg).expect("valid serialized postcard message")
+            payload: postcard::to_allocvec(&msg).expect("valid serialized postcard message"),
         })
     }
 
     pub fn close(&self, session_id: L::SessionId) {
         if self.counts.lock().remove(&session_id).is_some() {
-            _ = self.binding_tx.send(BindingCmd::new(session_id.clone(), BindingCmdKind::Unbind));
+            _ = self
+                .binding_tx
+                .send(BindingCmd::new(session_id.clone(), BindingCmdKind::Unbind));
         }
 
         self.local.close(&session_id);

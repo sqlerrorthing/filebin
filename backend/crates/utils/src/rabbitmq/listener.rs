@@ -4,7 +4,7 @@ use crate::rabbitmq::message::{Message, SessionId};
 
 pub trait Listener: Send + Sync + Clone + 'static {
     type SessionId: SessionId;
-    type LocalSessionControl: LocalSessionControl<Listener = Self>;
+    type LocalSessionData: LocalSessionData<Listener = Self>;
     
     type Message: Message;
     type StreamItem: From<Self::Message> + Clone + Send + Sync;
@@ -12,13 +12,13 @@ pub trait Listener: Send + Sync + Clone + 'static {
     fn on_message(&self, _session_id: &Self::SessionId, _message: Self::Message) {}
 }
 
-pub trait LocalSessionControl: Debug + Clone {
+pub trait LocalSessionData: Debug + Clone {
     type Listener: Listener;
     
     fn new(session_id: &<Self::Listener as Listener>::SessionId) -> Self;
 }
 
-impl<L: Listener> LocalSessionControl for PhantomData<L> {
+impl<L: Listener> LocalSessionData for PhantomData<L> {
     type Listener = L;
 
     fn new(_session_id: &<Self::Listener as Listener>::SessionId) -> Self {

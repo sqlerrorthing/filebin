@@ -9,6 +9,7 @@ use std::fmt::Debug;
 use std::sync::Arc;
 use tokio::sync::broadcast;
 use tokio_stream::wrappers::BroadcastStream;
+use tokio_util::sync::CancellationToken;
 use utils::stream::DebugStream;
 
 #[derive(Debug, Clone)]
@@ -24,23 +25,28 @@ pub struct LocalShareSyncService {
 }
 
 impl LocalShareSyncService {
-    pub fn get_or_create_sender(&self, session_id: SessionId) -> broadcast::Sender<ShareEvent> {
+    pub fn get_or_create_sender(&self, session_id: SessionId) -> SessionControl {
         let mut map = self.sessions.lock();
         if let Some(control) = map.get(&session_id) {
-            return control.tx.clone();
+            return control.clone();
         }
         let (tx, _) = broadcast::channel(32);
         let (cancel_tx, _) = tokio::sync::watch::channel(());
+
+
+        let control = SessionControl {
+            tx: tx.clone(),
+            cancel_tx,
+        };
+
         map.insert(
             session_id,
-            SessionControl {
-                tx: tx.clone(),
-                cancel_tx,
-            },
+            control.clone(),
         );
 
-        tx
+        control
     }
+
 
     pub fn stop_rotation(&self, session_id: SessionId) {
         let map = self.sessions.lock();

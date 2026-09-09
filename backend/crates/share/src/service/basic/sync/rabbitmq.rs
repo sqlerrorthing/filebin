@@ -1,4 +1,4 @@
-use crate::service::basic::sync::ShareSyncService;
+use crate::service::basic::sync::{ShareSyncService, SubscribedSession};
 use crate::service::{SessionId, ShareEvent};
 use amqprs::connection::Connection;
 use amqprs::consumer::AsyncConsumer;
@@ -8,9 +8,9 @@ use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use std::sync::Arc;
 use tokio_util::sync::CancellationToken;
-use utils::rabbitmq::listener::{Listener, LocalSessionControl};
-use utils::rabbitmq::message::Message;
 use utils::rabbitmq::RabbitMQSync;
+use utils::rabbitmq::listener::{Listener, LocalSessionData};
+use utils::rabbitmq::message::Message;
 
 struct PublishCmd {
     routing_key: String,
@@ -21,16 +21,17 @@ struct PublishCmd {
 #[derive(Derivative, Clone)]
 #[derivative(Debug)]
 pub struct RabbitMQShareSyncService {
-    inner: RabbitMQSync<SyncListener>
+    inner: RabbitMQSync<SyncListener>,
 }
 
+#[derive(Debug, Clone)]
 struct SyncListener;
 
 impl Listener for SyncListener {
     type SessionId = SessionId;
-    type LocalSessionControl = SessionControl;
+    type LocalSessionData = SessionControl;
     type Message = ShareEvent;
-    type StreamItem = Arc<ShareEvent>;
+    type StreamItem = ShareEvent;
 
     fn on_message(&self, session_id: &Self::SessionId, message: Self::Message) {
         dbg!((session_id, message));
@@ -43,50 +44,46 @@ impl Message for ShareEvent {
     }
 }
 
+#[derive(Clone, Debug)]
 struct SessionControl {
-    cancel_code_rotation: CancellationToken
+    cancel_code_rotation: CancellationToken,
 }
 
-impl LocalSessionControl for SessionControl {
+impl LocalSessionData for SessionControl {
     type Listener = SyncListener;
 
     fn new(_session_id: &<Self::Listener as Listener>::SessionId) -> Self {
         Self {
-            cancel_code_rotation: CancellationToken::new()
+            cancel_code_rotation: CancellationToken::new(),
         }
     }
 }
 
 impl RabbitMQShareSyncService {
-    pub fn new(
-        exchange: String,
-        connection: Connection,
-    ) -> Self {
+    pub fn new(exchange: String, connection: Connection) -> Self {
         Self {
-            inner: RabbitMQSync::new(
-                exchange,
-                connection,
-                "share",
-                SyncListener
-            )
+            inner: RabbitMQSync::new(exchange, connection, "share", SyncListener),
         }
     }
 }
 
 impl RabbitMQShareSyncService {
     pub fn stop_rotation(&self, session_id: &SessionId) {
-        self.inner.with_local_session_control(session_id, |sess| {
-            sess.cancel_code_rotation.cancel()
-        });
+        self.inner
+            .with_local_session_control(session_id, |sess| sess.cancel_code_rotation.cancel());
     }
 }
 
 impl ShareSyncService for RabbitMQShareSyncService {
     type ShareStream = impl Stream<Item = ShareEvent> + Send + Sync + Debug + 'static;
 
-    fn subscribe_session(&self, session_id: SessionId) -> Self::ShareStream {
-        self.inner.subscribe_session(session_id)
-            .map(|s| s.to_owned())
+    fn subscribe_session(&self, session_id: SessionId) -> SubscribedSession<Self::ShareStream> {
+        let sess = self.inner.subscribe_session(session_id);
+        
+        SubscribedSession {
+            stream: sess.session,
+            code_rotate_cancel: sess.data.cancel_code_rotation,
+        }
     }
 
     fn broadcast_event(&self, session_id: SessionId, event: ShareEvent) {
