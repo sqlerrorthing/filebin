@@ -1,4 +1,4 @@
-use crate::service::basic::sync::ShareSyncService;
+use crate::service::basic::sync::{ShareSyncService, SubscribedSession};
 use crate::service::{SessionId, ShareEvent};
 use derive_new::new;
 use futures::Stream;
@@ -15,7 +15,7 @@ use utils::stream::DebugStream;
 #[derive(Debug, Clone)]
 pub struct SessionControl {
     pub tx: broadcast::Sender<ShareEvent>,
-    pub cancel_tx: tokio::sync::watch::Sender<()>,
+    pub code_rotate_cancel: CancellationToken,
 }
 
 #[derive(Debug, Clone, new)]
@@ -31,12 +31,10 @@ impl LocalShareSyncService {
             return control.clone();
         }
         let (tx, _) = broadcast::channel(32);
-        let (cancel_tx, _) = tokio::sync::watch::channel(());
-
-
+        
         let control = SessionControl {
             tx: tx.clone(),
-            cancel_tx,
+            code_rotate_cancel: CancellationToken::new(),
         };
 
         map.insert(
@@ -51,7 +49,7 @@ impl LocalShareSyncService {
     pub fn stop_rotation(&self, session_id: SessionId) {
         let map = self.sessions.lock();
         if let Some(control) = map.get(&session_id) {
-            _ = control.cancel_tx.send(());
+            _ = control.code_rotate_cancel.cancel();
         }
     }
 
@@ -64,11 +62,14 @@ impl LocalShareSyncService {
 impl ShareSyncService for LocalShareSyncService {
     type ShareStream = DebugStream<impl Stream<Item = ShareEvent> + Send + Sync + 'static>;
 
-    fn subscribe_session(&self, session_id: SessionId) -> Self::ShareStream {
-        let tx = self.get_or_create_sender(session_id);
-        let rx = tx.subscribe();
+    fn subscribe_session(&self, session_id: SessionId) -> SubscribedSession<Self::ShareStream> {
+        let control = self.get_or_create_sender(session_id);
+        let rx = control.tx.subscribe();
 
-        DebugStream::new(BroadcastStream::new(rx).filter_map(|res| async move { res.ok() }))
+        SubscribedSession {
+            stream: DebugStream::new(BroadcastStream::new(rx).filter_map(|res| async move { res.ok() })),
+            code_rotate_cancel: control.code_rotate_cancel.clone()
+        }
     }
 
     fn broadcast_event(&self, session_id: SessionId, event: ShareEvent) {
