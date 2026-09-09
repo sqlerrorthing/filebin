@@ -148,7 +148,6 @@ async fn main() -> color_eyre::Result<()> {
         RabbitMQUpdatesService::new(
             CONFIG.rabbitmq.exchange.clone(),
             conn.clone(),
-            LocalUpdatesService::new(100),
         )
         .leaked()
     } else {
@@ -199,7 +198,6 @@ async fn main() -> color_eyre::Result<()> {
         RabbitMQShareSyncService::new(
             CONFIG.rabbitmq.exchange.clone(),
             conn.clone(),
-            LocalShareSyncService::new(),
         )
         .leaked()
     } else {

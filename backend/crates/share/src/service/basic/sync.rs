@@ -13,7 +13,7 @@ pub struct SubscribedSession<S> {
 }
 
 impl<S> SubscribedSession<S> {
-    pub fn map<N>(self, f: impl FnOnce(S) -> N) -> SubscribedSession<N> {
+    fn map<N>(self, f: impl FnOnce(S) -> N) -> SubscribedSession<N> {
         SubscribedSession {
             stream: f(self.stream),
             code_rotate_cancel: self.code_rotate_cancel,
