@@ -6,13 +6,15 @@ import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegen
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import type { FolderId } from "./common_pb";
 import { file_folder_v1_common } from "./common_pb";
+import type { Empty } from "@bufbuild/protobuf/wkt";
+import { file_google_protobuf_empty } from "@bufbuild/protobuf/wkt";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file folder/v1/share.proto.
  */
 export const file_folder_v1_share: GenFile = /*@__PURE__*/
-  fileDesc("ChVmb2xkZXIvdjEvc2hhcmUucHJvdG8SCWZvbGRlci52MSJKCgxTaGFyZVJlcXVlc3QSJgoJZm9sZGVyX2lkGAEgAigLMhMuZm9sZGVyLnYxLkZvbGRlcklkEhIKCnB1YmxpY19rZXkYAiACKAwiLwoLSm9pblJlcXVlc3QSDAoEY29kZRgBIAIoCRISCgpwdWJsaWNfa2V5GAIgAigMIkIKDlNlbmRLZXlSZXF1ZXN0EhIKCnNlc3Npb25faWQYASACKAkSHAoUZW5jcnlwdGVkX2ZvbGRlcl9rZXkYAiACKAwiIgoPU2VuZEtleVJlc3BvbnNlEg8KB3N1Y2Nlc3MYASACKAgizwIKClNoYXJlRXZlbnQSEgoKc2Vzc2lvbl9pZBgBIAIoCRIzCgxjb2RlX3JvdGF0ZWQYAiABKAsyGy5mb2xkZXIudjEuQ29kZVJvdGF0ZWRFdmVudEgAEjkKD3JlY2VpdmVyX2pvaW5lZBgDIAEoCzIeLmZvbGRlci52MS5SZWNlaXZlckpvaW5lZEV2ZW50SAASPQoRc2Vzc2lvbl9jb25uZWN0ZWQYBCABKAsyIC5mb2xkZXIudjEuU2Vzc2lvbkNvbm5lY3RlZEV2ZW50SAASPAoMa2V5X3JlY2VpdmVkGAUgASgLMiQuZm9sZGVyLnYxLkVuY3J5cHRlZEtleVJlY2VpdmVkRXZlbnRIABI3Cg5zZXNzaW9uX2ZhaWxlZBgGIAEoCzIdLmZvbGRlci52MS5TZXNzaW9uRmFpbGVkRXZlbnRIAEIHCgVldmVudCI1ChBDb2RlUm90YXRlZEV2ZW50EgwKBGNvZGUYASACKAkSEwoLdHRsX3NlY29uZHMYAiACKAUiMgoTUmVjZWl2ZXJKb2luZWRFdmVudBIbChNyZWNlaXZlcl9wdWJsaWNfa2V5GAEgAigMIjIKFVNlc3Npb25Db25uZWN0ZWRFdmVudBIZChFzZW5kZXJfcHVibGljX2tleRgBIAIoDCJhChlFbmNyeXB0ZWRLZXlSZWNlaXZlZEV2ZW50EhwKFGVuY3J5cHRlZF9mb2xkZXJfa2V5GAEgAigMEiYKCWZvbGRlcl9pZBgCIAIoCzITLmZvbGRlci52MS5Gb2xkZXJJZCIrChJTZXNzaW9uRmFpbGVkRXZlbnQSFQoNZXJyb3JfbWVzc2FnZRgBIAIoCTLEAQoMU2hhcmVTZXJ2aWNlEjkKBVNoYXJlEhcuZm9sZGVyLnYxLlNoYXJlUmVxdWVzdBoVLmZvbGRlci52MS5TaGFyZUV2ZW50MAESNwoESm9pbhIWLmZvbGRlci52MS5Kb2luUmVxdWVzdBoVLmZvbGRlci52MS5TaGFyZUV2ZW50MAESQAoHU2VuZEtleRIZLmZvbGRlci52MS5TZW5kS2V5UmVxdWVzdBoaLmZvbGRlci52MS5TZW5kS2V5UmVzcG9uc2U", [file_folder_v1_common]);
+  fileDesc("ChVmb2xkZXIvdjEvc2hhcmUucHJvdG8SCWZvbGRlci52MSJKCgxTaGFyZVJlcXVlc3QSJgoJZm9sZGVyX2lkGAEgAigLMhMuZm9sZGVyLnYxLkZvbGRlcklkEhIKCnB1YmxpY19rZXkYAiACKAwiLwoLSm9pblJlcXVlc3QSDAoEY29kZRgBIAIoCRISCgpwdWJsaWNfa2V5GAIgAigMIkIKDlNlbmRLZXlSZXF1ZXN0EhIKCnNlc3Npb25faWQYASACKAkSHAoUZW5jcnlwdGVkX2ZvbGRlcl9rZXkYAiACKAwiIgoPU2VuZEtleVJlc3BvbnNlEg8KB3N1Y2Nlc3MYASACKAgiyAIKClNoYXJlRXZlbnQSEgoKc2Vzc2lvbl9pZBgBIAIoCRIzCgxjb2RlX3JvdGF0ZWQYAiABKAsyGy5mb2xkZXIudjEuQ29kZVJvdGF0ZWRFdmVudEgAEjkKD3JlY2VpdmVyX2pvaW5lZBgDIAEoCzIeLmZvbGRlci52MS5SZWNlaXZlckpvaW5lZEV2ZW50SAASPQoRc2Vzc2lvbl9jb25uZWN0ZWQYBCABKAsyIC5mb2xkZXIudjEuU2Vzc2lvbkNvbm5lY3RlZEV2ZW50SAASPAoMa2V5X3JlY2VpdmVkGAUgASgLMiQuZm9sZGVyLnYxLkVuY3J5cHRlZEtleVJlY2VpdmVkRXZlbnRIABIwCg5zZXNzaW9uX2Nsb3NlZBgGIAEoCzIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eUgAQgcKBWV2ZW50IjUKEENvZGVSb3RhdGVkRXZlbnQSDAoEY29kZRgBIAIoCRITCgt0dGxfc2Vjb25kcxgCIAIoBSIyChNSZWNlaXZlckpvaW5lZEV2ZW50EhsKE3JlY2VpdmVyX3B1YmxpY19rZXkYASACKAwiMgoVU2Vzc2lvbkNvbm5lY3RlZEV2ZW50EhkKEXNlbmRlcl9wdWJsaWNfa2V5GAEgAigMImEKGUVuY3J5cHRlZEtleVJlY2VpdmVkRXZlbnQSHAoUZW5jcnlwdGVkX2ZvbGRlcl9rZXkYASACKAwSJgoJZm9sZGVyX2lkGAIgAigLMhMuZm9sZGVyLnYxLkZvbGRlcklkMsQBCgxTaGFyZVNlcnZpY2USOQoFU2hhcmUSFy5mb2xkZXIudjEuU2hhcmVSZXF1ZXN0GhUuZm9sZGVyLnYxLlNoYXJlRXZlbnQwARI3CgRKb2luEhYuZm9sZGVyLnYxLkpvaW5SZXF1ZXN0GhUuZm9sZGVyLnYxLlNoYXJlRXZlbnQwARJACgdTZW5kS2V5EhkuZm9sZGVyLnYxLlNlbmRLZXlSZXF1ZXN0GhouZm9sZGVyLnYxLlNlbmRLZXlSZXNwb25zZQ", [file_folder_v1_common, file_google_protobuf_empty]);
 
 /**
  * @generated from message folder.v1.ShareRequest
@@ -135,10 +137,10 @@ export type ShareEvent = Message<"folder.v1.ShareEvent"> & {
     case: "keyReceived";
   } | {
     /**
-     * @generated from field: folder.v1.SessionFailedEvent session_failed = 6;
+     * @generated from field: google.protobuf.Empty session_closed = 6;
      */
-    value: SessionFailedEvent;
-    case: "sessionFailed";
+    value: Empty;
+    case: "sessionClosed";
   } | { case: undefined; value?: undefined };
 };
 
@@ -226,23 +228,6 @@ export type EncryptedKeyReceivedEvent = Message<"folder.v1.EncryptedKeyReceivedE
  */
 export const EncryptedKeyReceivedEventSchema: GenMessage<EncryptedKeyReceivedEvent> = /*@__PURE__*/
   messageDesc(file_folder_v1_share, 8);
-
-/**
- * @generated from message folder.v1.SessionFailedEvent
- */
-export type SessionFailedEvent = Message<"folder.v1.SessionFailedEvent"> & {
-  /**
-   * @generated from field: required string error_message = 1;
-   */
-  errorMessage: string;
-};
-
-/**
- * Describes the message folder.v1.SessionFailedEvent.
- * Use `create(SessionFailedEventSchema)` to create a new message.
- */
-export const SessionFailedEventSchema: GenMessage<SessionFailedEvent> = /*@__PURE__*/
-  messageDesc(file_folder_v1_share, 9);
 
 /**
  * @generated from service folder.v1.ShareService

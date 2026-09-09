@@ -116,7 +116,8 @@ impl From<&CorsOrigins> for AllowOrigin {
             if origins.iter().any(|o| o.contains(['?', '*'])) {
                 let patterns: Vec<_> = origins.into_iter().map(WildMatch::new).collect();
                 AllowOrigin::predicate(move |val, _| {
-                    val.to_str().is_ok_and(|s| patterns.iter().any(|p| p.matches(s)))
+                    val.to_str()
+                        .is_ok_and(|s| patterns.iter().any(|p| p.matches(s)))
                 })
             } else {
                 AllowOrigin::list(origins.into_iter().map(|o| o.parse().unwrap()))

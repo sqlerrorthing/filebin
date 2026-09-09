@@ -1,5 +1,5 @@
-pub mod db;
 pub mod cache;
+pub mod db;
 
 use domain::models::{files, folders};
 use service::service;
@@ -10,7 +10,7 @@ pub trait FilesRepository {
 
     #[result]
     async fn files_count(&self, folder_id: folders::Id) -> u64;
-    
+
     /// Deletes all files from the folder, returning deleted files
     #[result]
     async fn delete_files_from_folder(&self, folder_id: folders::Id) -> Vec<files::Model>;
@@ -20,10 +20,10 @@ pub trait FilesRepository {
 
     #[result]
     async fn find_file_by_public_id(&self, public_id: files::PublicId) -> Option<files::Model>;
-    
+
     #[result]
     async fn list_folder_files(&self, folder_id: folders::Id) -> Vec<files::Model>;
-    
+
     #[result]
     async fn new_file(&self, new_file: files::NewFile) -> files::Model;
 }

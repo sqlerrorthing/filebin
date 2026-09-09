@@ -1,13 +1,12 @@
-use std::cell::UnsafeCell;
 use bytes::Bytes;
 use domain::models::files;
 use futures_core::Stream;
+use parking_lot::{Mutex, MutexGuard, RwLock, RwLockReadGuard, RwLockWriteGuard};
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 use service::service;
 use std::fmt::Debug;
 use std::ops::{Deref, DerefMut};
-use parking_lot::{Mutex, MutexGuard, RawRwLock, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 pub mod s3;
 
@@ -43,10 +42,7 @@ pub trait FilesStorage {
     ///
     /// Returns the key
     #[result]
-    async fn complete_multipart_upload<H>(
-        &self,
-        handle: H,
-    ) -> files::StoragePath
+    async fn complete_multipart_upload<H>(&self, handle: H) -> files::StoragePath
     where
         H: IntoRawMultipartUploadHandle<
             Raw = <Self::MultipartUploadHandle as HasRawMultipartUploadHandle>::Raw,
@@ -69,8 +65,8 @@ pub trait RawMultipartUploadHandle:
 {
 }
 
-impl<T: Send + Sync + Serialize + DeserializeOwned + Debug + Clone + 'static> RawMultipartUploadHandle
-    for T
+impl<T: Send + Sync + Serialize + DeserializeOwned + Debug + Clone + 'static>
+    RawMultipartUploadHandle for T
 {
 }
 
@@ -114,7 +110,6 @@ macro_rules! lock_impls {
     };
 }
 
-
 lock_impls! {
     RwLock<T>: (
         |RwLockReadGuard<'a, T> as this| this.read(),
@@ -137,7 +132,9 @@ pub trait HasRawMultipartUploadHandle {
     type Raw: RawMultipartUploadHandle;
 }
 
-pub trait IntoRawMultipartUploadHandle: LockRawMultipartUploadHandle + Send + Sync + 'static {
+pub trait IntoRawMultipartUploadHandle:
+    LockRawMultipartUploadHandle + Send + Sync + 'static
+{
     type Rest: Send;
 
     /// Consumes the handle, returning both the serializable raw data
@@ -150,7 +147,9 @@ pub trait IntoRawMultipartUploadHandle: LockRawMultipartUploadHandle + Send + Sy
     fn from_raw(raw: Self::Raw, rest: Self::Rest) -> Self;
 }
 
-pub trait LockRawMultipartUploadHandle: HasRawMultipartUploadHandle + Send + Sync + 'static {
+pub trait LockRawMultipartUploadHandle:
+    HasRawMultipartUploadHandle + Send + Sync + 'static
+{
     type ReadRaw<'a>: 'a + Deref<Target = Self::Raw>;
     type WriteRaw<'a>: 'a + DerefMut<Target = Self::Raw>;
 
@@ -174,24 +173,29 @@ pub trait LockRawMultipartUploadHandle: HasRawMultipartUploadHandle + Send + Syn
     /// automatically dropping any internal locks (like mutex guards) immediately afterward
     ///
     /// Returns `None` if the underlying handle has already been consumed
-    fn with_read<'a, R>(&'a self, f: impl FnOnce(&Self::Raw) -> R + Send + 'a) -> impl Future<Output = Option<R>> + Send + 'a {
-        async move {
-            self.read_raw().await.map(|r| f(r.deref()))
-        }
+    fn with_read<'a, R>(
+        &'a self,
+        f: impl FnOnce(&Self::Raw) -> R + Send + 'a,
+    ) -> impl Future<Output = Option<R>> + Send + 'a {
+        async move { self.read_raw().await.map(|r| f(r.deref())) }
     }
 
     /// Executes a closure with a mutable reference to the raw handle,
     /// automatically dropping any internal locks immediately afterward
     ///
     /// Returns `None` if the underlying handle has already been consumed
-    fn with_write<'a, R>(&'a self, f: impl FnOnce(&mut Self::Raw) -> R + Send + 'a) -> impl Future<Output = Option<R>> + Send + 'a {
-        async move {
-            self.write_raw().await.map(|mut r| f(r.deref_mut()))
-        }
+    fn with_write<'a, R>(
+        &'a self,
+        f: impl FnOnce(&mut Self::Raw) -> R + Send + 'a,
+    ) -> impl Future<Output = Option<R>> + Send + 'a {
+        async move { self.write_raw().await.map(|mut r| f(r.deref_mut())) }
     }
 }
 
-pub trait MultipartUploadHandle: LockRawMultipartUploadHandle + IntoRawMultipartUploadHandle {}
+pub trait MultipartUploadHandle:
+    LockRawMultipartUploadHandle + IntoRawMultipartUploadHandle
+{
+}
 
 impl<T> MultipartUploadHandle for T where
     T: LockRawMultipartUploadHandle + IntoRawMultipartUploadHandle

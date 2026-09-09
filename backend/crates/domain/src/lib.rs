@@ -1,5 +1,5 @@
-pub mod persistence;
-pub(crate) mod macros;
 pub mod into_string;
-pub mod sync;
+pub(crate) mod macros;
 pub mod models;
+pub mod persistence;
+pub mod sync;

@@ -1,4 +1,3 @@
-use sea_orm::{DbErr, TryGetError};
 
 macro_rules! tiny_str_sea_orm_derive {
     ($ty:path as $len:literal: |$str:ident| $($construct:tt)*) => {

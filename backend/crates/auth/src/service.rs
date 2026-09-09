@@ -1,6 +1,6 @@
-use std::error::Error;
 use domain::models::folders;
 use service::service;
+use std::error::Error;
 
 pub mod jwt;
 
@@ -11,13 +11,13 @@ pub trait TokenService {
     #[result]
     async fn generate_token_for_folder_public_id(
         &self,
-        folder_long_id: &folders::PublicId
+        folder_long_id: &folders::PublicId,
     ) -> String;
 
     #[result]
     async fn is_token_valid_for_folder(
         &self,
         folder_long_id: &folders::PublicId,
-        token: String
+        token: String,
     ) -> bool;
 }

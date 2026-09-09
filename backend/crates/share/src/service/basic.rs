@@ -1,6 +1,8 @@
 pub mod stream;
+pub mod sync;
 
 use crate::service::basic::stream::SessionStream;
+use crate::service::basic::sync::SubscribedSession;
 use crate::service::{
     CancelSessionError, Code, InitiateSessionError, JoinSessionError, ReceiverPublicKey,
     SendKeyError, SenderPublicKey, SessionId, ShareEvent, ShareService,
@@ -9,24 +11,19 @@ use bytes::Bytes;
 use derive_new::new;
 use domain::models;
 use folders::service::FoldersService;
-use futures::Stream;
-use futures::StreamExt;
-use parking_lot::Mutex;
-use rand::{Rng, RngExt};
+use rand::RngExt;
 use serde::{Deserialize, Serialize};
 use service::business;
 use service::error::ServiceError;
-use std::collections::HashMap;
 use std::fmt::Debug;
-use std::str::FromStr;
-use std::sync::Arc;
 use std::time::Duration;
 use storage::Storage;
+use sync::ShareSyncService;
+use sync::basic::LocalShareSyncService;
+use sync::rabbitmq::RabbitMQShareSyncService;
 use thiserror::Error;
 use tokio::spawn;
-use tokio::sync::{broadcast, watch};
 use tokio::time::sleep;
-use tokio_stream::wrappers::BroadcastStream;
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -36,12 +33,6 @@ pub struct SessionState {
     pub sender_public_key: SenderPublicKey,
     pub receiver_public_key: Option<ReceiverPublicKey>,
     pub code: Code,
-}
-
-#[derive(Debug, Clone)]
-pub struct SessionControl {
-    pub tx: broadcast::Sender<ShareEvent>,
-    pub cancel_tx: watch::Sender<()>,
 }
 
 #[derive(Debug, Error)]
@@ -57,20 +48,18 @@ where
 }
 
 #[derive(Debug, Clone, new)]
-pub struct BasicLocalShareService<S, FS> {
+pub struct BasicShareService<S, FS, SS> {
     storage: S,
     folders_service: FS,
     code_ttl: Duration,
-    #[new(default)]
-    sessions: Arc<Mutex<HashMap<SessionId, SessionControl>>>,
+    sync_service: SS,
 }
+
+pub type BasicLocalShareService<S, FS> = BasicShareService<S, FS, LocalShareSyncService>;
+pub type BasicRabbitMQShareService<S, FS> = BasicShareService<S, FS, RabbitMQShareSyncService>;
 
 fn generate_code() -> Code {
     let mut rng = rand::rng();
-
-    // todo: replace with this alphabet
-    // let alphabet = "234679ACDEFGHJKMNPQRTUVWXY";
-
     let code: u32 = rng.random_range(100000..=999999);
     code.to_string().into()
 }
@@ -83,47 +72,15 @@ fn code_key(code: &Code) -> String {
     format!("share:code:{code}")
 }
 
-impl<S, FS> BasicLocalShareService<S, FS>
+impl<S, FS, SS> BasicShareService<S, FS, SS>
 where
     S: Storage,
     FS: FoldersService,
+    SS: ShareSyncService,
 {
-    pub fn get_or_create_sender(&self, session_id: SessionId) -> broadcast::Sender<ShareEvent> {
-        let mut sessions = self.sessions.lock();
-        if let Some(control) = sessions.get(&session_id) {
-            return control.tx.clone();
-        }
-        let (tx, _) = broadcast::channel(32);
-        let (cancel_tx, _) = watch::channel(());
-        sessions.insert(
-            session_id,
-            SessionControl {
-                tx: tx.clone(),
-                cancel_tx,
-            },
-        );
-        tx
-    }
-
-    pub fn stop_rotation(&self, session_id: &SessionId) {
-        if let Some(control) = self.sessions.lock().get(session_id) {
-            _ = control.cancel_tx.send(());
-        }
-    }
-
-    pub fn broadcast_event(&self, session_id: SessionId, event: ShareEvent) {
-        if let Some(control) = self.sessions.lock().get(&session_id) {
-            _ = control.tx.send(event);
-        }
-    }
-
     async fn save_session(&self, state: &SessionState) -> Result<(), Error<S, FS>> {
         self.storage
-            .set(
-                &session_key(&state.session_id),
-                state,
-                3600,
-            )
+            .set(&session_key(&state.session_id), state, 3600)
             .await
             .map_err(Error::Storage)
     }
@@ -144,22 +101,16 @@ where
         session_id: SessionId,
     ) -> Result<(), Error<S, FS>> {
         self.storage
-            .set(
-                &code_key(code),
-                &session_id.to_string(),
-                self.code_ttl.as_secs() as u32,
-            )
+            .set(&code_key(code), &session_id, self.code_ttl.as_secs() as u32)
             .await
             .map_err(Error::Storage)
     }
 
     async fn get_session_id_by_code(&self, code: &Code) -> Result<Option<SessionId>, Error<S, FS>> {
-        let id_str: Option<String> = self
-            .storage
-            .get(&code_key(code))
+        self.storage
+            .get::<_, SessionId>(&code_key(code))
             .await
-            .map_err(Error::Storage)?;
-        Ok(id_str.and_then(|s| SessionId::from_str(&s).ok()))
+            .map_err(Error::Storage)
     }
 
     async fn delete_code_mapping(&self, code: &Code) -> Result<(), Error<S, FS>> {
@@ -171,40 +122,34 @@ where
         let session = match self.get_session(session_id).await? {
             Some(s) => s,
             None => {
-                self.stop_rotation(session_id);
-                self.sessions.lock().remove(session_id);
+                self.sync_service.session_closed(*session_id);
+                let _ = self.storage.delete(&session_key(session_id)).await;
                 return Ok(());
             }
         };
 
         _ = self.delete_code_mapping(&session.code).await;
-        self.stop_rotation(session_id);
         self.storage
             .delete(&session_key(session_id))
             .await
             .map_err(Error::Storage)?;
 
-        self.broadcast_event(*session_id, ShareEvent::SessionClosed);
-
-        self.sessions.lock().remove(session_id);
+        self.sync_service
+            .broadcast_event(*session_id, ShareEvent::SessionClosed);
+        self.sync_service.session_closed(*session_id);
 
         Ok(())
     }
 }
 
-fn broadcast_strean<T: Clone + Send + 'static>(
-    rx: broadcast::Receiver<T>,
-) -> impl Stream<Item = T> + Send + 'static {
-    BroadcastStream::new(rx).filter_map(|res| async move { res.ok() })
-}
-
-impl<S, FS> ShareService for BasicLocalShareService<S, FS>
+impl<S, FS, SS> ShareService for BasicShareService<S, FS, SS>
 where
     S: Storage,
     FS: FoldersService + Clone,
+    SS: ShareSyncService + Clone,
 {
     type Error = Error<S, FS>;
-    type ShareStream = impl Stream<Item = ShareEvent> + Send + 'static;
+    type ShareStream = SessionStream<SS::ShareStream, S, FS, SS>;
 
     async fn initiate_session(
         &self,
@@ -236,30 +181,20 @@ where
         self.save_session(&state).await?;
         self.set_code_mapping(&code, session_id).await?;
 
-        let tx = self.get_or_create_sender(session_id);
-        let rx = tx.subscribe();
-
-        let (cancel_tx, mut cancel_rx) = watch::channel(());
-        {
-            let mut sessions = self.sessions.lock();
-            if let Some(control) = sessions.get_mut(&session_id) {
-                control.cancel_tx = cancel_tx;
-            } else {
-                sessions.insert(
-                    session_id,
-                    SessionControl {
-                        tx: tx.clone(),
-                        cancel_tx,
-                    },
-                );
-            }
-        }
+        self.sync_service.session_created(session_id);
+        let SubscribedSession {
+            stream: inner_stream,
+            code_rotate_cancel,
+        } = self.sync_service.subscribe_session(session_id);
 
         let ttl_secs = self.code_ttl.as_secs() as i32;
-        _ = tx.send(ShareEvent::CodeRotated {
-            code: code.clone(),
-            ttl_seconds: ttl_secs,
-        });
+        self.sync_service.broadcast_event(
+            session_id,
+            ShareEvent::CodeRotated {
+                code: code.clone(),
+                ttl_seconds: ttl_secs,
+            },
+        );
 
         let this = self.clone();
         let session_id_cloned = session_id;
@@ -295,7 +230,7 @@ where
                         }
 
                         current_code = new_code.clone();
-                        this.broadcast_event(
+                        this.sync_service.broadcast_event(
                             session_id_cloned,
                             ShareEvent::CodeRotated {
                                 code: new_code,
@@ -303,7 +238,7 @@ where
                             },
                         );
                     }
-                    _ = cancel_rx.changed() => {
+                    _ = code_rotate_cancel.cancelled() => {
                         break;
                     }
                 }
@@ -311,7 +246,7 @@ where
         });
 
         let stream = SessionStream {
-            inner: broadcast_strean(rx),
+            inner: inner_stream,
             service: self.clone(),
             session_id,
         };
@@ -334,26 +269,34 @@ where
 
         _ = self.delete_code_mapping(&code).await;
         _ = self.delete_code_mapping(&session.code).await;
-        self.stop_rotation(&session_id);
+        self.sync_service.stop_rotation(session_id); // stops rotation without closing session
 
         let sender_pk = session.sender_public_key.clone();
 
         session.receiver_public_key = Some(receiver_pk.clone());
         self.save_session(&session).await?;
 
-        let tx = self.get_or_create_sender(session_id);
-        let rx = tx.subscribe();
+        let SubscribedSession {
+            stream: inner_stream,
+            ..
+        } = self.sync_service.subscribe_session(session_id);
 
-        _ = tx.send(ShareEvent::ReceiverJoined {
-            receiver_public_key: receiver_pk,
-        });
+        self.sync_service.broadcast_event(
+            session_id,
+            ShareEvent::ReceiverJoined {
+                receiver_public_key: receiver_pk,
+            },
+        );
 
-        _ = tx.send(ShareEvent::SessionConnected {
-            sender_public_key: sender_pk,
-        });
+        self.sync_service.broadcast_event(
+            session_id,
+            ShareEvent::SessionConnected {
+                sender_public_key: sender_pk,
+            },
+        );
 
         let stream = SessionStream {
-            inner: broadcast_strean(rx),
+            inner: inner_stream,
             service: self.clone(),
             session_id,
         };
@@ -370,7 +313,7 @@ where
             return Err(business!(SendKeyError::SessionNotFound));
         };
 
-        self.broadcast_event(
+        self.sync_service.broadcast_event(
             session_id,
             ShareEvent::KeyReceived {
                 encrypted_folder_key: folder_key,

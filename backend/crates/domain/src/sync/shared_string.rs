@@ -1,8 +1,8 @@
-use std::borrow::Borrow;
-use std::sync::Arc;
+use crate::sync::arc_cow::ArcCow;
 use derive_more::{Deref, DerefMut};
 use serde::{Deserialize, Serialize};
-use crate::sync::arc_cow::ArcCow;
+use std::borrow::Borrow;
+use std::sync::Arc;
 
 /// A shared string is an immutable string that can be cheaply cloned.
 /// Essentially an abstraction over an [`Arc<str>`] and `&'static str`,

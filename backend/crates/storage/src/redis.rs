@@ -16,7 +16,12 @@ pub enum Error {
 impl Storage for Pool {
     type Error = Error;
 
-    async fn set<K, V>(&self, key: K, value: &V, ttl: impl Into<SetTtl> + Send) -> Result<(), Self::Error>
+    async fn set<K, V>(
+        &self,
+        key: K,
+        value: &V,
+        ttl: impl Into<SetTtl> + Send,
+    ) -> Result<(), Self::Error>
     where
         K: Into<String>,
         V: Serialize,
@@ -27,7 +32,7 @@ impl Storage for Pool {
 
         let expiration = match ttl.into() {
             SetTtl::Keep => Some(SetExpiry::KEEPTTL),
-            SetTtl::Set(seconds) => seconds.map(|seconds| SetExpiry::EX(seconds as u64))
+            SetTtl::Set(seconds) => seconds.map(|seconds| SetExpiry::EX(seconds as u64)),
         };
 
         let mut options = SetOptions::default();
@@ -36,25 +41,23 @@ impl Storage for Pool {
         }
 
         let _: () = conn
-            .set_options(key, serialized, options).await.map_err(PoolError::Backend)?;
+            .set_options(key, serialized, options)
+            .await
+            .map_err(PoolError::Backend)?;
 
         Ok(())
     }
 
     async fn set_ex<K>(&self, key: K, ttl: Option<u32>) -> Result<bool, Self::Error>
     where
-        K: Into<String> + Send
+        K: Into<String> + Send,
     {
         let mut conn = self.get().await?;
         let key = key.into();
 
         let result: RedisResult<i32> = match ttl {
-            Some(seconds) => {
-                conn.expire(&key, seconds as i64).await
-            }
-            None => {
-                conn.persist(&key).await
-            }
+            Some(seconds) => conn.expire(&key, seconds as i64).await,
+            None => conn.persist(&key).await,
         };
 
         Ok(matches!(result, Ok(1)))
@@ -85,14 +88,11 @@ impl Storage for Pool {
     {
         let keys = keys.into_iter().map(Into::into).collect::<Vec<_>>();
         if keys.is_empty() {
-            return Ok(())
+            return Ok(());
         }
-        
+
         let mut conn = self.get().await?;
-        let _: usize = conn
-            .unlink(keys)
-            .await
-            .map_err(PoolError::Backend)?;
+        let _: usize = conn.unlink(keys).await.map_err(PoolError::Backend)?;
         Ok(())
     }
 }

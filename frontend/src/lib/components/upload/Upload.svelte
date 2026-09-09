@@ -63,6 +63,10 @@
     }
 
     function handlePaste(event: ClipboardEvent) {
+        const activeEl = document.activeElement;
+        if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.hasAttribute('contenteditable'))) {
+            return;
+        }
         const items = event.clipboardData?.items;
         if (!items) return;
 

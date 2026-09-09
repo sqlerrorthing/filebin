@@ -115,7 +115,7 @@ fn modify_associated_type(input: &mut ItemTrait, mut requires: Requires) {
             if modify_error_associated_type(assoc_type) {
                 requires -= Requires::DEBUG;
             }
-            
+
             expand_supertraits(requires, &mut assoc_type.bounds);
         }
     }

@@ -22,7 +22,10 @@ use id_generator::service::random::RandomIdGeneratorService;
 use sea_orm::{Database, DatabaseConnection, DbErr};
 use sea_orm_migration::migrator::MigratorTrait;
 use secrecy::ExposeSecret;
-use std::any::type_name_of_val;
+use share::service::DynShareSyncService;
+use share::service::basic::BasicShareService;
+use share::service::basic::sync::basic::LocalShareSyncService;
+use share::service::basic::sync::rabbitmq::RabbitMQShareSyncService;
 use tonic::codegen::http::{HeaderName, Method, header};
 use tonic::transport::Server;
 use tonic_web::GrpcWebLayer;
@@ -34,8 +37,6 @@ use tracing_subscriber::{EnvFilter, fmt};
 use updates::service::DynUpdatesService;
 use updates::service::basic::LocalUpdatesService;
 use updates::service::rabbitmq::RabbitMQUpdatesService;
-use share::service::DynShareService;
-use share::service::basic::BasicLocalShareService;
 use upload::service::basic::{BasicUploadService, LimitsBuilder};
 
 pub mod config;
@@ -141,13 +142,8 @@ async fn main() -> color_eyre::Result<()> {
         .await?
         .inspect(|_| info!("RabbitMQ connected"));
 
-    let updates_service: &dyn DynUpdatesService = if let Some(conn) = rabbitmq {
-        RabbitMQUpdatesService::new(
-            CONFIG.rabbitmq.exchange.clone(),
-            conn,
-            LocalUpdatesService::new(100),
-        )
-        .leaked()
+    let updates_service: &dyn DynUpdatesService = if let Some(ref conn) = rabbitmq {
+        RabbitMQUpdatesService::new(CONFIG.rabbitmq.exchange.clone(), conn.clone()).leaked()
     } else {
         LocalUpdatesService::new(100).leaked()
     };
@@ -192,14 +188,20 @@ async fn main() -> color_eyre::Result<()> {
             .build()?,
     );
 
-    let local_share_service = BasicLocalShareService::new(
+    let share_sync_service: &dyn DynShareSyncService = if let Some(ref conn) = rabbitmq {
+        RabbitMQShareSyncService::new(CONFIG.rabbitmq.exchange.clone(), conn.clone()).leaked()
+    } else {
+        LocalShareSyncService::new().leaked()
+    };
+
+    let share_service = BasicShareService::new(
         redis,
         folders_service,
         CONFIG.share.code_ttl,
-    ).leaked();
+        share_sync_service,
+    )
+    .leaked();
 
-    let share_service = local_share_service; // add rabbitmq sync
-    
     Server::builder()
         .accept_http1(true)
         .layer(cors())

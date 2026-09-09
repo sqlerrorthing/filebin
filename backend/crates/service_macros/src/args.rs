@@ -1,9 +1,9 @@
+use bitflags::bitflags;
 use proc_macro2::TokenStream;
 use std::fmt::Display;
-use bitflags::bitflags;
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
-use syn::{Ident, Result, Token, parenthesized, Lifetime};
+use syn::{Ident, Lifetime, Result, Token, parenthesized};
 
 bitflags! {
     #[derive(Debug, Copy, Clone)]
@@ -18,14 +18,14 @@ bitflags! {
 #[derive(Debug, Copy, Clone)]
 pub struct AttrArgs {
     pub requires: Requires,
-    pub dynamic_dispatch: bool
+    pub dynamic_dispatch: bool,
 }
 
 #[derive(Debug, Clone)]
 pub struct Args {
     pub requires: Requires,
     pub dynamic_dispatch: bool,
-    pub service_crate_root: TokenStream
+    pub service_crate_root: TokenStream,
 }
 
 enum RequiredItem {
@@ -37,7 +37,7 @@ impl Display for RequiredItem {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let str = match self {
             RequiredItem::Ident(s) => s.to_string(),
-            RequiredItem::Lifetime(s) => s.to_string()
+            RequiredItem::Lifetime(s) => s.to_string(),
         };
         write!(f, "{}", str)
     }
@@ -54,7 +54,10 @@ impl Parse for RequiredItem {
     }
 }
 
-fn try_parse_required(input: Punctuated<RequiredItem, Token![,]>, requires: &mut Requires) -> Result<()> {
+fn try_parse_required(
+    input: Punctuated<RequiredItem, Token![,]>,
+    requires: &mut Requires,
+) -> Result<()> {
     let mut to_remove = Requires::empty();
 
     for ident in input {
@@ -96,7 +99,7 @@ impl Parse for AttrArgs {
                 let _: Token![,] = input.parse()?;
             }
         }
-        
+
         Ok(AttrArgs {
             requires,
             dynamic_dispatch,

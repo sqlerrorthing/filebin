@@ -1,7 +1,7 @@
 use crate::repository::FoldersRepository;
 use cache::{Cache, Cached};
+use domain::models::folders;
 use storage::Storage;
-use domain::models::{encrypted_blobs, folders};
 
 const PREFIX: &str = "cache:folders";
 
@@ -31,7 +31,10 @@ where
         .map(|v| v.0)
     }
 
-    async fn new_folder(&self, new_folder: folders::NewFolder) -> Result<folders::Model, Self::Error> {
+    async fn new_folder(
+        &self,
+        new_folder: folders::NewFolder,
+    ) -> Result<folders::Model, Self::Error> {
         self.repository().new_folder(new_folder).await
     }
 
@@ -44,7 +47,11 @@ where
         Ok(folder)
     }
 
-    async fn rename(&self, folder_id: folders::Id, new_name: folders::FolderName) -> Result<Option<folders::Model>, Self::Error> {
+    async fn rename(
+        &self,
+        folder_id: folders::Id,
+        new_name: folders::FolderName,
+    ) -> Result<Option<folders::Model>, Self::Error> {
         let folder = self.repository().rename(folder_id, new_name).await?;
         if let Some(folder) = &folder {
             self.clear_cache_keys([key_by_id(folder.id), key_by_public_id(&folder.public_id)])

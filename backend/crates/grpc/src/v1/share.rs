@@ -1,10 +1,8 @@
+use crate::schema::SplitBusinessResultExt;
 use crate::schema::api::folder::v1::share_service_server::ShareService as GrpcShareService;
 use crate::schema::api::folder::v1::{
-    JoinRequest, SendKeyRequest,
-    SendKeyResponse, ShareEvent as ProtoShareEvent,
-    ShareRequest,
+    JoinRequest, SendKeyRequest, SendKeyResponse, ShareEvent as ProtoShareEvent, ShareRequest,
 };
-use crate::schema::SplitBusinessResultExt;
 use async_trait::async_trait;
 use derive_new::new;
 use domain::models;
@@ -17,6 +15,7 @@ use std::str::FromStr;
 use tonic::{Request, Response, Status};
 
 #[derive(new)]
+#[allow(clippy::redundant_field_names)]
 pub struct BasicGrpcShareService<SS> {
     share_service: SS,
 }

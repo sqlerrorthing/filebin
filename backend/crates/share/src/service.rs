@@ -1,14 +1,17 @@
 pub mod basic;
 
+pub use basic::sync::DynShareSyncService;
+pub use basic::sync::ShareSyncService;
+
 use bytes::Bytes;
-use service::service;
+use domain::models::folders;
 use futures::Stream;
 use nutype::nutype;
+use serde::{Deserialize, Serialize};
+use service::service;
+use std::fmt::Debug;
 use thiserror::Error;
 use uuid::Uuid;
-use domain::models::folders;
-use serde::{Deserialize, Serialize};
-use std::fmt::Debug;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ShareEvent {
@@ -26,7 +29,7 @@ pub enum ShareEvent {
         encrypted_folder_key: Bytes,
         folder_public_id: folders::PublicId,
     },
-    SessionClosed
+    SessionClosed,
 }
 
 macro_rules! keys {
@@ -43,10 +46,33 @@ macro_rules! keys {
 
 keys!(SenderPublicKey ReceiverPublicKey);
 
-#[nutype(derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Display, From, FromStr, Serialize, Deserialize))]
+#[nutype(derive(
+    Debug,
+    Copy,
+    Clone,
+    PartialEq,
+    Eq,
+    Hash,
+    Display,
+    From,
+    FromStr,
+    Serialize,
+    Deserialize
+))]
 pub struct SessionId(Uuid);
 
-#[nutype(derive(Debug, Clone, PartialEq, Eq, Display, From, FromStr, Serialize, Deserialize, AsRef))]
+#[nutype(derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    Display,
+    From,
+    FromStr,
+    Serialize,
+    Deserialize,
+    AsRef
+))]
 pub struct Code(String);
 
 #[derive(Debug, Error)]
@@ -80,7 +106,7 @@ pub enum CancelSessionError {
 #[service(dynamic)]
 pub trait ShareService {
     type Error;
-    type ShareStream: Stream<Item = ShareEvent> + Send + 'static;
+    type ShareStream: Stream<Item = ShareEvent> + 'static;
 
     #[result(InitiateSessionError)]
     async fn initiate_session(
@@ -97,15 +123,8 @@ pub trait ShareService {
     ) -> (SessionId, Self::ShareStream);
 
     #[result(SendKeyError)]
-    async fn send_key(
-        &self,
-        session_id: SessionId,
-        folder_key: Bytes,
-    );
+    async fn send_key(&self, session_id: SessionId, folder_key: Bytes);
 
     #[result(CancelSessionError)]
-    async fn cancel_session(
-        &self,
-        session_id: SessionId,
-    );
+    async fn cancel_session(&self, session_id: SessionId);
 }

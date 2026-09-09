@@ -13,7 +13,16 @@ macro_rules! idents {
 }
 
 fn basic_idents() -> Vec<Ident> {
-    idents![Debug, PartialEq, Eq, Clone, Serialize, Deserialize, Deref, AsRef]
+    idents![
+        Debug,
+        PartialEq,
+        Eq,
+        Clone,
+        Serialize,
+        Deserialize,
+        Deref,
+        AsRef
+    ]
 }
 
 pub struct NewtypeMeta {
@@ -43,7 +52,7 @@ impl NewtypeMeta {
         Self {
             const_fn: false,
             derives: basic_idents(),
-            derive_value_type: false
+            derive_value_type: false,
         }
     }
 
@@ -88,7 +97,7 @@ impl NewtypeMeta {
                     => Self::tinystr(),
 
                 default => Some(Self::other())
-            }
+            };
         }
 
         None
