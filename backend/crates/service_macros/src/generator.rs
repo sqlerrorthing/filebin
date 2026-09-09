@@ -2,12 +2,12 @@ use crate::args::Args;
 use derive_new::new;
 use proc_macro2::{Ident, TokenStream};
 use quote::{ToTokens, format_ident, quote};
-use std::collections::{BTreeMap, HashMap};
-use std::ops::ControlFlow;
+use std::collections::HashMap;
 use syn::visit_mut::VisitMut;
 use syn::{
-    Attribute, Error, GenericArgument, ItemTrait, Meta, PathArguments, PathSegment, Result, ReturnType, Token, TraitBound,
-    TraitItem, TraitItemFn, Type, TypeImplTrait, TypeParamBound, TypePath, parse_quote,
+    Attribute, Error, GenericArgument, ItemTrait, Meta, PathArguments, Result,
+    ReturnType, Token, TraitBound, TraitItem, TraitItemFn, Type, TypeImplTrait, TypeParamBound,
+    TypePath, parse_quote,
 };
 
 impl Boxing {
@@ -52,7 +52,7 @@ struct ParsedAssocType {
     erased_ty: Type,
     into_box: Option<Boxing>,
     map_err_into: bool,
-    alias_def: Option<TokenStream>
+    alias_def: Option<TokenStream>,
 }
 
 #[derive(Debug)]
@@ -201,7 +201,7 @@ impl DynGeneratorContext {
                         erased_ty,
                         into_box,
                         map_err_into,
-                        alias_def
+                        alias_def,
                     },
                 );
             }
@@ -247,7 +247,7 @@ impl DynGeneratorContext {
                 if needs_map && map_fn.is_none() {
                     return Err(Error::new_spanned(
                         orig_fn,
-                        "method return type uses Self:: associated types inside a generic/wrapper type; require #[map(...)] or #[map = ...] annotation with a mapping method (e.g. #[map(SubscribedSession::map)])"
+                        "method return type uses Self:: associated types inside a generic/wrapper type; require #[map(...)] or #[map = ...] annotation with a mapping method (e.g. #[map(SubscribedSession::map)])",
                     ));
                 }
 
@@ -456,12 +456,12 @@ impl ParsedGeneratorContext {
                     let transformed_stream = if let Some(assoc_ident) = assoc_ident
                         && let Some(parsed) = self.assoc_types.get(&assoc_ident)
                     {
-                        let boxed = if let Some(boxing) = parsed.into_box {
+                        
+                        if let Some(boxing) = parsed.into_box {
                             boxing.into_box(&quote!(__stream))
                         } else {
                             quote!(__stream)
-                        };
-                        boxed
+                        }
                     } else {
                         quote!(__stream)
                     };
@@ -469,7 +469,8 @@ impl ParsedGeneratorContext {
                 }
             } else if m.meta.is_result {
                 if let Some(ok_ty) = extract_ok_ty(&m.un_erased_ret) {
-                    let transformed_ok = transform_type_expr(&ok_ty, quote!(__ok), &self.assoc_types);
+                    let transformed_ok =
+                        transform_type_expr(&ok_ty, quote!(__ok), &self.assoc_types);
                     res_expr = quote!(#res_expr.map(|__ok| #transformed_ok));
                 }
 
@@ -640,7 +641,8 @@ fn extract_ok_ty(ty: &Type) -> Option<Type> {
     if let Type::Path(TypePath { qself, path }) = ty
         && qself.is_none()
         && path.segments.last().is_some_and(|s| s.ident == "Result")
-        && let Some(PathArguments::AngleBracketed(args)) = &path.segments.last().map(|s| &s.arguments)
+        && let Some(PathArguments::AngleBracketed(args)) =
+            &path.segments.last().map(|s| &s.arguments)
         && let Some(GenericArgument::Type(ok_ty)) = args.args.first()
     {
         return Some(ok_ty.clone());
@@ -663,7 +665,7 @@ fn transform_type_expr(
             boxing.into_box(&expr)
         } else {
             expr
-        }
+        };
     }
 
     if let Type::Tuple(type_tuple) = ty {
@@ -671,7 +673,9 @@ fn transform_type_expr(
             return expr;
         }
         let elems: Vec<_> = type_tuple.elems.iter().collect();
-        let arg_idents: Vec<_> = (0..elems.len()).map(|i| format_ident!("__arg{}", i)).collect();
+        let arg_idents: Vec<_> = (0..elems.len())
+            .map(|i| format_ident!("__arg{}", i))
+            .collect();
         let transformed_elems = elems.iter().enumerate().map(|(i, elem_ty)| {
             let ident = &arg_idents[i];
             transform_type_expr(elem_ty, quote!(#ident), assoc_types)
@@ -697,7 +701,10 @@ fn extract_and_remove_map_attr(attrs: &mut Vec<Attribute>) -> Result<Option<Toke
             let expr = meta_nv.value;
             Ok(Some(quote!(#expr)))
         }
-        Meta::Path(_) => Err(Error::new_spanned(attr, "expected #[map(...)] or #[map = ...]")),
+        Meta::Path(_) => Err(Error::new_spanned(
+            attr,
+            "expected #[map(...)] or #[map = ...]",
+        )),
     }
 }
 
@@ -718,7 +725,11 @@ fn uses_self_assoc(ty: &Type, assoc_types: &HashMap<Ident, ParsedAssocType>) -> 
         }
     }
     let mut ty_clone = ty.clone();
-    Visitor { assoc_types, uses: &mut uses }.visit_type_mut(&mut ty_clone);
+    Visitor {
+        assoc_types,
+        uses: &mut uses,
+    }
+    .visit_type_mut(&mut ty_clone);
     uses
 }
 
@@ -751,7 +762,11 @@ fn find_used_assoc_type(ty: &Type, assoc_types: &HashMap<Ident, ParsedAssocType>
         }
     }
     let mut ty_clone = ty.clone();
-    Finder { assoc_types, found: &mut found }.visit_type_mut(&mut ty_clone);
+    Finder {
+        assoc_types,
+        found: &mut found,
+    }
+    .visit_type_mut(&mut ty_clone);
     found
 }
 
@@ -778,12 +793,14 @@ fn requires_map(ty: &Type, assoc_types: &HashMap<Ident, ParsedAssocType>) -> boo
                 }
             }
             let mut ty_clone = ty.clone();
-            CheckGenericAssoc { assoc_types, has_generic_assoc: &mut has_generic_assoc }.visit_type_mut(&mut ty_clone);
-            
+            CheckGenericAssoc {
+                assoc_types,
+                has_generic_assoc: &mut has_generic_assoc,
+            }
+            .visit_type_mut(&mut ty_clone);
+
             has_generic_assoc && !is_direct_self_assoc(ty, assoc_types)
         }
-        _ => {
-            uses_self_assoc(ty, assoc_types) && !is_direct_self_assoc(ty, assoc_types)
-        }
+        _ => uses_self_assoc(ty, assoc_types) && !is_direct_self_assoc(ty, assoc_types),
     }
 }

@@ -2,6 +2,7 @@ pub mod stream;
 pub mod sync;
 
 use crate::service::basic::stream::SessionStream;
+use crate::service::basic::sync::SubscribedSession;
 use crate::service::{
     CancelSessionError, Code, InitiateSessionError, JoinSessionError, ReceiverPublicKey,
     SendKeyError, SenderPublicKey, SessionId, ShareEvent, ShareService,
@@ -10,12 +11,11 @@ use bytes::Bytes;
 use derive_new::new;
 use domain::models;
 use folders::service::FoldersService;
-use rand::{Rng, RngExt};
+use rand::RngExt;
 use serde::{Deserialize, Serialize};
 use service::business;
 use service::error::ServiceError;
 use std::fmt::Debug;
-use std::str::FromStr;
 use std::time::Duration;
 use storage::Storage;
 use sync::ShareSyncService;
@@ -25,7 +25,6 @@ use thiserror::Error;
 use tokio::spawn;
 use tokio::time::sleep;
 use uuid::Uuid;
-use crate::service::basic::sync::SubscribedSession;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SessionState {
@@ -81,11 +80,7 @@ where
 {
     async fn save_session(&self, state: &SessionState) -> Result<(), Error<S, FS>> {
         self.storage
-            .set(
-                &session_key(&state.session_id),
-                state,
-                3600,
-            )
+            .set(&session_key(&state.session_id), state, 3600)
             .await
             .map_err(Error::Storage)
     }
@@ -106,18 +101,13 @@ where
         session_id: SessionId,
     ) -> Result<(), Error<S, FS>> {
         self.storage
-            .set(
-                &code_key(code),
-                &session_id,
-                self.code_ttl.as_secs() as u32,
-            )
+            .set(&code_key(code), &session_id, self.code_ttl.as_secs() as u32)
             .await
             .map_err(Error::Storage)
     }
 
     async fn get_session_id_by_code(&self, code: &Code) -> Result<Option<SessionId>, Error<S, FS>> {
-        self
-            .storage
+        self.storage
             .get::<_, SessionId>(&code_key(code))
             .await
             .map_err(Error::Storage)
@@ -144,7 +134,8 @@ where
             .await
             .map_err(Error::Storage)?;
 
-        self.sync_service.broadcast_event(*session_id, ShareEvent::SessionClosed);
+        self.sync_service
+            .broadcast_event(*session_id, ShareEvent::SessionClosed);
         self.sync_service.session_closed(*session_id);
 
         Ok(())
@@ -193,8 +184,7 @@ where
         self.sync_service.session_created(session_id);
         let SubscribedSession {
             stream: inner_stream,
-            code_rotate_cancel
-            
+            code_rotate_cancel,
         } = self.sync_service.subscribe_session(session_id);
 
         let ttl_secs = self.code_ttl.as_secs() as i32;
@@ -310,7 +300,7 @@ where
             service: self.clone(),
             session_id,
         };
-        
+
         Ok((session_id, stream))
     }
 

@@ -29,7 +29,7 @@ pub enum ShareEvent {
         encrypted_folder_key: Bytes,
         folder_public_id: folders::PublicId,
     },
-    SessionClosed
+    SessionClosed,
 }
 
 macro_rules! keys {
@@ -46,10 +46,33 @@ macro_rules! keys {
 
 keys!(SenderPublicKey ReceiverPublicKey);
 
-#[nutype(derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Display, From, FromStr, Serialize, Deserialize))]
+#[nutype(derive(
+    Debug,
+    Copy,
+    Clone,
+    PartialEq,
+    Eq,
+    Hash,
+    Display,
+    From,
+    FromStr,
+    Serialize,
+    Deserialize
+))]
 pub struct SessionId(Uuid);
 
-#[nutype(derive(Debug, Clone, PartialEq, Eq, Display, From, FromStr, Serialize, Deserialize, AsRef))]
+#[nutype(derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    Display,
+    From,
+    FromStr,
+    Serialize,
+    Deserialize,
+    AsRef
+))]
 pub struct Code(String);
 
 #[derive(Debug, Error)]
@@ -100,15 +123,8 @@ pub trait ShareService {
     ) -> (SessionId, Self::ShareStream);
 
     #[result(SendKeyError)]
-    async fn send_key(
-        &self,
-        session_id: SessionId,
-        folder_key: Bytes,
-    );
+    async fn send_key(&self, session_id: SessionId, folder_key: Bytes);
 
     #[result(CancelSessionError)]
-    async fn cancel_session(
-        &self,
-        session_id: SessionId,
-    );
+    async fn cancel_session(&self, session_id: SessionId);
 }

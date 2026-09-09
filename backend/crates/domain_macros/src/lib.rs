@@ -5,10 +5,10 @@ mod newtype;
 use crate::args::Args;
 use crate::generator::Generator;
 use proc_macro::TokenStream;
+use proc_macro_crate::{FoundCrate, crate_name};
 use proc_macro2::{Ident, Span};
-use proc_macro_crate::{crate_name, FoundCrate};
 use quote::quote;
-use syn::{Data, DeriveInput, Error, parse_macro_input, DataStruct, Fields};
+use syn::{Data, DataStruct, DeriveInput, Error, Fields, parse_macro_input};
 
 #[proc_macro_derive(Model, attributes(model))]
 pub fn model(input: TokenStream) -> TokenStream {
@@ -20,24 +20,25 @@ pub fn model(input: TokenStream) -> TokenStream {
         }
         Err(_) => quote!(::domain),
     };
-    
+
     let input = parse_macro_input!(input as DeriveInput);
     let model_args = input
         .attrs
         .iter()
         .find(|a| a.path().is_ident("model"))
-        .map(|attr| {
-            attr.parse_args::<Args>()
-        });
-    
+        .map(|attr| attr.parse_args::<Args>());
+
     let model_args = match model_args {
         Some(Ok(a)) => a,
         Some(Err(e)) => return e.to_compile_error().into(),
-        None => Args::default()
+        None => Args::default(),
     };
 
     match input.data.clone() {
-        Data::Struct(DataStruct { fields: Fields::Named(named), .. }) => Generator::new(model_args, input, named, crate_root)
+        Data::Struct(DataStruct {
+            fields: Fields::Named(named),
+            ..
+        }) => Generator::new(model_args, input, named, crate_root)
             .generate()
             .unwrap_or_else(|f| f.to_compile_error())
             .into(),

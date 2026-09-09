@@ -20,7 +20,7 @@ use std::sync::Arc;
 use tokio::spawn;
 use tokio::sync::mpsc;
 use tokio::sync::mpsc::UnboundedSender;
-use tracing::{Level, debug, debug_span, error, info, span};
+use tracing::{debug, debug_span, error, info};
 
 pub mod consumer;
 pub mod listener;

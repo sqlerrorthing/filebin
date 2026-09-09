@@ -5,7 +5,6 @@ use crate::service::{
 use auth::service::TokenService;
 use bytes::Bytes;
 use derive_builder::Builder;
-use derive_more::{Deref, DerefMut};
 use derive_new::new;
 use domain::models;
 use domain::models::files::{Model, UploadFileData};
@@ -69,8 +68,12 @@ where
     US: UpdatesService,
     SS: Storage,
 {
-    async fn is_folder_full(&self, folder_id: models::folders::Id) -> Result<bool, <Self as UploadService>::Error> {
-        Ok(self.files_service
+    async fn is_folder_full(
+        &self,
+        folder_id: models::folders::Id,
+    ) -> Result<bool, <Self as UploadService>::Error> {
+        Ok(self
+            .files_service
             .files_count(folder_id)
             .await
             .map_err(Error::Files)?

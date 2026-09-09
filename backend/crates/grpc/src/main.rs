@@ -22,12 +22,10 @@ use id_generator::service::random::RandomIdGeneratorService;
 use sea_orm::{Database, DatabaseConnection, DbErr};
 use sea_orm_migration::migrator::MigratorTrait;
 use secrecy::ExposeSecret;
-use share::service::DynShareService;
 use share::service::DynShareSyncService;
 use share::service::basic::BasicShareService;
 use share::service::basic::sync::basic::LocalShareSyncService;
 use share::service::basic::sync::rabbitmq::RabbitMQShareSyncService;
-use std::any::type_name_of_val;
 use tonic::codegen::http::{HeaderName, Method, header};
 use tonic::transport::Server;
 use tonic_web::GrpcWebLayer;
@@ -145,11 +143,7 @@ async fn main() -> color_eyre::Result<()> {
         .inspect(|_| info!("RabbitMQ connected"));
 
     let updates_service: &dyn DynUpdatesService = if let Some(ref conn) = rabbitmq {
-        RabbitMQUpdatesService::new(
-            CONFIG.rabbitmq.exchange.clone(),
-            conn.clone(),
-        )
-        .leaked()
+        RabbitMQUpdatesService::new(CONFIG.rabbitmq.exchange.clone(), conn.clone()).leaked()
     } else {
         LocalUpdatesService::new(100).leaked()
     };
@@ -195,11 +189,7 @@ async fn main() -> color_eyre::Result<()> {
     );
 
     let share_sync_service: &dyn DynShareSyncService = if let Some(ref conn) = rabbitmq {
-        RabbitMQShareSyncService::new(
-            CONFIG.rabbitmq.exchange.clone(),
-            conn.clone(),
-        )
-        .leaked()
+        RabbitMQShareSyncService::new(CONFIG.rabbitmq.exchange.clone(), conn.clone()).leaked()
     } else {
         LocalShareSyncService::new().leaked()
     };
@@ -211,7 +201,7 @@ async fn main() -> color_eyre::Result<()> {
         share_sync_service,
     )
     .leaked();
-    
+
     Server::builder()
         .accept_http1(true)
         .layer(cors())

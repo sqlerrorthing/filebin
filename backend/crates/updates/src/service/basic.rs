@@ -39,10 +39,7 @@ impl LocalUpdatesService {
 
     pub(super) fn send_update(&self, folder_id: folders::Id, kind: FolderUpdateKind) {
         let is_delete = matches!(kind, FolderUpdateKind::FolderDeleted { .. });
-        let update = FolderUpdate {
-            folder_id,
-            kind
-        };
+        let update = FolderUpdate { folder_id, kind };
 
         if let Some(sender) = self.get_channel(update.folder_id) {
             _ = sender.send(Arc::new(update))
@@ -73,11 +70,8 @@ impl UpdatesService for LocalUpdatesService {
         self.send_update(file.folder_id, FolderUpdateKind::FileUploaded { file })
     }
 
-    fn fire_file_deleted(&self, file: files::Model) -> () {
-        self.send_update(
-            file.folder_id,
-            FolderUpdateKind::FileDeleted { file }
-        )
+    fn fire_file_deleted(&self, file: files::Model) {
+        self.send_update(file.folder_id, FolderUpdateKind::FileDeleted { file })
     }
 
     fn fire_folder_renamed(&self, folder_id: folders::Id, new_folder_name: folders::FolderName) {

@@ -1,9 +1,9 @@
-use std::fmt::{Debug, Formatter};
-use std::pin::Pin;
-use std::task::{Context, Poll};
 use derive_new::new;
 use futures::Stream;
 use pin_project::pin_project;
+use std::fmt::{Debug, Formatter};
+use std::pin::Pin;
+use std::task::{Context, Poll};
 
 #[pin_project]
 #[derive(new)]

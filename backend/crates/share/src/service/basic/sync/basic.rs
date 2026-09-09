@@ -31,25 +31,21 @@ impl LocalShareSyncService {
             return control.clone();
         }
         let (tx, _) = broadcast::channel(32);
-        
+
         let control = SessionControl {
             tx: tx.clone(),
             code_rotate_cancel: CancellationToken::new(),
         };
 
-        map.insert(
-            session_id,
-            control.clone(),
-        );
+        map.insert(session_id, control.clone());
 
         control
     }
 
-
     pub fn stop_rotation(&self, session_id: SessionId) {
         let map = self.sessions.lock();
         if let Some(control) = map.get(&session_id) {
-            _ = control.code_rotate_cancel.cancel();
+            control.code_rotate_cancel.cancel();
         }
     }
 
@@ -67,8 +63,10 @@ impl ShareSyncService for LocalShareSyncService {
         let rx = control.tx.subscribe();
 
         SubscribedSession {
-            stream: DebugStream::new(BroadcastStream::new(rx).filter_map(|res| async move { res.ok() })),
-            code_rotate_cancel: control.code_rotate_cancel.clone()
+            stream: DebugStream::new(
+                BroadcastStream::new(rx).filter_map(|res| async move { res.ok() }),
+            ),
+            code_rotate_cancel: control.code_rotate_cancel.clone(),
         }
     }
 

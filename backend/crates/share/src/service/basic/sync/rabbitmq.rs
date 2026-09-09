@@ -1,12 +1,9 @@
 use crate::service::basic::sync::{ShareSyncService, SubscribedSession};
 use crate::service::{SessionId, ShareEvent};
 use amqprs::connection::Connection;
-use amqprs::consumer::AsyncConsumer;
 use derivative::Derivative;
-use futures::{Stream, StreamExt};
-use serde::{Deserialize, Serialize};
+use futures::Stream;
 use std::fmt::Debug;
-use std::sync::Arc;
 use tokio_util::sync::CancellationToken;
 use utils::rabbitmq::RabbitMQSync;
 use utils::rabbitmq::listener::{Listener, LocalSessionData};
@@ -32,10 +29,6 @@ impl Listener for SyncListener {
     type LocalSessionData = SessionControl;
     type Message = ShareEvent;
     type StreamItem = ShareEvent;
-
-    fn on_message(&self, session_id: &Self::SessionId, message: Self::Message) {
-        dbg!((session_id, message));
-    }
 }
 
 impl Message for ShareEvent {
@@ -79,7 +72,7 @@ impl ShareSyncService for RabbitMQShareSyncService {
 
     fn subscribe_session(&self, session_id: SessionId) -> SubscribedSession<Self::ShareStream> {
         let sess = self.inner.subscribe_session(session_id);
-        
+
         SubscribedSession {
             stream: sess.session,
             code_rotate_cancel: sess.data.cancel_code_rotation,

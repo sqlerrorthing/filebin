@@ -6,7 +6,7 @@ use service::service;
 
 pub enum SetTtl {
     Keep,
-    Set(Option<u32>)
+    Set(Option<u32>),
 }
 
 impl From<Option<u32>> for SetTtl {

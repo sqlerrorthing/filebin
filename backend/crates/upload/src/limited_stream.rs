@@ -1,9 +1,8 @@
 use bytes::Bytes;
-use derive_new::new;
 use futures::Stream;
+use pin_project::pin_project;
 use std::pin::Pin;
 use std::task::{Context, Poll};
-use pin_project::pin_project;
 use thiserror::Error;
 
 #[pin_project]
@@ -49,17 +48,15 @@ where
 
         stream.poll_next(cx).map(|opt| {
             opt.map(|result| {
-                result
-                    .map_err(LimitStreamError::Stream)
-                    .and_then(|bytes| {
-                        *this.processed += bytes.len() as u64;
-                        if *this.processed > *this.max_size {
-                            this.stream.set(None);
-                            Err(LimitStreamError::LimitExceeds)
-                        } else {
-                            Ok(bytes)
-                        }
-                    })
+                result.map_err(LimitStreamError::Stream).and_then(|bytes| {
+                    *this.processed += bytes.len() as u64;
+                    if *this.processed > *this.max_size {
+                        this.stream.set(None);
+                        Err(LimitStreamError::LimitExceeds)
+                    } else {
+                        Ok(bytes)
+                    }
+                })
             })
         })
     }

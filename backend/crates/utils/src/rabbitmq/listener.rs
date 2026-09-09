@@ -1,11 +1,11 @@
+use crate::rabbitmq::message::{Message, SessionId};
 use std::fmt::Debug;
 use std::marker::PhantomData;
-use crate::rabbitmq::message::{Message, SessionId};
 
 pub trait Listener: Send + Sync + Clone + 'static {
     type SessionId: SessionId;
     type LocalSessionData: LocalSessionData<Listener = Self>;
-    
+
     type Message: Message;
     type StreamItem: From<Self::Message> + Clone + Send + Sync;
 
@@ -14,7 +14,7 @@ pub trait Listener: Send + Sync + Clone + 'static {
 
 pub trait LocalSessionData: Debug + Clone {
     type Listener: Listener;
-    
+
     fn new(session_id: &<Self::Listener as Listener>::SessionId) -> Self;
 }
 

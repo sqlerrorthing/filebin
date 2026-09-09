@@ -1,13 +1,13 @@
-use futures_util::TryStreamExt;
 use crate::service::DownloadService;
 use bytes::Bytes;
 use derive_new::new;
+use domain::models;
 use files::service::FilesService;
 use folders::service::FoldersService;
 use futures_core::Stream;
+use futures_util::TryStreamExt;
 use std::fmt::Debug;
 use thiserror::Error;
-use domain::models;
 
 #[derive(Debug, Clone, new)]
 pub struct BasicDownloadService<FilesS, FoldersS> {
@@ -33,14 +33,14 @@ where
     FoldersS: FoldersService,
 {
     type Error = Error<FilesS, FoldersS>;
-    type DownloadFileByPublicIdsStream =
-        impl Stream<Item = Result<Bytes, Self::Error>> + Debug;
+    type DownloadFileByPublicIdsStream = impl Stream<Item = Result<Bytes, Self::Error>> + Debug;
 
     async fn download_file_stream_by_public_ids(
         &self,
         folder_id: models::folders::PublicId,
         file_id: models::files::PublicId,
-    ) -> Result<Option<(models::files::Model, Self::DownloadFileByPublicIdsStream)>, Self::Error> {
+    ) -> Result<Option<(models::files::Model, Self::DownloadFileByPublicIdsStream)>, Self::Error>
+    {
         let Some(folder) = self
             .folders_service
             .find_folder_by_public_id(folder_id)
@@ -64,7 +64,6 @@ where
             .get_file_by_storage_path(file.storage_path)
             .await
             .map_err(Error::Files)?
-            .map(|s| (file, s.map_err(Error::Files)))
-        )
+            .map(|s| (file, s.map_err(Error::Files))))
     }
 }

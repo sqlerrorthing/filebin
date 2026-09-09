@@ -1,17 +1,17 @@
 use crate::rabbitmq::Debug;
-use std::collections::HashMap;
-use std::pin::Pin;
-use std::sync::Arc;
-use std::task::{Context, Poll};
+use crate::rabbitmq::consumer::{BindingCmd, BindingCmdKind};
+use crate::rabbitmq::listener::Listener;
 use derivative::Derivative;
 use derive_new::new;
 use futures::Stream;
 use parking_lot::Mutex;
 use pin_project::{pin_project, pinned_drop};
+use std::collections::HashMap;
+use std::pin::Pin;
+use std::sync::Arc;
+use std::task::{Context, Poll};
 use tokio::sync::mpsc::UnboundedSender;
-use tracing::{debug, debug_span, span};
-use crate::rabbitmq::consumer::{BindingCmd, BindingCmdKind};
-use crate::rabbitmq::listener::Listener;
+use tracing::{debug, debug_span};
 
 #[derive(Derivative, new)]
 #[derivative(Debug(bound = "S: Debug"))]
@@ -21,7 +21,7 @@ pub struct SubscriptionGuardStream<S, L: Listener> {
     inner: S,
     session_id: L::SessionId,
     binding_tx: UnboundedSender<BindingCmd<L::SessionId>>,
-    counts: Arc<Mutex<HashMap<L::SessionId, usize>>>
+    counts: Arc<Mutex<HashMap<L::SessionId, usize>>>,
 }
 
 #[pinned_drop]
@@ -36,7 +36,10 @@ impl<S, L: Listener> PinnedDrop for SubscriptionGuardStream<S, L> {
             if *count == 0 {
                 debug!("dropping full folder subscription cause no one needed it");
                 counts.remove(&self.session_id);
-                let _ = self.binding_tx.send(BindingCmd::new(self.session_id.clone(), BindingCmdKind::Unbind));
+                let _ = self.binding_tx.send(BindingCmd::new(
+                    self.session_id.clone(),
+                    BindingCmdKind::Unbind,
+                ));
             }
         }
     }
@@ -44,7 +47,7 @@ impl<S, L: Listener> PinnedDrop for SubscriptionGuardStream<S, L> {
 
 impl<S, I, L: Listener> Stream for SubscriptionGuardStream<S, L>
 where
-    S: Stream<Item = I>
+    S: Stream<Item = I>,
 {
     type Item = I;
 

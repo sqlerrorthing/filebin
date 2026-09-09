@@ -1,7 +1,7 @@
-use sea_orm::FromJsonQueryResult;
 use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize};
 use domain_macros::Model;
+use sea_orm::FromJsonQueryResult;
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize, Model)]
 #[model(

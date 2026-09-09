@@ -1,12 +1,11 @@
-use derive_more::{Display, FromStr};
-use tinystr::TinyAsciiStr;
 use crate::macros::tiny_str_sea_orm_derive;
-use nutype::nutype;
-use serde::{Deserialize, Serialize};
-use sea_orm::entity::prelude::DeriveValueType;
-use sea_orm::FromJsonQueryResult;
-use strum_macros::EnumIter;
+use derive_more::{Display, FromStr};
 use domain_macros::Model;
+use nutype::nutype;
+use sea_orm::FromJsonQueryResult;
+use serde::{Deserialize, Serialize};
+use strum_macros::EnumIter;
+use tinystr::TinyAsciiStr;
 
 macro_rules! b64_encoded_exact_size {
     (
@@ -55,16 +54,11 @@ b64_encoded_exact_size!(IV(16) Tag(24));
 #[display(rename_all = "kebab-case")]
 pub enum EncryptionAlgo {
     Aes256Gcm,
-    Aes128Gcm
+    Aes128Gcm,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize, Model, FromJsonQueryResult)]
-#[model(
-    newtypes(
-        Version(i16)
-    )
-
-)]
+#[model(newtypes(Version(i16)))]
 pub struct Model {
     pub iv: IV,
     pub tag: Tag,

@@ -134,6 +134,6 @@ impl<L: Listener> LocalSessions<L> {
         self.sessions
             .lock()
             .get(session_id)
-            .map(move |sess| f(sess))
+            .map(f)
     }
 }

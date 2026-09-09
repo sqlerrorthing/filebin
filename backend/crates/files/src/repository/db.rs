@@ -1,6 +1,9 @@
 use crate::repository::FilesRepository;
 use domain::{models, persistence};
-use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, JoinType, PaginatorTrait, QueryFilter, QuerySelect, RelationTrait, Set};
+use sea_orm::{
+    ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait,
+    QueryFilter, Set,
+};
 
 impl FilesRepository for DatabaseConnection {
     type Error = sea_orm::DbErr;

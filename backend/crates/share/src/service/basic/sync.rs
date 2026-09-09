@@ -1,15 +1,15 @@
 pub mod basic;
 pub mod rabbitmq;
 
-use service::{service, map};
+use crate::service::{SessionId, ShareEvent};
 use futures::Stream;
+use service::{map, service};
 use std::fmt::Debug;
 use tokio_util::sync::CancellationToken;
-use crate::service::{SessionId, ShareEvent};
 
 pub struct SubscribedSession<S> {
     pub(crate) stream: S,
-    pub(crate) code_rotate_cancel: CancellationToken
+    pub(crate) code_rotate_cancel: CancellationToken,
 }
 
 impl<S> SubscribedSession<S> {

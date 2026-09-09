@@ -23,19 +23,19 @@ pub struct InstanceRabbitMQConsumer<L: Listener> {
 #[derive(Debug, new, Serialize, Deserialize)]
 pub struct BindingCmd<Id> {
     pub(super) session_id: Id,
-    pub(super) kind: BindingCmdKind
+    pub(super) kind: BindingCmdKind,
 }
 
 #[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum BindingCmdKind {
     Bind,
-    Unbind
+    Unbind,
 }
 
 #[derive(Serialize, Deserialize)]
 pub(super) struct QueueMessage<L: Listener> {
     pub session_id: L::SessionId,
-    pub message: L::Message
+    pub message: L::Message,
 }
 
 #[async_trait]
@@ -59,7 +59,9 @@ where
             if is_close {
                 let mut counts = self.counts.lock();
                 if counts.remove(&session_id).is_some() {
-                    let _ = self.binding_tx.send(BindingCmd::new(session_id, BindingCmdKind::Unbind));
+                    let _ = self
+                        .binding_tx
+                        .send(BindingCmd::new(session_id, BindingCmdKind::Unbind));
                 }
             }
         }
