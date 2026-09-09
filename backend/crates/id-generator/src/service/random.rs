@@ -1,10 +1,10 @@
-use rand::{rng, RngExt};
+use crate::service::IdGeneratorService;
+use domain::models::{files, folders};
 use rand::distr::Alphanumeric;
 use rand::prelude::IteratorRandom;
+use rand::{RngExt, rng};
 use tinystr::TinyAsciiStr;
 use uuid::Uuid;
-use domain::models::{files, folders};
-use crate::service::IdGeneratorService;
 
 #[derive(Debug, Copy, Clone)]
 pub struct RandomIdGeneratorService;
@@ -25,6 +25,9 @@ impl IdGeneratorService for RandomIdGeneratorService {
 
 fn fill_tinystr<const N: usize>() -> TinyAsciiStr<N> {
     let mut buf = [0u8; N];
-    rng().sample_iter(Alphanumeric).take(N).sample_fill(&mut rng(), &mut buf);
+    rng()
+        .sample_iter(Alphanumeric)
+        .take(N)
+        .sample_fill(&mut rng(), &mut buf);
     unsafe { TinyAsciiStr::<N>::try_from_raw(buf).unwrap_unchecked() }
 }

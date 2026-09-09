@@ -50,3 +50,8 @@ pub fn service(attr: TokenStream, item: TokenStream) -> TokenStream {
         #generated
     ))
 }
+
+#[proc_macro_attribute]
+pub fn map(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    item
+}

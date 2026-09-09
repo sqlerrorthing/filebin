@@ -1,5 +1,5 @@
-use std::error::Error;
 use crate::error::sealed::Sealed;
+use std::error::Error;
 use thiserror::Error;
 
 pub trait FromError<E> {
@@ -70,7 +70,7 @@ impl<B, I> ServiceError<B, I> {
     fn map_internal<IN>(self, f: impl FnOnce(I) -> IN) -> ServiceError<B, IN> {
         match self {
             ServiceError::Business(b) => business!(b),
-            ServiceError::Internal(i) => internal!(f(i))
+            ServiceError::Internal(i) => internal!(f(i)),
         }
     }
 }
@@ -122,7 +122,10 @@ impl<T, B, I> ResultExt<T, B, I> for Result<T, ServiceError<B, I>> {
 
 pub trait OptionExt<T> {
     fn ok_or_business<B: Error, I: Error>(self, err: B) -> Result<T, ServiceError<B, I>>;
-    fn ok_or_else_business<B: Error, I: Error>(self, err: impl FnOnce() -> B) -> Result<T, ServiceError<B, I>>;
+    fn ok_or_else_business<B: Error, I: Error>(
+        self,
+        err: impl FnOnce() -> B,
+    ) -> Result<T, ServiceError<B, I>>;
 }
 
 impl OptionExt<()> for bool {
@@ -130,7 +133,10 @@ impl OptionExt<()> for bool {
         self.ok_or_else_business(|| err)
     }
 
-    fn ok_or_else_business<B: Error, I: Error>(self, err: impl FnOnce() -> B) -> Result<(), ServiceError<B, I>> {
+    fn ok_or_else_business<B: Error, I: Error>(
+        self,
+        err: impl FnOnce() -> B,
+    ) -> Result<(), ServiceError<B, I>> {
         self.ok_or_else(|| business!(err()))
     }
 }
@@ -142,7 +148,10 @@ impl<T> OptionExt<T> for Option<T> {
     }
 
     #[inline(always)]
-    fn ok_or_else_business<B: Error, I: Error>(self, err: impl FnOnce() -> B) -> Result<T, ServiceError<B, I>> {
+    fn ok_or_else_business<B: Error, I: Error>(
+        self,
+        err: impl FnOnce() -> B,
+    ) -> Result<T, ServiceError<B, I>> {
         self.ok_or_else(|| business!(err()))
     }
 }

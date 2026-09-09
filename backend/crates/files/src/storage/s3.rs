@@ -1,6 +1,6 @@
 use crate::storage::{
-    LockRawMultipartUploadHandle, FILES_PREFIX, FilesStorage, HasRawMultipartUploadHandle,
-    IntoRawMultipartUploadHandle,
+    FILES_PREFIX, FilesStorage, HasRawMultipartUploadHandle, IntoRawMultipartUploadHandle,
+    LockRawMultipartUploadHandle,
 };
 use aws_sdk_s3::error::SdkError;
 use aws_sdk_s3::operation::complete_multipart_upload::CompleteMultipartUploadError;
@@ -24,7 +24,6 @@ use parking_lot::{RawRwLock, RwLock};
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use std::hint::cold_path;
-use std::sync::atomic::AtomicI32;
 use thiserror::Error;
 use tokio::spawn;
 use tracing::error;
@@ -217,7 +216,7 @@ impl FilesStorage for S3FilesStorage {
                 let part = h.next_part_number;
                 h.next_part_number += 1;
 
-                (part, h.bucket.clone(), h.upload_id.clone(), h.key.clone())
+                (part, h.bucket.clone(), h.upload_id.clone(), h.key)
             })
             .await
             .ok_or(Error::MultipartHandlerDropped)?;
@@ -238,7 +237,8 @@ impl FilesStorage for S3FilesStorage {
             part_number,
         };
 
-        handle.with_write(|h| h.completed_parts.push(completed_part))
+        handle
+            .with_write(|h| h.completed_parts.push(completed_part))
             .await
             .ok_or(Error::MultipartHandlerDropped)?;
 
@@ -252,9 +252,12 @@ impl FilesStorage for S3FilesStorage {
     where
         H: IntoRawMultipartUploadHandle<
             Raw = <Self::MultipartUploadHandle as HasRawMultipartUploadHandle>::Raw,
-        >
+        >,
     {
-        let (handle_inner, rest) = handle.into_raw().await.ok_or(Error::MultipartHandlerDropped)?;
+        let (handle_inner, rest) = handle
+            .into_raw()
+            .await
+            .ok_or(Error::MultipartHandlerDropped)?;
         let mut parts = handle_inner.completed_parts.clone();
         parts.sort_by_key(|p| p.part_number);
         let parts = parts.into_iter().map(Into::into).collect();

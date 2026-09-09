@@ -2,8 +2,8 @@ use heck::ToSnakeCase;
 use proc_macro2::Ident;
 use quote::format_ident;
 use syn::parse::{Parse, ParseStream};
-use syn::{Attribute, Result, Token, Type};
 use syn::token::Paren;
+use syn::{Attribute, Result, Token, Type};
 
 #[derive(Debug, Clone)]
 pub struct NewType {
@@ -25,14 +25,8 @@ impl Parse for NewType {
 
 #[derive(Debug, Clone)]
 pub enum InputField {
-    Field {
-        name: Ident,
-        alias: Ident
-    },
-    Spread {
-        name: Ident,
-        path: syn::Path,
-    },
+    Field { name: Ident, alias: Ident },
+    Spread { name: Ident, path: syn::Path },
 }
 
 impl Parse for InputField {
@@ -45,7 +39,15 @@ impl Parse for InputField {
                 input.parse::<Token![as]>()?;
                 input.parse::<Ident>()?
             } else {
-                format_ident!("{}", path.segments.last().unwrap().ident.to_string().to_snake_case())
+                format_ident!(
+                    "{}",
+                    path.segments
+                        .last()
+                        .unwrap()
+                        .ident
+                        .to_string()
+                        .to_snake_case()
+                )
             };
 
             return Ok(InputField::Spread { path, name: prefix });
@@ -74,7 +76,10 @@ impl Parse for Input {
         let name: Ident = input.parse()?;
 
         if !input.peek(Paren) {
-            return Ok(Input { name, fields: vec![] })
+            return Ok(Input {
+                name,
+                fields: vec![],
+            });
         }
 
         let content;

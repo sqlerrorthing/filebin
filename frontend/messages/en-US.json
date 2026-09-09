@@ -1,6 +1,9 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "language": "English",
+  "general": {
+    "close": "Close"
+  },
   "head": {
     "title": "Anonymous E2EE File storage.\nWe respect your privacy!"
   },
@@ -22,8 +25,26 @@
     "delete-confirm": "Confirm",
     "files": "{count} of {max}"
   },
+  "share": {
+    "enter-code": "Code",
+    "title": "Folder Share",
+    "join": "Join",
+    "connecting": "Connection to session",
+    "connected-and-verify": "Recipient connected! Verify that these emojis match on both screens.",
+    "if-match": "If the emojis match, click confirm to securely transmit the folder key.",
+    "match-btn": "Emojis Match, Confirm Share",
+    "init": "Initializing secure session",
+    "verify-emojis": "Verify these emojis match with the sender:",
+    "waiting-confirm": "Waiting for sender to confirm",
+    "decrypting-and-open": "Decrypting folder key and opening",
+    "share": "Share this code with the recipient. Waiting for them to join",
+    "copy-code": "Copy code",
+    "rotate": "Code rotates automatically",
+    "success": "Folder shared successfully!",
+    "invalid-code": "Please enter a valid {digits}-digit code"
+  },
   "footer": {
-    "made": "Made with ♥\uFE0F\uD83C\uDFF3\uFE0F\u200D\uD83C\uDF08 by {#link to=$authorUrl}{author}{/link}",
+    "made": "Made with ♥\uFE0F by {#link to=$authorUrl}{author}{/link}",
     "source": "Source code available on {#link to=$url}{platform}{/link}"
   }
 }

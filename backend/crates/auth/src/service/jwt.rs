@@ -1,10 +1,10 @@
-use std::time::Duration;
 use crate::service::TokenService;
 use chrono::{DateTime, Utc};
+use domain::models;
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use serde::{Deserialize, Serialize};
+use std::time::Duration;
 use thiserror::Error;
-use domain::models;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct ModifyFolderToken {
@@ -63,9 +63,11 @@ impl TokenService for JwtTokenService {
         folder_long_id: &models::folders::PublicId,
         token: String,
     ) -> Result<bool, Self::Error> {
-        Ok(
-            decode::<ModifyFolderToken>(&token, &self.decoding_key, &Validation::new(Algorithm::HS256))
-                .is_ok_and(|data| &data.claims.folder == folder_long_id),
+        Ok(decode::<ModifyFolderToken>(
+            &token,
+            &self.decoding_key,
+            &Validation::new(Algorithm::HS256),
         )
+        .is_ok_and(|data| &data.claims.folder == folder_long_id))
     }
 }

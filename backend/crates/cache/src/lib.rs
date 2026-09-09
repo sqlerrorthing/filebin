@@ -1,8 +1,8 @@
-use std::any::type_name;
 use derive_builder::Builder;
 use derive_new::new;
-use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
+use serde::{Deserialize, Serialize};
+use std::any::type_name;
 use std::collections::HashMap;
 use std::sync::Arc;
 use storage::Storage;
@@ -60,32 +60,33 @@ impl<S: Storage, R> Cache<S, R> {
                     (false, notify.clone())
                 } else {
                     let notify = Arc::new(Notify::new());
-                    in_flight.insert(key.to_owned() , notify.clone());
+                    in_flight.insert(key.to_owned(), notify.clone());
                     (true, notify)
                 }
             };
 
             if !is_leader {
                 notify.notified().await;
-                continue
+                continue;
             }
 
             let _guard = InflightGuard {
                 key,
                 inflight: &self.inflight,
-                notify
+                notify,
             };
 
             let result = load(&self.repository).await?;
             self.cache(key, &result).await;
             drop(_guard);
 
-            return Ok(result)
+            return Ok(result);
         }
     }
 
     async fn cache<T: Serialize + Sync>(&self, key: &str, value: &T) {
-        _ = self.storage
+        _ = self
+            .storage
             .set(key, value, Some(self.ttl))
             .await
             .inspect_err(|e| error!("failed to cache item in storage: {e}"));
@@ -105,13 +106,16 @@ impl<S: Storage, R> Cache<S, R> {
     where
         K: Into<String> + Send,
         I: IntoIterator<Item = K> + Send,
-        I::IntoIter: Send
+        I::IntoIter: Send,
     {
-        _ = self.storage.bulk_delete(keys).await
+        _ = self
+            .storage
+            .bulk_delete(keys)
+            .await
             .inspect_err(|e| error!("Failed to bulk delete keys: {e}"));
     }
 
     pub fn repository(&self) -> &R {
-         &self.repository
+        &self.repository
     }
 }

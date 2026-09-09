@@ -1,7 +1,7 @@
 use domain::into_string::IntoOptionalString;
 use service::error::ServiceError;
 use std::error::Error;
-use tonic::{Response, Status};
+use tonic::Status;
 use tracing::error;
 
 pub mod api {
@@ -20,7 +20,7 @@ pub mod api {
 
 pub trait ServiceOptionErrorExt<T> {
     type OkOrNotFound;
-    
+
     fn ok_or_not_found(self) -> Self::OkOrNotFound;
 }
 
@@ -168,7 +168,9 @@ pub trait SplitBusinessResultExt<T, B> {
     fn split_business(self) -> Result<Result<T, B>, Status>;
 }
 
-impl<T, B: Error + 'static, I: Error + 'static> SplitBusinessResultExt<T, B> for Result<T, ServiceError<B, I>> {
+impl<T, B: Error + 'static, I: Error + 'static> SplitBusinessResultExt<T, B>
+    for Result<T, ServiceError<B, I>>
+{
     fn split_business(self) -> Result<Result<T, B>, Status> {
         self.ok_or_internal()
     }

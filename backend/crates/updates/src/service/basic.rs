@@ -4,35 +4,12 @@ use domain::models::{files, folders};
 use futures::Stream;
 use futures::StreamExt;
 use parking_lot::Mutex;
-use pin_project::pin_project;
 use std::collections::HashMap;
-use std::fmt::{Debug, Formatter};
-use std::pin::Pin;
+use std::fmt::Debug;
 use std::sync::Arc;
-use std::task::{Context, Poll};
 use tokio::sync::broadcast;
 use tokio_stream::wrappers::BroadcastStream;
-
-#[pin_project]
-#[derive(new)]
-struct DebugStream<S> {
-    #[pin]
-    inner: S,
-}
-
-impl<S> Debug for DebugStream<S> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("DebugStream")
-    }
-}
-
-impl<S: Stream> Stream for DebugStream<S> {
-    type Item = S::Item;
-
-    fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
-        self.project().inner.poll_next(cx)
-    }
-}
+use utils::stream::DebugStream;
 
 #[derive(Debug, new)]
 pub struct LocalUpdatesService {
@@ -62,10 +39,7 @@ impl LocalUpdatesService {
 
     pub(super) fn send_update(&self, folder_id: folders::Id, kind: FolderUpdateKind) {
         let is_delete = matches!(kind, FolderUpdateKind::FolderDeleted { .. });
-        let update = FolderUpdate {
-            folder_id,
-            kind
-        };
+        let update = FolderUpdate { folder_id, kind };
 
         if let Some(sender) = self.get_channel(update.folder_id) {
             _ = sender.send(Arc::new(update))
@@ -96,11 +70,8 @@ impl UpdatesService for LocalUpdatesService {
         self.send_update(file.folder_id, FolderUpdateKind::FileUploaded { file })
     }
 
-    fn fire_file_deleted(&self, file: files::Model) -> () {
-        self.send_update(
-            file.folder_id,
-            FolderUpdateKind::FileDeleted { file }
-        )
+    fn fire_file_deleted(&self, file: files::Model) {
+        self.send_update(file.folder_id, FolderUpdateKind::FileDeleted { file })
     }
 
     fn fire_folder_renamed(&self, folder_id: folders::Id, new_folder_name: folders::FolderName) {

@@ -1,22 +1,25 @@
 use crate::config::CONFIG;
 use crate::schema::api::folder::v1::folder_service_server::FolderService;
-use crate::schema::api::folder::v1::{CreateFolderRequest, DeleteFolderRequest, Folder, FolderUpdate, GetFolderRequest, LimitsResponse, OwnedFolder, RenameRequest, UpdatesRequest};
+use crate::schema::api::folder::v1::{
+    CreateFolderRequest, DeleteFolderRequest, Folder, FolderUpdate, GetFolderRequest,
+    LimitsResponse, OwnedFolder, RenameRequest, UpdatesRequest,
+};
 use crate::schema::{BoolExt, ServiceErrorExt, ServiceResultExt, SplitBusinessResultExt};
 use crate::v1::dto::prost_duration_to_std_duration;
 use async_trait::async_trait;
 use auth::service::TokenService;
 use derive_new::new;
 use domain::models;
+use domain::models::encrypted_blobs;
+use folders::service::RenameFolderError;
 use futures::Stream;
 use pbjson_types::Empty;
 use tonic::codegen::tokio_stream::StreamExt;
 use tonic::{Request, Response, Status};
-use domain::models::encrypted_blobs;
-use folders::service::RenameFolderError;
-use service::error::{OptionExt, ServiceError};
 use updates::service::UpdatesService;
 
 #[derive(new)]
+#[allow(clippy::redundant_field_names)]
 pub struct BasicGrpcFolderService<FS, TS, US> {
     folders_service: FS,
     token_service: TS,
@@ -62,7 +65,10 @@ where
         }))
     }
 
-    async fn get_folder(&self, request: Request<GetFolderRequest>) -> Result<Response<Folder>, Status> {
+    async fn get_folder(
+        &self,
+        request: Request<GetFolderRequest>,
+    ) -> Result<Response<Folder>, Status> {
         let id: models::folders::PublicId = request.into_inner().id.try_into()?;
 
         let folder = self
@@ -123,8 +129,7 @@ where
         let id: models::folders::PublicId = payload.owned_folder.folder_id.try_into()?;
         let token = payload.owned_folder.token.value;
         let new_name = encrypted_blobs::Model::try_from(payload.name.value)?;
-        self
-            .token_service
+        self.token_service
             .is_token_valid_for_folder(&id, token)
             .await
             .ok_or_internal()?
@@ -137,7 +142,8 @@ where
             .ok_or_internal()?
             .ok_or_not_found("folder not found")?;
 
-        let result = self.folders_service
+        let result = self
+            .folders_service
             .rename_folder(folder.id, models::folders::FolderName::new(new_name))
             .await
             .split_business()?
@@ -146,12 +152,8 @@ where
 
         if let Err(e) = result {
             return Err(match e {
-                RenameFolderError::Empty => {
-                    Status::invalid_argument("name is empty")
-                }
-                RenameFolderError::TooLong => {
-                    Status::invalid_argument("name is too long")
-                }
+                RenameFolderError::Empty => Status::invalid_argument("name is empty"),
+                RenameFolderError::TooLong => Status::invalid_argument("name is too long"),
             });
         }
 

@@ -16,7 +16,7 @@ impl IntoOptionalString for String {
 
 impl<S> IntoOptionalString for Option<S>
 where
-    S: IntoOptionalString
+    S: IntoOptionalString,
 {
     fn as_ref(&self) -> Option<&str> {
         self.as_ref().and_then(|s| s.as_ref())
@@ -24,8 +24,8 @@ where
 }
 
 impl<S> IntoOptionalString for &S
-where 
-    S: IntoOptionalString
+where
+    S: IntoOptionalString,
 {
     fn as_ref(&self) -> Option<&str> {
         S::as_ref(self)

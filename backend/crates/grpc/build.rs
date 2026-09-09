@@ -2,7 +2,6 @@ use glob::{PatternError, glob};
 use std::env;
 use std::path::Path;
 
-
 fn find_protos(pat: &str) -> Result<Vec<String>, PatternError> {
     Ok(glob(pat)?
         .filter_map(Result::ok)

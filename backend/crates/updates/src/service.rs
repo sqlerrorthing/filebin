@@ -1,14 +1,14 @@
 pub mod basic;
 pub mod rabbitmq;
 
-use std::fmt::Debug;
-use domain::models::{encrypted_blobs, files, folders};
-use futures::Stream;
-use service::service;
-use std::sync::Arc;
 use derive_new::new;
-use serde::{Deserialize, Serialize};
+use domain::models::{files, folders};
+use futures::Stream;
 use pastey::paste;
+use serde::{Deserialize, Serialize};
+use service::service;
+use std::fmt::Debug;
+use std::sync::Arc;
 
 macro_rules! make_updates_service {
     (

@@ -1,0 +1,91 @@
+use crate::service::basic::sync::{ShareSyncService, SubscribedSession};
+use crate::service::{SessionId, ShareEvent};
+use derive_new::new;
+use futures::Stream;
+use futures::StreamExt;
+use parking_lot::Mutex;
+use std::collections::HashMap;
+use std::fmt::Debug;
+use std::sync::Arc;
+use tokio::sync::broadcast;
+use tokio_stream::wrappers::BroadcastStream;
+use tokio_util::sync::CancellationToken;
+use utils::stream::DebugStream;
+
+#[derive(Debug, Clone)]
+pub struct SessionControl {
+    pub tx: broadcast::Sender<ShareEvent>,
+    pub code_rotate_cancel: CancellationToken,
+}
+
+#[derive(Debug, Clone, new)]
+pub struct LocalShareSyncService {
+    #[new(default)]
+    sessions: Arc<Mutex<HashMap<SessionId, SessionControl>>>,
+}
+
+impl LocalShareSyncService {
+    pub fn get_or_create_sender(&self, session_id: SessionId) -> SessionControl {
+        let mut map = self.sessions.lock();
+        if let Some(control) = map.get(&session_id) {
+            return control.clone();
+        }
+        let (tx, _) = broadcast::channel(32);
+
+        let control = SessionControl {
+            tx: tx.clone(),
+            code_rotate_cancel: CancellationToken::new(),
+        };
+
+        map.insert(session_id, control.clone());
+
+        control
+    }
+
+    pub fn stop_rotation(&self, session_id: SessionId) {
+        let map = self.sessions.lock();
+        if let Some(control) = map.get(&session_id) {
+            control.code_rotate_cancel.cancel();
+        }
+    }
+
+    pub fn remove_session(&self, session_id: &SessionId) {
+        let mut map = self.sessions.lock();
+        map.remove(session_id);
+    }
+}
+
+impl ShareSyncService for LocalShareSyncService {
+    type ShareStream = DebugStream<impl Stream<Item = ShareEvent> + Send + Sync + 'static>;
+
+    fn subscribe_session(&self, session_id: SessionId) -> SubscribedSession<Self::ShareStream> {
+        let control = self.get_or_create_sender(session_id);
+        let rx = control.tx.subscribe();
+
+        SubscribedSession {
+            stream: DebugStream::new(
+                BroadcastStream::new(rx).filter_map(|res| async move { res.ok() }),
+            ),
+            code_rotate_cancel: control.code_rotate_cancel.clone(),
+        }
+    }
+
+    fn broadcast_event(&self, session_id: SessionId, event: ShareEvent) {
+        if let Some(control) = self.sessions.lock().get(&session_id) {
+            _ = control.tx.send(event);
+        }
+    }
+
+    fn session_created(&self, session_id: SessionId) {
+        let _ = self.get_or_create_sender(session_id);
+    }
+
+    fn session_closed(&self, session_id: SessionId) {
+        self.stop_rotation(session_id);
+        self.remove_session(&session_id);
+    }
+
+    fn stop_rotation(&self, session_id: SessionId) {
+        LocalShareSyncService::stop_rotation(self, session_id);
+    }
+}

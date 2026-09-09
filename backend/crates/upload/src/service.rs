@@ -1,17 +1,17 @@
 pub mod basic;
 
+use bytes::Bytes;
+use domain::models;
+use domain::models::{encrypted_blobs, encrypted_vault, files, folders};
+use futures::Stream;
+use serde::Serialize;
+use serde::de::DeserializeOwned;
+use service::service;
 use std::error::Error;
 use std::fmt::{Debug, Display};
 use std::ops::ControlFlow;
 use std::str::FromStr;
-use bytes::Bytes;
-use futures::Stream;
-use serde::de::DeserializeOwned;
-use serde::Serialize;
 use thiserror::Error;
-use domain::models;
-use domain::models::{encrypted_blobs, encrypted_vault, files, folders};
-use service::service;
 
 #[derive(Debug, Error)]
 pub enum StreamUploadFileError<E> {
@@ -48,14 +48,13 @@ pub enum ConsumeChunkError {
     #[error("chunk is empty")]
     EmptyChunk,
     #[error("invalid final chunk")]
-    InvalidFinalChunk
+    InvalidFinalChunk,
 }
 
 #[service]
-pub trait UploadService
-{
+pub trait UploadService {
     type Error;
-    
+
     type UploadId: Serialize + DeserializeOwned + FromStr<Err: std::error::Error> + Display;
 
     #[result(StreamUploadFileError<E>)]
@@ -76,7 +75,7 @@ pub trait UploadService
         &self,
         public_id: folders::PublicId,
         token: String,
-        file_meta: encrypted_blobs::Model
+        file_meta: encrypted_blobs::Model,
     ) -> (Self::UploadId, usize);
 
     #[result(ConsumeChunkError)]
@@ -84,6 +83,6 @@ pub trait UploadService
         &self,
         upload_id: Self::UploadId,
         data_meta: Option<models::encrypted_vault::Model>,
-        bytes: Bytes
+        bytes: Bytes,
     ) -> ControlFlow<files::Model>;
 }

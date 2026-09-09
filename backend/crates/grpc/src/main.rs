@@ -3,9 +3,11 @@
 use crate::config::{CONFIG, Db, Redis, Storage};
 use crate::schema::api::folder::v1::files_service_server::FilesServiceServer;
 use crate::schema::api::folder::v1::folder_service_server::FolderServiceServer;
+use crate::schema::api::folder::v1::share_service_server::ShareServiceServer;
 use crate::sealed::Leaked;
 use crate::v1::files::BasicGrpcFilesService;
 use crate::v1::folder::BasicGrpcFolderService;
+use crate::v1::share::BasicGrpcShareService;
 use amqprs::connection::Connection;
 use auth::service::jwt::JwtTokenService;
 use aws_config::{BehaviorVersion, Region};
@@ -20,7 +22,10 @@ use id_generator::service::random::RandomIdGeneratorService;
 use sea_orm::{Database, DatabaseConnection, DbErr};
 use sea_orm_migration::migrator::MigratorTrait;
 use secrecy::ExposeSecret;
-use std::any::type_name_of_val;
+use share::service::DynShareSyncService;
+use share::service::basic::BasicShareService;
+use share::service::basic::sync::basic::LocalShareSyncService;
+use share::service::basic::sync::rabbitmq::RabbitMQShareSyncService;
 use tonic::codegen::http::{HeaderName, Method, header};
 use tonic::transport::Server;
 use tonic_web::GrpcWebLayer;
@@ -137,13 +142,8 @@ async fn main() -> color_eyre::Result<()> {
         .await?
         .inspect(|_| info!("RabbitMQ connected"));
 
-    let updates_service: &dyn DynUpdatesService = if let Some(conn) = rabbitmq {
-        RabbitMQUpdatesService::new(
-            CONFIG.rabbitmq.exchange.clone(),
-            conn,
-            LocalUpdatesService::new(100),
-        )
-        .leaked()
+    let updates_service: &dyn DynUpdatesService = if let Some(ref conn) = rabbitmq {
+        RabbitMQUpdatesService::new(CONFIG.rabbitmq.exchange.clone(), conn.clone()).leaked()
     } else {
         LocalUpdatesService::new(100).leaked()
     };
@@ -188,6 +188,20 @@ async fn main() -> color_eyre::Result<()> {
             .build()?,
     );
 
+    let share_sync_service: &dyn DynShareSyncService = if let Some(ref conn) = rabbitmq {
+        RabbitMQShareSyncService::new(CONFIG.rabbitmq.exchange.clone(), conn.clone()).leaked()
+    } else {
+        LocalShareSyncService::new().leaked()
+    };
+
+    let share_service = BasicShareService::new(
+        redis,
+        folders_service,
+        CONFIG.share.code_ttl,
+        share_sync_service,
+    )
+    .leaked();
+
     Server::builder()
         .accept_http1(true)
         .layer(cors())
@@ -208,6 +222,9 @@ async fn main() -> color_eyre::Result<()> {
             .max_decoding_message_size(16 * 1024 * 1024)
             .max_encoding_message_size(16 * 1024 * 1024),
         )
+        .add_service(ShareServiceServer::new(BasicGrpcShareService::new(
+            share_service,
+        )))
         .serve("0.0.0.0:50051".parse()?)
         .await?;
 

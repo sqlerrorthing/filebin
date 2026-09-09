@@ -1,9 +1,9 @@
-use std::default::Default;
 use crate::repository::FoldersRepository;
 use domain::{models, persistence};
+use sea_orm::QueryFilter;
 use sea_orm::{ActiveModelTrait, ColumnTrait, Set, TryIntoModel};
 use sea_orm::{DatabaseConnection, EntityTrait};
-use sea_orm::QueryFilter;
+use std::default::Default;
 
 impl FoldersRepository for DatabaseConnection {
     type Error = sea_orm::DbErr;
@@ -27,12 +27,14 @@ impl FoldersRepository for DatabaseConnection {
         &self,
         new_folder: models::folders::NewFolder,
     ) -> Result<models::folders::Model, Self::Error> {
-        let folder= persistence::folders::ActiveModel {
+        let folder = persistence::folders::ActiveModel {
             public_id: Set(new_folder.public_id),
             encrypted_name: Set(new_folder.encrypted_name),
             expired_at: Set(new_folder.expired_at.map(|d| d.fixed_offset())),
             ..Default::default()
-        }.save(self).await?;
+        }
+        .save(self)
+        .await?;
 
         Ok(folder.try_into_model()?.into())
     }
@@ -59,7 +61,11 @@ impl FoldersRepository for DatabaseConnection {
             ..Default::default()
         };
 
-        match persistence::folders::Entity::update(model).validate()?.exec(self).await {
+        match persistence::folders::Entity::update(model)
+            .validate()?
+            .exec(self)
+            .await
+        {
             Ok(x) => Ok(Some(x.into())),
             Err(sea_orm::DbErr::RecordNotFound(_)) => Ok(None),
             Err(err) => Err(err),

@@ -54,7 +54,7 @@ impl Generator {
                 )));
 
                 let attrs = &t.attrs;
-                
+
                 let args = [const_fn, Some(derives), derive_value_type]
                     .into_iter()
                     .flatten();
@@ -121,7 +121,9 @@ impl Generator {
         let field_tys: Vec<_> = resolved_fields.iter().map(|f| &f.struct_field.ty).collect();
         let no_spreads: bool = resolved_fields.iter().all(|f| !f.spread);
 
-        let from_one_field = if resolved_fields.len() == 1 && let Some(field) = resolved_fields.first() {
+        let from_one_field = if resolved_fields.len() == 1
+            && let Some(field) = resolved_fields.first()
+        {
             let struct_id = &field.struct_field;
             let ty = &field.struct_field.ty;
             Some(quote! {
@@ -176,7 +178,7 @@ impl Generator {
                     }
                 }
             }
-            
+
             #model_related_methods
             #from_one_field
         })

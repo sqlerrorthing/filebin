@@ -1,7 +1,7 @@
 use crate::repository::FoldersRepository;
 use crate::service::{FoldersService, RenameFolderError};
 use derive_new::new;
-use domain::models::{encrypted_blobs, folders};
+use domain::models::folders;
 use files::service::FilesService;
 use id_generator::service::IdGeneratorService;
 use sea_orm::sea_query::prelude::Utc;

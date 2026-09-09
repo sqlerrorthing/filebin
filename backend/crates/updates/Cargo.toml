@@ -6,6 +6,7 @@ edition.workspace = true
 [dependencies]
 domain.path = "../domain"
 service.path = "../service"
+utils.path = "../utils"
 tokio.workspace = true
 futures.workspace = true
 parking_lot.workspace = true

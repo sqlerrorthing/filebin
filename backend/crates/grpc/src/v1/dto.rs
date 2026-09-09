@@ -1,13 +1,18 @@
-use std::error::Error;
-use std::str::FromStr;
 use crate::schema::ServiceErrorExt;
 use crate::schema::api::folder::v1::folder_update::Update;
-use crate::schema::api::folder::v1::{Algorithm, EncryptedBlobs, EncryptedVault, FileDeleted, FileId, FileMetadata, FileView, Folder, FolderId, FolderName, FolderNameChanged, FolderToken, NewFile, Version};
+use crate::schema::api::folder::v1::{
+    Algorithm, CodeRotatedEvent, EncryptedBlobs, EncryptedKeyReceivedEvent, EncryptedVault,
+    FileDeleted, FileId, FileMetadata, FileView, Folder, FolderId, FolderName, FolderNameChanged,
+    FolderToken, NewFile, ReceiverJoinedEvent, SessionConnectedEvent, Version,
+    share_event,
+};
 use crate::schema::api::google;
 use chrono::{Datelike, Timelike};
 use domain::models;
 use pbjson_types::Empty;
 use sea_orm::prelude::DateTimeUtc;
+use std::error::Error;
+use std::str::FromStr;
 use std::time::Duration;
 use thiserror::Error;
 use tinystr::{TinyStr8, TinyStr16};
@@ -38,6 +43,38 @@ impl From<&updates::service::FolderUpdateKind> for Update {
             FolderUpdateKind::FileDeleted { file } => Update::FileDeleted(FileDeleted {
                 file_id: file.public_id.clone().into(),
             }),
+        }
+    }
+}
+
+impl From<&share::service::ShareEvent> for share_event::Event {
+    fn from(event: &share::service::ShareEvent) -> Self {
+        use share::service::ShareEvent as SE;
+        use share_event::Event as E;
+
+        match event {
+            SE::CodeRotated { code, ttl_seconds } => E::CodeRotated(CodeRotatedEvent {
+                code: code.to_string(),
+                ttl_seconds: *ttl_seconds,
+            }),
+            SE::ReceiverJoined {
+                receiver_public_key,
+            } => E::ReceiverJoined(ReceiverJoinedEvent {
+                receiver_public_key: receiver_public_key.clone().into_inner(),
+            }),
+            SE::SessionConnected { sender_public_key } => {
+                E::SessionConnected(SessionConnectedEvent {
+                    sender_public_key: sender_public_key.clone().into_inner(),
+                })
+            }
+            SE::KeyReceived {
+                encrypted_folder_key,
+                folder_public_id,
+            } => E::KeyReceived(EncryptedKeyReceivedEvent {
+                encrypted_folder_key: encrypted_folder_key.clone(),
+                folder_id: folder_public_id.clone().into(),
+            }),
+            SE::SessionClosed => E::SessionClosed(Empty {}),
         }
     }
 }
@@ -99,7 +136,7 @@ impl From<String> for FolderToken {
 impl From<models::encrypted_blobs::Model> for FolderName {
     fn from(value: models::encrypted_blobs::Model) -> Self {
         Self {
-            value: value.into()
+            value: value.into(),
         }
     }
 }
@@ -126,20 +163,30 @@ impl From<models::encrypted_blobs::Model> for EncryptedBlobs {
 
 impl TryFrom<EncryptedVault> for models::encrypted_vault::Model {
     type Error = Status;
-    
+
     fn try_from(value: EncryptedVault) -> Result<Self, Self::Error> {
         Ok(Self {
-            iv: value.iv.parse().map_err(|_| Status::invalid_argument("invalid iv"))?,
-            tag: value.tag.parse().map_err(|_| Status::invalid_argument("invalid iv"))?,
+            iv: value
+                .iv
+                .parse()
+                .map_err(|_| Status::invalid_argument("invalid iv"))?,
+            tag: value
+                .tag
+                .parse()
+                .map_err(|_| Status::invalid_argument("invalid iv"))?,
             ver: models::encrypted_vault::Version::new(value.version.value as _),
-            algo: value.algo.value.parse().map_err(|_| Status::invalid_argument("unsupported algo"))?,
+            algo: value
+                .algo
+                .value
+                .parse()
+                .map_err(|_| Status::invalid_argument("unsupported algo"))?,
         })
     }
 }
 
 impl TryFrom<EncryptedBlobs> for models::encrypted_blobs::Model {
     type Error = Status;
-    
+
     fn try_from(value: EncryptedBlobs) -> Result<Self, Self::Error> {
         Ok(Self {
             meta: value.meta.try_into()?,
@@ -213,21 +260,20 @@ pub fn prost_duration_to_std_duration(
 
 pub trait FromStrExt: FromStr
 where
-    <Self as FromStr>::Err: Error
+    <Self as FromStr>::Err: Error,
 {
-    fn from_str_or_invalid_argument<'a>(s: &str, value_name: impl Into<Option<&'a str>>) -> Result<Self, Status> {
+    fn from_str_or_invalid_argument<'a>(
+        s: &str,
+        value_name: impl Into<Option<&'a str>>,
+    ) -> Result<Self, Status> {
         let mut msg = "invalid value".to_string();
 
         if let Some(value_name) = value_name.into() {
             msg.push_str(&format!(": {value_name}"));
         }
 
-        Self::from_str(s)
-            .ok_or_invalid_argument(msg)
+        Self::from_str(s).ok_or_invalid_argument(msg)
     }
 }
 
-impl<T: FromStr> FromStrExt for T
-where
-    <Self as FromStr>::Err: Error
-{}
+impl<T: FromStr> FromStrExt for T where <Self as FromStr>::Err: Error {}
