@@ -37,9 +37,9 @@ jobs:
         uses: actions/cache@v5
         with:
           path: cache-mount
-          key: cargo-build-${{ runner.os }}-${{ hashFiles('backend/Cargo.lock') }}
+          key: cargo-build-v2-${{ runner.os }}-${{ hashFiles('backend/Cargo.lock') }}
           restore-keys: |
-            cargo-build-${{ runner.os }}-
+            cargo-build-v2-${{ runner.os }}-
 
       - name: Restore Docker cache mounts
         uses: reproducible-containers/buildkit-cache-dance@v3.4.0
@@ -47,7 +47,6 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           cache-dir: cache-mount
           dockerfile: backend/Dockerfile
-          skip-extraction: ${{ steps.cargo-cache.outputs.cache-hit }}
 
       - name: Build and push backend
         uses: docker/build-push-action@v7.2.0
