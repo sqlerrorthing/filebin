@@ -131,9 +131,6 @@ impl<L: Listener> LocalSessions<L> {
         session_id: &L::SessionId,
         f: impl FnOnce(&SessionControl<L>) -> R,
     ) -> Option<R> {
-        self.sessions
-            .lock()
-            .get(session_id)
-            .map(f)
+        self.sessions.lock().get(session_id).map(f)
     }
 }

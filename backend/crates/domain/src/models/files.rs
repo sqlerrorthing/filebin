@@ -18,11 +18,11 @@ use uuid::Uuid;
             file_size
         ),
         NewFile(
-            public_id, 
-            folder_id, 
-            data_meta, 
-            meta, 
-            storage_path, 
+            public_id,
+            folder_id,
+            data_meta,
+            meta,
+            storage_path,
             file_size
         ),
     )

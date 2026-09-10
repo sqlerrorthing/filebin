@@ -1,0 +1,98 @@
+x-network: &network
+  networks:
+    - filebin-network
+
+x-common: &common
+  restart: always
+  <<: [*network]
+
+services:
+  backend:
+    image: ghcr.io/sqlerrorthing/filebin:backend
+    container_name: backend-filebin
+    ports:
+      - "50051:50051"
+    environment:
+      RUST_LOG: debug
+      SERVER__CONFIG: /etc/config
+    volumes:
+      - ./config.yaml:/etc/config
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_started
+      minio:
+        condition: service_started
+    <<: [*common]
+
+  frontend:
+    image: ghcr.io/sqlerrorthing/filebin:frontend
+    container_name: frontend-filebin
+    ports:
+      - "3000:3000"
+    environment:
+      PUBLIC_BACKEND_URL: http://localhost:50051
+    depends_on:
+      backend:
+        condition: service_started
+    <<: [*common]
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio-filebin
+    environment:
+      MINIO_ROOT_USER: "admin"
+      MINIO_ROOT_PASSWORD: "adminadmin"
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+    <<: [*common]
+
+  minio-init:
+    image: minio/mc:latest
+    container_name: mc-filebin-backend
+    depends_on:
+      minio:
+        condition: service_started
+    entrypoint: >
+      /bin/sh -c "
+      until (/usr/bin/mc alias set myminio http://minio:9000 admin adminadmin) do echo 'Waiting for MinIO...' && sleep 1; done;
+      /usr/bin/mc mb --ignore-existing myminio/filebin;
+      /usr/bin/mc anonymous set download myminio/filebin;
+      exit 0;
+      "
+    <<: [*network]
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres-filebin
+    environment:
+      POSTGRES_USER: "user"
+      POSTGRES_PASSWORD: "password"
+      POSTGRES_DB: "filebin"
+      TZ: UTC
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user -d filebin" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    <<: [*common]
+
+  valkey:
+    image: valkey/valkey:8.0-alpine
+    container_name: valkey-filebin
+    volumes:
+      - valkey_data:/data
+    <<: [*common]
+
+volumes:
+  minio_data:
+  postgres_data:
+  valkey_data:
+
+networks:
+  filebin-network:

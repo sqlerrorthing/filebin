@@ -14,25 +14,24 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - uses: arduino/setup-protoc@v3
+
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: nightly
           components: clippy, rustfmt
 
-      - uses: actions/cache@v6
+      - uses: Swatinem/rust-cache@v2
         with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            backend/target/
-          key: autofix-${{ hashFiles('backend/**/Cargo.lock') }}
+          workspaces: backend
 
       - name: Fix Clippy and Format
-        working-directory: backend
         run: |
-          cargo clippy --fix --workspace --allow-staged --allow-dirty
+          cd ./backend
+          cargo clippy --fix --workspace --allow-staged --allow-dirty --no-deps
           cargo fmt --all
 
       - uses: autofix-ci/action@c5b2d67aa2274e7b5a18224e8171550871fc7e4a
+        if: ${{ always() }}
+        with:
+          fail-fast: false

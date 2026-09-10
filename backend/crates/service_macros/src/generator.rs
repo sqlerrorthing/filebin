@@ -5,9 +5,8 @@ use quote::{ToTokens, format_ident, quote};
 use std::collections::HashMap;
 use syn::visit_mut::VisitMut;
 use syn::{
-    Attribute, Error, GenericArgument, ItemTrait, Meta, PathArguments, Result,
-    ReturnType, Token, TraitBound, TraitItem, TraitItemFn, Type, TypeImplTrait, TypeParamBound,
-    TypePath, parse_quote,
+    Attribute, Error, GenericArgument, ItemTrait, Meta, PathArguments, Result, ReturnType, Token,
+    TraitBound, TraitItem, TraitItemFn, Type, TypeImplTrait, TypeParamBound, TypePath, parse_quote,
 };
 
 impl Boxing {
@@ -456,7 +455,6 @@ impl ParsedGeneratorContext {
                     let transformed_stream = if let Some(assoc_ident) = assoc_ident
                         && let Some(parsed) = self.assoc_types.get(&assoc_ident)
                     {
-                        
                         if let Some(boxing) = parsed.into_box {
                             boxing.into_box(&quote!(__stream))
                         } else {

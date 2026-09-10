@@ -9,11 +9,6 @@ use utils::rabbitmq::RabbitMQSync;
 use utils::rabbitmq::listener::{Listener, LocalSessionData};
 use utils::rabbitmq::message::Message;
 
-struct PublishCmd {
-    routing_key: String,
-    payload: Vec<u8>,
-}
-
 /// Uses RabbitMQ to publish and synchronize share session events
 #[derive(Derivative, Clone)]
 #[derivative(Debug)]
