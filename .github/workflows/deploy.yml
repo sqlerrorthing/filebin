@@ -66,6 +66,12 @@ jobs:
               }
             }
 
+      - name: Debug cargo cache
+        run: |
+          echo "=== cache-mount ==="
+          du -sh cache-mount 2>/dev/null || true
+          find cache-mount -maxdepth 2 -type f | head -30 || true
+
       - name: Build and push backend
         uses: docker/build-push-action@v7.2.0
         with:
