@@ -30,6 +30,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Inject BuildKit cache
+        uses: reproducible-containers/buildkit-cache-dance@v3
+        with:
+          cache-source: type=gha,scope=backend
+          cache-target: /tmp/buildkit-cache
+
       - name: Build and push backend
         uses: docker/build-push-action@v7.2.0
         with:
@@ -37,8 +43,8 @@ jobs:
           file: backend/Dockerfile
           push: true
           tags: ghcr.io/sqlerrorthing/filebin:backend
-          cache-from: type=registry,ref=ghcr.io/sqlerrorthing/filebin:backend-buildcache
-          cache-to: type=registry,ref=ghcr.io/sqlerrorthing/filebin:backend-buildcache,mode=max
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,scope=backend,mode=max
 
   build-frontend:
     runs-on: ubuntu-latest

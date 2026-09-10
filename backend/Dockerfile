@@ -12,7 +12,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN rustup component add rust-src \
     --toolchain nightly-x86_64-unknown-linux-gnu
 
-RUN curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+RUN curl -L --proto '=https' --tlsv1.2 -sSf \
+    https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh \
+    | bash
 
 RUN cargo binstall cargo-chef --locked \
     && cargo binstall sccache --locked
@@ -27,8 +29,8 @@ FROM chef AS planner
 COPY backend .
 COPY proto proto
 
-RUN cargo chef prepare \
-    --recipe-path recipe.json
+RUN cargo chef prepare --recipe-path recipe.json
+
 
 FROM chef AS deps
 
@@ -43,6 +45,7 @@ RUN --mount=type=cache,id=cargo-registry,target=/usr/local/cargo/registry,sharin
     cargo chef cook \
         ${CARGO_FLAGS} \
         --recipe-path recipe.json
+
 
 FROM deps AS builder
 
@@ -74,8 +77,6 @@ RUN --mount=type=cache,id=cargo-registry,target=/usr/local/cargo/registry,sharin
 
 FROM gcr.io/distroless/static:latest AS runtime
 
-COPY --from=builder \
-    /app/grpc \
-    /usr/local/bin/backend
+COPY --from=builder /app/grpc /usr/local/bin/backend
 
 ENTRYPOINT ["/usr/local/bin/backend"]
