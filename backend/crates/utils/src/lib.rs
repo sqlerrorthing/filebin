@@ -9,7 +9,5 @@ mod tests {
     }
 
     #[test]
-    fn success() {
-
-    }
+    fn success() {}
 }
