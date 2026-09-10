@@ -1,4 +1,4 @@
-name: Deploy
+name: Build
 
 on:
   pull_request:
@@ -23,7 +23,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
       - uses: dorny/paths-filter@v3
         id: filter
         with:
@@ -36,14 +35,25 @@ jobs:
               - 'frontend/**'
               - 'proto/**'
 
-  build-backend:
+  test-backend:
     needs: changes
-    if: needs.changes.outputs.backend == 'true'
+    if: needs.changes.outputs.backend == 'true' && github.ref != 'refs/heads/master'
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checking out the repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
+      - uses: taiki-e/install-action@nextest
+      - name: Run tests
+        run: cd backend && cargo nextest run
+
+  build-backend:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
         id: buildx
@@ -85,11 +95,10 @@ jobs:
 
   build-frontend:
     needs: changes
-    if: needs.changes.outputs.frontend == 'true'
+    if: needs.changes.outputs.frontend == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
-      - name: Checking out the repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
         id: buildx
