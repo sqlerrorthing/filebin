@@ -41,6 +41,10 @@ jobs:
       needs.changes.outputs.backend == 'true' 
       && github.ref != 'refs/heads/master'
 
+    permissions:
+      checks: write
+      pull-requests: write
+
     runs-on: ubuntu-latest
 
     steps:
@@ -60,6 +64,14 @@ jobs:
 
       - name: Tests
         run: cd backend && cargo nextest run --no-tests pass --profile ci
+
+      - name: Report
+        id: report
+        uses: mikepenz/action-junit-report@v6
+        if: success() || failure()
+        with:
+          report_paths: 'backend/target/nextest/ci/test-results.xml'
+
 
   build-backend:
     needs: changes
