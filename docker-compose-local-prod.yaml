@@ -17,6 +17,13 @@ services:
       SERVER__CONFIG: /etc/config
     volumes:
       - ./config.yaml:/etc/config
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_started
+      minio:
+        condition: service_started
     <<: [*common]
 
   minio:
