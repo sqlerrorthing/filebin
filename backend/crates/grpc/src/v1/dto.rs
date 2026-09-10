@@ -1,3 +1,4 @@
+use crate::schema::ServiceErrorExt;
 use crate::schema::api::folder::v1::folder_update::Update;
 use crate::schema::api::folder::v1::{
     Algorithm, CodeRotatedEvent, EncryptedBlobs, EncryptedKeyReceivedEvent, EncryptedVault,
@@ -5,7 +6,6 @@ use crate::schema::api::folder::v1::{
     FolderToken, NewFile, ReceiverJoinedEvent, SessionConnectedEvent, Version,
     share_event,
 };
-use crate::schema::ServiceErrorExt;
 use crate::schema::api::google;
 use chrono::{Datelike, Timelike};
 use domain::models;
