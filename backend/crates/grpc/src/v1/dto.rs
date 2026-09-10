@@ -1,4 +1,5 @@
 use crate::schema::api::folder::v1::folder_update::Update;
+use crate::schema::ServiceErrorExt;
 use crate::schema::api::folder::v1::{
     Algorithm, CodeRotatedEvent, EncryptedBlobs, EncryptedKeyReceivedEvent, EncryptedVault,
     FileDeleted, FileId, FileMetadata, FileView, Folder, FolderId, FolderName, FolderNameChanged,
@@ -6,7 +7,6 @@ use crate::schema::api::folder::v1::{
     share_event,
 };
 use crate::schema::api::google;
-use crate::schema::ServiceErrorExt;
 use chrono::{Datelike, Timelike};
 use domain::models;
 use pbjson_types::Empty;
