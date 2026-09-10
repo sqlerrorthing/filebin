@@ -38,10 +38,10 @@ ARG CARGO_FLAGS="--release"
 
 COPY --from=planner /app/recipe.json recipe.json
 
-RUN --mount=type=cache,id=cargo-registry,target=/usr/local/cargo/registry,sharing=locked \
-    --mount=type=cache,id=cargo-git,target=/usr/local/cargo/git,sharing=locked \
-    --mount=type=cache,id=cargo-target,target=/app/target,sharing=locked \
-    --mount=type=cache,id=cargo-sccache,target=/root/.cache/sccache,sharing=locked \
+RUN --mount=type=cache,target=/usr/local/cargo/registry,sharing=locked \
+    --mount=type=cache,target=/usr/local/cargo/git,sharing=locked \
+    --mount=type=cache,target=/app/target,sharing=locked \
+    --mount=type=cache,target=/root/.cache/sccache,sharing=locked \
     cargo chef cook \
         ${CARGO_FLAGS} \
         --recipe-path recipe.json
@@ -54,10 +54,10 @@ ARG CARGO_FLAGS="--release"
 COPY backend .
 COPY proto proto
 
-RUN --mount=type=cache,id=cargo-registry,target=/usr/local/cargo/registry,sharing=locked \
-    --mount=type=cache,id=cargo-git,target=/usr/local/cargo/git,sharing=locked \
-    --mount=type=cache,id=cargo-target,target=/app/target,sharing=locked \
-    --mount=type=cache,id=cargo-sccache,target=/root/.cache/sccache,sharing=locked \
+RUN --mount=type=cache,target=/usr/local/cargo/registry,sharing=locked \
+    --mount=type=cache,target=/usr/local/cargo/git,sharing=locked \
+    --mount=type=cache,target=/app/target,sharing=locked \
+    --mount=type=cache,target=/root/.cache/sccache,sharing=locked \
     cargo build \
         --bin grpc \
         --features proto-in-root \
