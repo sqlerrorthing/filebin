@@ -11,6 +11,7 @@ FROM base AS deps
 COPY frontend/package.json frontend/pnpm-lock.yaml ./
 
 RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store,sharing=locked \
+    pnpm config set allow-build true && \
     pnpm install --frozen-lockfile
 
 FROM base AS builder
