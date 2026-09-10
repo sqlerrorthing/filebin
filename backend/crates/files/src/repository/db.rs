@@ -1,8 +1,8 @@
 use crate::repository::FilesRepository;
 use domain::{models, persistence};
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait,
-    QueryFilter, Set,
+    ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait, QueryFilter,
+    Set,
 };
 
 impl FilesRepository for DatabaseConnection {
