@@ -1,3 +1,5 @@
+name: Build backend
+
 on:
   push:
     branches:
@@ -13,6 +15,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checking out the repo
         uses: actions/checkout@v7
@@ -27,22 +30,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Cache Cargo registry and target
-        uses: actions/cache@v5.0.5
-        with:
-          path: |
-            ~/.cargo/registry/index
-            ~/.cargo/registry/cache
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Build
+      - name: Build and push
         uses: docker/build-push-action@v7.2.0
         with:
           context: .
           file: backend/Dockerfile
+
           push: true
           tags: ghcr.io/sqlerrorthing/filebin:backend
-          cache-from: type=registry,ref=ghcr.io/sqlerrorthing/filebin:backend-buildcache
-          cache-to: type=registry,ref=ghcr.io/sqlerrorthing/filebin:backend-buildcache,mode=max
+
+          cache-from: |
+            type=registry,ref=ghcr.io/sqlerrorthing/filebin:backend-buildcache
+
+          cache-to: |
+            type=registry,ref=ghcr.io/sqlerrorthing/filebin:backend-buildcache,mode=max
