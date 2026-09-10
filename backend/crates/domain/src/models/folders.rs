@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
     ),
     inputs(
         NewFolder(
-            public_id, 
+            public_id,
             ..FolderName as encrypted_name,
             expired_at
         ),
