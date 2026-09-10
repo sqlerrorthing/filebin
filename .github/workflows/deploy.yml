@@ -30,6 +30,41 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Cache Cargo build mounts
+        id: cargo-cache
+        uses: actions/cache@v5
+        with:
+          path: cache-mount
+          key: cargo-build-${{ runner.os }}-${{ hashFiles('backend/Cargo.lock') }}
+          restore-keys: |
+            cargo-build-${{ runner.os }}-
+
+      - name: Restore Docker cache mounts
+        uses: reproducible-containers/buildkit-cache-dance@v3
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          cache-dir: cache-mount
+          cache-map: |
+            {
+              "cargo-target": {
+                "target": "/app/target",
+                "id": "cargo-target"
+              },
+              "cargo-sccache": {
+                "target": "/root/.cache/sccache",
+                "id": "cargo-sccache"
+              },
+              "cargo-registry": {
+                "target": "/usr/local/cargo/registry",
+                "id": "cargo-registry"
+              },
+              "cargo-git": {
+                "target": "/usr/local/cargo/git",
+                "id": "cargo-git"
+              }
+            }
+          skip-extraction: ${{ steps.cargo-cache.outputs.cache-hit }}
+
       - name: Build and push backend
         uses: docker/build-push-action@v7.2.0
         with:
