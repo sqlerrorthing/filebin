@@ -26,6 +26,18 @@ services:
         condition: service_started
     <<: [*common]
 
+  frontend:
+    image: ghcr.io/sqlerrorthing/filebin:frontend
+    container_name: frontend-filebin
+    ports:
+      - "3000:3000"
+    environment:
+      PUBLIC_BACKEND_URL: http://localhost:50051
+    depends_on:
+      backend:
+        condition: service_started
+    <<: [*common]
+
   minio:
     image: minio/minio:latest
     container_name: minio-filebin
