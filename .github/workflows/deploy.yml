@@ -33,8 +33,11 @@ jobs:
       - name: Inject BuildKit cache
         uses: reproducible-containers/buildkit-cache-dance@v3
         with:
-          cache-source: type=gha,scope=backend
-          cache-target: /tmp/buildkit-cache
+          cache-map: |
+            {
+              "/app/target": "/tmp/buildkit-cache/cargo-target",
+              "/root/.cache/sccache": "/tmp/buildkit-cache/sccache"
+            }
 
       - name: Build and push backend
         uses: docker/build-push-action@v7.2.0
