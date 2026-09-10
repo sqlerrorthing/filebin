@@ -30,8 +30,8 @@ jobs:
           key: autofix-${{ hashFiles('backend/**/Cargo.lock') }}
 
       - name: Fix Clippy and Format
-        working-directory: backend
         run: |
+          cd ./backend
           cargo clippy --fix --workspace --allow-staged --allow-dirty
           cargo fmt --all
 
