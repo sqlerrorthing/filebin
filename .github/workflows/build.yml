@@ -50,6 +50,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@nightly
 
       - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: backend
 
       - name: Doctests
         run: cd backend && cargo test --doc
