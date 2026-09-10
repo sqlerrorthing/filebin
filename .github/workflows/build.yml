@@ -52,7 +52,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
 
       - name: Doctests
-        run: cd backend && cargo text --doc
+        run: cd backend && cargo test --doc
 
       - uses: taiki-e/install-action@nextest
 
