@@ -38,6 +38,11 @@ jobs:
           cargo clippy --fix --workspace --allow-staged --allow-dirty
           cargo fmt --all
 
+      - name: Remove build artifacts from Git index
+        run: |
+          git reset -- backend/target
+          git clean -fdX backend/target || true
+
       - uses: autofix-ci/action@c5b2d67aa2274e7b5a18224e8171550871fc7e4a
         if: ${{ always() }}
         with:
