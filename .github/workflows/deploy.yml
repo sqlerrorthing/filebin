@@ -1,4 +1,4 @@
-name: Build backend
+name: Deploy
 
 on:
   pull_request:
@@ -8,13 +8,37 @@ on:
     paths:
       - 'proto/**'
       - 'backend/**'
+      - 'frontend/**'
 
 permissions:
   contents: read
   packages: write
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+              - 'proto/**'
+            
+            frontend:
+              - 'frontend/**'
+              - 'proto/**'
+
   build-backend:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -60,6 +84,8 @@ jobs:
           cache-to: type=gha,scope=backend,mode=max
 
   build-frontend:
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checking out the repo
