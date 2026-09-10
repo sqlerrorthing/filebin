@@ -14,10 +14,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - run: |
-          apt-get update && apt-get install -y --no-install-recommends \
-            protobuf-compiler \
-            libprotobuf-dev
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v3
 
       - uses: dtolnay/rust-toolchain@master
         with:
