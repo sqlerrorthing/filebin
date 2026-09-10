@@ -42,6 +42,7 @@ jobs:
       && github.ref != 'refs/heads/master'
 
     permissions:
+      contents: read
       checks: write
       pull-requests: write
 
