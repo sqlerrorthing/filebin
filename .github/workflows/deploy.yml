@@ -16,11 +16,13 @@ permissions:
 jobs:
   build-backend:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checking out the repo
         uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
+        id: buildx
         uses: docker/setup-buildx-action@v4.1.0
 
       - name: Log in to GHCR
@@ -40,7 +42,7 @@ jobs:
             cargo-build-${{ runner.os }}-
 
       - name: Restore Docker cache mounts
-        uses: reproducible-containers/buildkit-cache-dance@v3
+        uses: reproducible-containers/buildkit-cache-dance@v3.4.0
         with:
           builder: ${{ steps.buildx.outputs.name }}
           cache-dir: cache-mount
@@ -63,7 +65,6 @@ jobs:
                 "id": "cargo-git"
               }
             }
-          skip-extraction: ${{ steps.cargo-cache.outputs.cache-hit }}
 
       - name: Build and push backend
         uses: docker/build-push-action@v7.2.0
