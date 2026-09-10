@@ -37,11 +37,26 @@ jobs:
 
   test-backend:
     needs: changes
-    if: needs.changes.outputs.backend == 'true' && github.ref != 'refs/heads/master'
+    if: >-
+      needs.changes.outputs.backend == 'true' 
+      && github.ref != 'refs/heads/master'
+
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+      - uses: arduino/setup-protoc@v3
+
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            backend/target/
+          key: test-backend-${{ hashFiles('backend/**/Cargo.lock') }}
+
       - uses: dtolnay/rust-toolchain@nightly
       - uses: taiki-e/install-action@nextest
       - name: Run tests
@@ -49,7 +64,11 @@ jobs:
 
   build-backend:
     needs: changes
-    if: needs.changes.outputs.backend == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: >-
+      needs.changes.outputs.backend == 'true' 
+      && github.event_name == 'push' 
+      && github.ref == 'refs/heads/master'
+
     runs-on: ubuntu-latest
 
     steps:
@@ -95,7 +114,11 @@ jobs:
 
   build-frontend:
     needs: changes
-    if: needs.changes.outputs.frontend == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: >-
+      needs.changes.outputs.frontend == 'true' 
+      && github.event_name == 'push' 
+      && github.ref == 'refs/heads/master'
+
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
