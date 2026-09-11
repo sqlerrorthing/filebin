@@ -79,7 +79,7 @@ jobs:
       - run: pnpm install --frozen-lockfile --ignore-workspace
         working-directory: frontend
 
-      - run: pnpm dlx prettier --write .
+      - run: pnpm --ignore-workspace dlx prettier --write .
         working-directory: frontend
 
       - uses: autofix-ci/action@c5b2d67aa2274e7b5a18224e8171550871fc7e4a
