@@ -16,14 +16,17 @@
 // @generated from file google/type/dayofweek.proto (package google.type, syntax proto3)
 /* eslint-disable */
 
-import type { GenEnum, GenFile } from "@bufbuild/protobuf/codegenv2";
-import { enumDesc, fileDesc } from "@bufbuild/protobuf/codegenv2";
+import type { GenEnum, GenFile } from '@bufbuild/protobuf/codegenv2';
+import { enumDesc, fileDesc } from '@bufbuild/protobuf/codegenv2';
 
 /**
  * Describes the file google/type/dayofweek.proto.
  */
-export const file_google_type_dayofweek: GenFile = /*@__PURE__*/
-  fileDesc("Chtnb29nbGUvdHlwZS9kYXlvZndlZWsucHJvdG8SC2dvb2dsZS50eXBlKoQBCglEYXlPZldlZWsSGwoXREFZX09GX1dFRUtfVU5TUEVDSUZJRUQQABIKCgZNT05EQVkQARILCgdUVUVTREFZEAISDQoJV0VETkVTREFZEAMSDAoIVEhVUlNEQVkQBBIKCgZGUklEQVkQBRIMCghTQVRVUkRBWRAGEgoKBlNVTkRBWRAHQmkKD2NvbS5nb29nbGUudHlwZUIORGF5T2ZXZWVrUHJvdG9QAVo+Z29vZ2xlLmdvbGFuZy5vcmcvZ2VucHJvdG8vZ29vZ2xlYXBpcy90eXBlL2RheW9md2VlaztkYXlvZndlZWuiAgNHVFBiBnByb3RvMw");
+export const file_google_type_dayofweek: GenFile =
+    /*@__PURE__*/
+    fileDesc(
+        'Chtnb29nbGUvdHlwZS9kYXlvZndlZWsucHJvdG8SC2dvb2dsZS50eXBlKoQBCglEYXlPZldlZWsSGwoXREFZX09GX1dFRUtfVU5TUEVDSUZJRUQQABIKCgZNT05EQVkQARILCgdUVUVTREFZEAISDQoJV0VETkVTREFZEAMSDAoIVEhVUlNEQVkQBBIKCgZGUklEQVkQBRIMCghTQVRVUkRBWRAGEgoKBlNVTkRBWRAHQmkKD2NvbS5nb29nbGUudHlwZUIORGF5T2ZXZWVrUHJvdG9QAVo+Z29vZ2xlLmdvbGFuZy5vcmcvZ2VucHJvdG8vZ29vZ2xlYXBpcy90eXBlL2RheW9md2VlaztkYXlvZndlZWuiAgNHVFBiBnByb3RvMw'
+    );
 
 /**
  * Represents a day of the week.
@@ -31,66 +34,66 @@ export const file_google_type_dayofweek: GenFile = /*@__PURE__*/
  * @generated from enum google.type.DayOfWeek
  */
 export enum DayOfWeek {
-  /**
-   * The day of the week is unspecified.
-   *
-   * @generated from enum value: DAY_OF_WEEK_UNSPECIFIED = 0;
-   */
-  DAY_OF_WEEK_UNSPECIFIED = 0,
+    /**
+     * The day of the week is unspecified.
+     *
+     * @generated from enum value: DAY_OF_WEEK_UNSPECIFIED = 0;
+     */
+    DAY_OF_WEEK_UNSPECIFIED = 0,
 
-  /**
-   * Monday
-   *
-   * @generated from enum value: MONDAY = 1;
-   */
-  MONDAY = 1,
+    /**
+     * Monday
+     *
+     * @generated from enum value: MONDAY = 1;
+     */
+    MONDAY = 1,
 
-  /**
-   * Tuesday
-   *
-   * @generated from enum value: TUESDAY = 2;
-   */
-  TUESDAY = 2,
+    /**
+     * Tuesday
+     *
+     * @generated from enum value: TUESDAY = 2;
+     */
+    TUESDAY = 2,
 
-  /**
-   * Wednesday
-   *
-   * @generated from enum value: WEDNESDAY = 3;
-   */
-  WEDNESDAY = 3,
+    /**
+     * Wednesday
+     *
+     * @generated from enum value: WEDNESDAY = 3;
+     */
+    WEDNESDAY = 3,
 
-  /**
-   * Thursday
-   *
-   * @generated from enum value: THURSDAY = 4;
-   */
-  THURSDAY = 4,
+    /**
+     * Thursday
+     *
+     * @generated from enum value: THURSDAY = 4;
+     */
+    THURSDAY = 4,
 
-  /**
-   * Friday
-   *
-   * @generated from enum value: FRIDAY = 5;
-   */
-  FRIDAY = 5,
+    /**
+     * Friday
+     *
+     * @generated from enum value: FRIDAY = 5;
+     */
+    FRIDAY = 5,
 
-  /**
-   * Saturday
-   *
-   * @generated from enum value: SATURDAY = 6;
-   */
-  SATURDAY = 6,
+    /**
+     * Saturday
+     *
+     * @generated from enum value: SATURDAY = 6;
+     */
+    SATURDAY = 6,
 
-  /**
-   * Sunday
-   *
-   * @generated from enum value: SUNDAY = 7;
-   */
-  SUNDAY = 7,
+    /**
+     * Sunday
+     *
+     * @generated from enum value: SUNDAY = 7;
+     */
+    SUNDAY = 7,
 }
 
 /**
  * Describes the enum google.type.DayOfWeek.
  */
-export const DayOfWeekSchema: GenEnum<DayOfWeek> = /*@__PURE__*/
-  enumDesc(file_google_type_dayofweek, 0);
-
+export const DayOfWeekSchema: GenEnum<DayOfWeek> =
+    /*@__PURE__*/
+    enumDesc(file_google_type_dayofweek, 0);

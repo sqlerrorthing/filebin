@@ -16,15 +16,18 @@
 // @generated from file google/type/quaternion.proto (package google.type, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
-import type { Message } from "@bufbuild/protobuf";
+import type { GenFile, GenMessage } from '@bufbuild/protobuf/codegenv2';
+import { fileDesc, messageDesc } from '@bufbuild/protobuf/codegenv2';
+import type { Message } from '@bufbuild/protobuf';
 
 /**
  * Describes the file google/type/quaternion.proto.
  */
-export const file_google_type_quaternion: GenFile = /*@__PURE__*/
-  fileDesc("Chxnb29nbGUvdHlwZS9xdWF0ZXJuaW9uLnByb3RvEgtnb29nbGUudHlwZSI4CgpRdWF0ZXJuaW9uEgkKAXgYASABKAESCQoBeRgCIAEoARIJCgF6GAMgASgBEgkKAXcYBCABKAFCbAoPY29tLmdvb2dsZS50eXBlQg9RdWF0ZXJuaW9uUHJvdG9QAVpAZ29vZ2xlLmdvbGFuZy5vcmcvZ2VucHJvdG8vZ29vZ2xlYXBpcy90eXBlL3F1YXRlcm5pb247cXVhdGVybmlvbqICA0dUUGIGcHJvdG8z");
+export const file_google_type_quaternion: GenFile =
+    /*@__PURE__*/
+    fileDesc(
+        'Chxnb29nbGUvdHlwZS9xdWF0ZXJuaW9uLnByb3RvEgtnb29nbGUudHlwZSI4CgpRdWF0ZXJuaW9uEgkKAXgYASABKAESCQoBeRgCIAEoARIJCgF6GAMgASgBEgkKAXcYBCABKAFCbAoPY29tLmdvb2dsZS50eXBlQg9RdWF0ZXJuaW9uUHJvdG9QAVpAZ29vZ2xlLmdvbGFuZy5vcmcvZ2VucHJvdG8vZ29vZ2xlYXBpcy90eXBlL3F1YXRlcm5pb247cXVhdGVybmlvbqICA0dUUGIGcHJvdG8z'
+    );
 
 /**
  * A quaternion, represented by four 64-bit floating point values.
@@ -87,40 +90,40 @@ export const file_google_type_quaternion: GenFile = /*@__PURE__*/
  *
  * @generated from message google.type.Quaternion
  */
-export type Quaternion = Message<"google.type.Quaternion"> & {
-  /**
-   * The x component.
-   *
-   * @generated from field: double x = 1;
-   */
-  x: number;
+export type Quaternion = Message<'google.type.Quaternion'> & {
+    /**
+     * The x component.
+     *
+     * @generated from field: double x = 1;
+     */
+    x: number;
 
-  /**
-   * The y component.
-   *
-   * @generated from field: double y = 2;
-   */
-  y: number;
+    /**
+     * The y component.
+     *
+     * @generated from field: double y = 2;
+     */
+    y: number;
 
-  /**
-   * The z component.
-   *
-   * @generated from field: double z = 3;
-   */
-  z: number;
+    /**
+     * The z component.
+     *
+     * @generated from field: double z = 3;
+     */
+    z: number;
 
-  /**
-   * The scalar component.
-   *
-   * @generated from field: double w = 4;
-   */
-  w: number;
+    /**
+     * The scalar component.
+     *
+     * @generated from field: double w = 4;
+     */
+    w: number;
 };
 
 /**
  * Describes the message google.type.Quaternion.
  * Use `create(QuaternionSchema)` to create a new message.
  */
-export const QuaternionSchema: GenMessage<Quaternion> = /*@__PURE__*/
-  messageDesc(file_google_type_quaternion, 0);
-
+export const QuaternionSchema: GenMessage<Quaternion> =
+    /*@__PURE__*/
+    messageDesc(file_google_type_quaternion, 0);

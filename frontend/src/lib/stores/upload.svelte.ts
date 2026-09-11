@@ -1,36 +1,46 @@
-import {bufferToBase64, encryptBlob, exportKeyToArray} from "$lib/crypt";
-import {fileClient, useGrpc} from "$lib/grpc";
-import {create} from "@bufbuild/protobuf";
+import { bufferToBase64, encryptBlob, exportKeyToArray } from '$lib/crypt';
+import { fileClient, useGrpc } from '$lib/grpc';
+import { create } from '@bufbuild/protobuf';
 import {
-    FileMetadataSchema, type FileView,
+    FileMetadataSchema,
+    type FileView,
     InitiateUploadRequestSchema,
-    UploadChunkRequestSchema
-} from "$lib/grpc/gen/folder/v1/files_pb";
-import type {OwnedFolderRef} from "$lib/grpc/gen/folder/v1/common_pb";
-import {ctr} from '@noble/ciphers/aes.js';
-import {ghash} from "@noble/ciphers/_polyval.js";
-import {AlgorithmSchema, EncryptedVaultSchema, VersionSchema} from "$lib/grpc/gen/folder/v1/encryption_pb";
+    UploadChunkRequestSchema,
+} from '$lib/grpc/gen/folder/v1/files_pb';
+import type { OwnedFolderRef } from '$lib/grpc/gen/folder/v1/common_pb';
+import { ctr } from '@noble/ciphers/aes.js';
+import { ghash } from '@noble/ciphers/_polyval.js';
+import {
+    AlgorithmSchema,
+    EncryptedVaultSchema,
+    VersionSchema,
+} from '$lib/grpc/gen/folder/v1/encryption_pb';
 
-type Status = {
-    case: "pending";
-} | {
-    case: "uploading";
-    progress: number;
-    controller: AbortController
-} | {
-    case: "completed";
-    file: FileView;
-} | {
-    case: "error";
-    error: string;
-} | {
-    case: "canceled"
-}
+type Status =
+    | {
+          case: 'pending';
+      }
+    | {
+          case: 'uploading';
+          progress: number;
+          controller: AbortController;
+      }
+    | {
+          case: 'completed';
+          file: FileView;
+      }
+    | {
+          case: 'error';
+          error: string;
+      }
+    | {
+          case: 'canceled';
+      };
 
 export class UploadItem {
     id = $state<string>();
     file = $state<File>();
-    status = $state<Status>({case: "pending"});
+    status = $state<Status>({ case: 'pending' });
 
     constructor(file: File) {
         this.file = file;
@@ -40,11 +50,15 @@ export class UploadItem {
 class UploadStore {
     items = $state<UploadItem[]>([]);
 
-    addFiles(files: FileList | File[], key: CryptoKey, ownedFolderRef: OwnedFolderRef) {
+    addFiles(
+        files: FileList | File[],
+        key: CryptoKey,
+        ownedFolderRef: OwnedFolderRef
+    ) {
         const newItems = Array.from(files).map((file) => {
             const item = new UploadItem(file);
             item.id = crypto.randomUUID();
-            item.status.case = "pending";
+            item.status.case = 'pending';
             return item;
         });
 
@@ -59,23 +73,23 @@ class UploadStore {
         const item = this.items.find((i) => i.id === id);
 
         if (item) {
-            if (item.status.case === "uploading") {
+            if (item.status.case === 'uploading') {
                 item.status.controller.abort();
             }
 
-            item.status.case = "pending";
-            await this.#uploadFile(item, key, ownedFolderRef)
+            item.status.case = 'pending';
+            await this.#uploadFile(item, key, ownedFolderRef);
         }
     }
 
     removeUpload(id: string) {
         const item = this.items.find((i) => i.id === id);
         if (item) {
-            if (item.status.case === "uploading") {
+            if (item.status.case === 'uploading') {
                 item.status.controller.abort();
             }
 
-            item.status.case = "canceled";
+            item.status.case = 'canceled';
             this.items = this.items.filter((i) => i.id !== id);
         }
     }
@@ -88,43 +102,58 @@ class UploadStore {
         }
     }
 
-    async #uploadFile(item: UploadItem, key: CryptoKey, ownedFolderRef: OwnedFolderRef) {
+    async #uploadFile(
+        item: UploadItem,
+        key: CryptoKey,
+        ownedFolderRef: OwnedFolderRef
+    ) {
         const controller = new AbortController();
 
         item.status = {
-            case: "uploading",
+            case: 'uploading',
             controller,
-            progress: 0
-        }
+            progress: 0,
+        };
 
         const signal = controller.signal;
 
         try {
             const encryptedFileMeta = await encryptBlob(
                 key,
-                new TextEncoder().encode(JSON.stringify({path: item.file!!.name, type: item.file!!.type}))
+                new TextEncoder().encode(
+                    JSON.stringify({
+                        path: item.file!!.name,
+                        type: item.file!!.type,
+                    })
+                )
             );
 
-            const useInitUpload = useGrpc(fileClient.initiateUpload.bind(fileClient));
+            const useInitUpload = useGrpc(
+                fileClient.initiateUpload.bind(fileClient)
+            );
 
             const initResponse = await useInitUpload.call(
                 create(InitiateUploadRequestSchema, {
-                    metadata: create(FileMetadataSchema, {value: encryptedFileMeta}),
-                    folder: ownedFolderRef
+                    metadata: create(FileMetadataSchema, {
+                        value: encryptedFileMeta,
+                    }),
+                    folder: ownedFolderRef,
                 }),
-                {signal}
+                { signal }
             );
 
             if (!initResponse) {
                 item.status = {
-                    case: "error",
-                    error: useInitUpload.error?.message || 'Upload initiated failed'
-                }
+                    case: 'error',
+                    error:
+                        useInitUpload.error?.message ||
+                        'Upload initiated failed',
+                };
 
                 return;
             }
 
-            const {uploadId, chunkSize: rawChunkSize} = initResponse;
+            const { uploadId, chunkSize: rawChunkSize } = initResponse;
             const chunkSize = Number(rawChunkSize);
 
             if (!chunkSize || chunkSize <= 0) {
@@ -157,10 +186,16 @@ class UploadStore {
             let offset = 0;
             let chunkIndex = 0;
 
-            const useUploadChunk = useGrpc(fileClient.uploadChunk.bind(fileClient));
+            const useUploadChunk = useGrpc(
+                fileClient.uploadChunk.bind(fileClient)
+            );
 
             function addBlocksToCounter(counter: Uint8Array, blocks: number) {
-                const view = new DataView(counter.buffer, counter.byteOffset, counter.byteLength);
+                const view = new DataView(
+                    counter.buffer,
+                    counter.byteOffset,
+                    counter.byteLength
+                );
                 const high = view.getUint32(8, false);
                 const low = view.getUint32(12, false);
 
@@ -175,16 +210,22 @@ class UploadStore {
             }
 
             while (offset < totalSize) {
-                if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
+                if (signal.aborted)
+                    throw new DOMException('Aborted', 'AbortError');
 
-                const currentChunkSize = Math.min(chunkSize, totalSize - offset);
+                const currentChunkSize = Math.min(
+                    chunkSize,
+                    totalSize - offset
+                );
 
-                const chunkBlob = item.file!!.slice(offset, offset + currentChunkSize);
+                const chunkBlob = item.file!!.slice(
+                    offset,
+                    offset + currentChunkSize
+                );
                 const rawChunk = new Uint8Array(await chunkBlob.arrayBuffer());
 
                 offset += currentChunkSize;
                 const isLastChunk = offset >= totalSize;
-
 
                 const cipher = ctr(keyArray, currentCounter);
                 const encryptedChunkData = cipher.encrypt(rawChunk);
@@ -196,13 +237,19 @@ class UploadStore {
 
                 uploadedBytes += rawChunk.length;
 
-                item.status.progress = Math.min(Math.round((uploadedBytes / totalSize) * 100), 99);
+                item.status.progress = Math.min(
+                    Math.round((uploadedBytes / totalSize) * 100),
+                    99
+                );
 
                 if (!isLastChunk) {
-                    await useUploadChunk.call(create(UploadChunkRequestSchema, {
-                        uploadId,
-                        chunkData: encryptedChunkData
-                    }), {signal});
+                    await useUploadChunk.call(
+                        create(UploadChunkRequestSchema, {
+                            uploadId,
+                            chunkData: encryptedChunkData,
+                        }),
+                        { signal }
+                    );
                 } else {
                     const lenBlock = new Uint8Array(16);
                     const view = new DataView(lenBlock.buffer);
@@ -221,54 +268,59 @@ class UploadStore {
                     const vault = create(EncryptedVaultSchema, {
                         iv: bufferToBase64(iv),
                         tag: bufferToBase64(tag),
-                        version: create(VersionSchema, {value: 1}),
-                        algo: create(AlgorithmSchema, {value: "aes-256-gcm"}),
+                        version: create(VersionSchema, { value: 1 }),
+                        algo: create(AlgorithmSchema, { value: 'aes-256-gcm' }),
                     });
 
-                    await useUploadChunk.call(create(UploadChunkRequestSchema, {
-                        uploadId,
-                        chunkData: encryptedChunkData,
-                        vault: vault
-                    }), {signal});
+                    await useUploadChunk.call(
+                        create(UploadChunkRequestSchema, {
+                            uploadId,
+                            chunkData: encryptedChunkData,
+                            vault: vault,
+                        }),
+                        { signal }
+                    );
                 }
 
                 if (useUploadChunk.error) {
-                    console.error(`[Upload] Error on chunk #${chunkIndex}:`, useUploadChunk.error);
+                    console.error(
+                        `[Upload] Error on chunk #${chunkIndex}:`,
+                        useUploadChunk.error
+                    );
                     item.status = {
-                        case: "error",
-                        error: useUploadChunk.error.message
-                    }
+                        case: 'error',
+                        error: useUploadChunk.error.message,
+                    };
                     return;
                 }
 
                 chunkIndex++;
             }
 
-            if (useUploadChunk.data?.result.case !== "file") {
+            if (useUploadChunk.data?.result.case !== 'file') {
                 item.status = {
-                    case: "error",
-                    error: "Server didnt return file"
-                }
+                    case: 'error',
+                    error: 'Server didnt return file',
+                };
 
                 return;
             }
 
             item.status = {
-                case: "completed",
-                file: useUploadChunk.data?.result?.value!!
+                case: 'completed',
+                file: useUploadChunk.data?.result?.value!!,
             };
             console.log('[Upload] 14. Upload completed successfully');
-
         } catch (error: any) {
             console.error('[Upload] Caught error in catch block:', error);
             if (signal.aborted || error?.name === 'AbortError') {
-                item.status = { case: "canceled" }
+                item.status = { case: 'canceled' };
                 console.log('Upload was canceled by signal');
             } else {
                 item.status = {
-                    case: "error",
-                    error: error?.message || error || "Unknown upload error"
-                }
+                    case: 'error',
+                    error: error?.message || error || 'Unknown upload error',
+                };
             }
         }
     }

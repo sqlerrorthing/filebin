@@ -1,9 +1,9 @@
-import {paraglideVitePlugin} from '@inlang/paraglide-js'
+import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import tailwindcss from '@tailwindcss/vite';
 import adapter from '@sveltejs/adapter-node';
-import utwm from 'unplugin-tailwindcss-mangle/vite'
-import {sveltekit} from '@sveltejs/kit/vite';
-import {defineConfig} from 'vite';
+import utwm from 'unplugin-tailwindcss-mangle/vite';
+import { sveltekit } from '@sveltejs/kit/vite';
+import { defineConfig } from 'vite';
 
 export default defineConfig({
     plugins: [
@@ -11,48 +11,52 @@ export default defineConfig({
             project: './project.inlang',
             outdir: './src/lib/paraglide',
             emitTsDeclarations: true,
-            strategy: ['url', 'baseLocale']
+            strategy: ['url', 'baseLocale'],
         }),
         tailwindcss(),
         sveltekit({
             compilerOptions: {
-                runes: ({filename}) => filename.split(/[/\\]/).includes('node_modules') ? undefined : true
+                runes: ({ filename }) =>
+                    filename.split(/[/\\]/).includes('node_modules')
+                        ? undefined
+                        : true,
             },
 
-            adapter: adapter()
+            adapter: adapter(),
         }),
-        utwm()
-    ], ssr: {
+        utwm(),
+    ],
+    ssr: {
         noExternal: ['@lucide/svelte', '@inlang/paraglide-js-svelte'],
-        external: ['@noble/ciphers', '@noble/hashes']
+        external: ['@noble/ciphers', '@noble/hashes'],
     },
     optimizeDeps: {
-        exclude: ['@noble/ciphers', '@noble/hashes']
+        exclude: ['@noble/ciphers', '@noble/hashes'],
     },
     build: {
-        target: "esnext",
-        minify: "terser",
+        target: 'esnext',
+        minify: 'terser',
         terserOptions: {
             compress: {
                 passes: 3,
                 drop_console: true,
                 drop_debugger: true,
-                toplevel: true
+                toplevel: true,
             },
 
             mangle: {
-                toplevel: true
+                toplevel: true,
             },
 
             format: {
-                comments: false
-            }
+                comments: false,
+            },
         },
 
         cssMinify: 'lightningcss',
 
         sourcemap: false,
 
-        emptyOutDir: true
-    }
+        emptyOutDir: true,
+    },
 });

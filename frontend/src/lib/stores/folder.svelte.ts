@@ -1,13 +1,19 @@
-import  {type Folder, type FolderId, type FolderToken, FolderTokenSchema, OwnedFolderRefSchema} from "$lib/grpc/gen/folder/v1/common_pb";
-import {decryptBlobAsString} from "$lib/crypt";
-import * as m from "$lib/paraglide/messages";
-import {create} from "@bufbuild/protobuf";
-import type {DateTime} from "$lib/grpc/gen/google/type/datetime_pb";
+import {
+    type Folder,
+    type FolderId,
+    type FolderToken,
+    FolderTokenSchema,
+    OwnedFolderRefSchema,
+} from '$lib/grpc/gen/folder/v1/common_pb';
+import { decryptBlobAsString } from '$lib/crypt';
+import * as m from '$lib/paraglide/messages';
+import { create } from '@bufbuild/protobuf';
+import type { DateTime } from '$lib/grpc/gen/google/type/datetime_pb';
 
 export interface DecryptedFolder {
     name: string;
-    createdAt: DateTime,
-    expiredAt: DateTime
+    createdAt: DateTime;
+    expiredAt: DateTime;
 }
 
 class ActiveFolder {
@@ -30,11 +36,11 @@ class ActiveFolder {
             this.decrypted = {
                 name,
                 expiredAt: folder.expiredAt!!,
-                createdAt: folder.createdAt!!
+                createdAt: folder.createdAt!!,
             };
         } catch (e) {
-            console.error("Failed to decrypt folder:", e);
-            this.error = m["crypt.errors.decrypt"]();
+            console.error('Failed to decrypt folder:', e);
+            this.error = m['crypt.errors.decrypt']();
         } finally {
             this.isDecrypting = false;
         }
@@ -49,7 +55,11 @@ class ActiveFolder {
             const jsonPayload = decodeURIComponent(
                 atob(base64)
                     .split('')
-                    .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                    .map(
+                        (c) =>
+                            '%' +
+                            ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+                    )
                     .join('')
             );
 
@@ -67,7 +77,11 @@ class ActiveFolder {
         }
     }
 
-    async set(folder: Folder, cryptoKey: CryptoKey, folderToken: FolderToken | null | undefined) {
+    async set(
+        folder: Folder,
+        cryptoKey: CryptoKey,
+        folderToken: FolderToken | null | undefined
+    ) {
         const tokenItem = `${folder.id?.value}_token`;
 
         this.id = folder.id!!;
@@ -75,22 +89,24 @@ class ActiveFolder {
 
         if (folderToken === null) {
             this.token = null;
-            localStorage.removeItem(tokenItem)
+            localStorage.removeItem(tokenItem);
         } else if (folderToken !== undefined) {
             if (this.isTokenValid(folderToken)) {
                 this.token = folderToken;
-                localStorage.setItem(tokenItem, folderToken.value)
+                localStorage.setItem(tokenItem, folderToken.value);
             }
         } else {
             if (!this.token) {
                 const rawSaved = localStorage.getItem(tokenItem);
-                const savedToken = rawSaved !== null
-                    ? create(FolderTokenSchema, { value: rawSaved }) : null;
+                const savedToken =
+                    rawSaved !== null
+                        ? create(FolderTokenSchema, { value: rawSaved })
+                        : null;
 
                 if (savedToken && this.isTokenValid(savedToken)) {
                     this.token = savedToken;
                 } else if (rawSaved != null) {
-                    localStorage.removeItem(rawSaved)
+                    localStorage.removeItem(rawSaved);
                 }
             }
         }
@@ -102,10 +118,10 @@ class ActiveFolder {
         if (this.token && this.id) {
             return create(OwnedFolderRefSchema, {
                 folderId: this.id,
-                token: this.token
-            })
+                token: this.token,
+            });
         } else {
-            return null
+            return null;
         }
     }
 

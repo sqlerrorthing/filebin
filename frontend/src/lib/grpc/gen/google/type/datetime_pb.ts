@@ -16,17 +16,21 @@
 // @generated from file google/type/datetime.proto (package google.type, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
-import type { Duration } from "@bufbuild/protobuf/wkt";
-import { file_google_protobuf_duration } from "@bufbuild/protobuf/wkt";
-import type { Message } from "@bufbuild/protobuf";
+import type { GenFile, GenMessage } from '@bufbuild/protobuf/codegenv2';
+import { fileDesc, messageDesc } from '@bufbuild/protobuf/codegenv2';
+import type { Duration } from '@bufbuild/protobuf/wkt';
+import { file_google_protobuf_duration } from '@bufbuild/protobuf/wkt';
+import type { Message } from '@bufbuild/protobuf';
 
 /**
  * Describes the file google/type/datetime.proto.
  */
-export const file_google_type_datetime: GenFile = /*@__PURE__*/
-  fileDesc("Chpnb29nbGUvdHlwZS9kYXRldGltZS5wcm90bxILZ29vZ2xlLnR5cGUi4AEKCERhdGVUaW1lEgwKBHllYXIYASABKAUSDQoFbW9udGgYAiABKAUSCwoDZGF5GAMgASgFEg0KBWhvdXJzGAQgASgFEg8KB21pbnV0ZXMYBSABKAUSDwoHc2Vjb25kcxgGIAEoBRINCgVuYW5vcxgHIAEoBRIvCgp1dGNfb2Zmc2V0GAggASgLMhkuZ29vZ2xlLnByb3RvYnVmLkR1cmF0aW9uSAASKgoJdGltZV96b25lGAkgASgLMhUuZ29vZ2xlLnR5cGUuVGltZVpvbmVIAEINCgt0aW1lX29mZnNldCInCghUaW1lWm9uZRIKCgJpZBgBIAEoCRIPCgd2ZXJzaW9uGAIgASgJQmYKD2NvbS5nb29nbGUudHlwZUINRGF0ZVRpbWVQcm90b1ABWjxnb29nbGUuZ29sYW5nLm9yZy9nZW5wcm90by9nb29nbGVhcGlzL3R5cGUvZGF0ZXRpbWU7ZGF0ZXRpbWWiAgNHVFBiBnByb3RvMw", [file_google_protobuf_duration]);
+export const file_google_type_datetime: GenFile =
+    /*@__PURE__*/
+    fileDesc(
+        'Chpnb29nbGUvdHlwZS9kYXRldGltZS5wcm90bxILZ29vZ2xlLnR5cGUi4AEKCERhdGVUaW1lEgwKBHllYXIYASABKAUSDQoFbW9udGgYAiABKAUSCwoDZGF5GAMgASgFEg0KBWhvdXJzGAQgASgFEg8KB21pbnV0ZXMYBSABKAUSDwoHc2Vjb25kcxgGIAEoBRINCgVuYW5vcxgHIAEoBRIvCgp1dGNfb2Zmc2V0GAggASgLMhkuZ29vZ2xlLnByb3RvYnVmLkR1cmF0aW9uSAASKgoJdGltZV96b25lGAkgASgLMhUuZ29vZ2xlLnR5cGUuVGltZVpvbmVIAEINCgt0aW1lX29mZnNldCInCghUaW1lWm9uZRIKCgJpZBgBIAEoCRIPCgd2ZXJzaW9uGAIgASgJQmYKD2NvbS5nb29nbGUudHlwZUINRGF0ZVRpbWVQcm90b1ABWjxnb29nbGUuZ29sYW5nLm9yZy9nZW5wcm90by9nb29nbGVhcGlzL3R5cGUvZGF0ZXRpbWU7ZGF0ZXRpbWWiAgNHVFBiBnByb3RvMw',
+        [file_google_protobuf_duration]
+    );
 
 /**
  * Represents civil time (or occasionally physical time).
@@ -56,99 +60,103 @@ export const file_google_type_datetime: GenFile = /*@__PURE__*/
  *
  * @generated from message google.type.DateTime
  */
-export type DateTime = Message<"google.type.DateTime"> & {
-  /**
-   * Optional. Year of date. Must be from 1 to 9999, or 0 if specifying a
-   * datetime without a year.
-   *
-   * @generated from field: int32 year = 1;
-   */
-  year: number;
-
-  /**
-   * Optional. Month of year. Must be from 1 to 12, or 0 if specifying a
-   * datetime without a month.
-   *
-   * @generated from field: int32 month = 2;
-   */
-  month: number;
-
-  /**
-   * Optional. Day of month. Must be from 1 to 31 and valid for the year and
-   * month, or 0 if specifying a datetime without a day.
-   *
-   * @generated from field: int32 day = 3;
-   */
-  day: number;
-
-  /**
-   * Optional. Hours of day in 24 hour format. Should be from 0 to 23, defaults
-   * to 0 (midnight). An API may choose to allow the value "24:00:00" for
-   * scenarios like business closing time.
-   *
-   * @generated from field: int32 hours = 4;
-   */
-  hours: number;
-
-  /**
-   * Optional. Minutes of hour of day. Must be from 0 to 59, defaults to 0.
-   *
-   * @generated from field: int32 minutes = 5;
-   */
-  minutes: number;
-
-  /**
-   * Optional. Seconds of minutes of the time. Must normally be from 0 to 59,
-   * defaults to 0. An API may allow the value 60 if it allows leap-seconds.
-   *
-   * @generated from field: int32 seconds = 6;
-   */
-  seconds: number;
-
-  /**
-   * Optional. Fractions of seconds in nanoseconds. Must be from 0 to
-   * 999,999,999, defaults to 0.
-   *
-   * @generated from field: int32 nanos = 7;
-   */
-  nanos: number;
-
-  /**
-   * Optional. Specifies either the UTC offset or the time zone of the DateTime.
-   * Choose carefully between them, considering that time zone data may change
-   * in the future (for example, a country modifies their DST start/end dates,
-   * and future DateTimes in the affected range had already been stored).
-   * If omitted, the DateTime is considered to be in local time.
-   *
-   * @generated from oneof google.type.DateTime.time_offset
-   */
-  timeOffset: {
+export type DateTime = Message<'google.type.DateTime'> & {
     /**
-     * UTC offset. Must be whole seconds, between -18 hours and +18 hours.
-     * For example, a UTC offset of -4:00 would be represented as
-     * { seconds: -14400 }.
+     * Optional. Year of date. Must be from 1 to 9999, or 0 if specifying a
+     * datetime without a year.
      *
-     * @generated from field: google.protobuf.Duration utc_offset = 8;
+     * @generated from field: int32 year = 1;
      */
-    value: Duration;
-    case: "utcOffset";
-  } | {
+    year: number;
+
     /**
-     * Time zone.
+     * Optional. Month of year. Must be from 1 to 12, or 0 if specifying a
+     * datetime without a month.
      *
-     * @generated from field: google.type.TimeZone time_zone = 9;
+     * @generated from field: int32 month = 2;
      */
-    value: TimeZone;
-    case: "timeZone";
-  } | { case: undefined; value?: undefined };
+    month: number;
+
+    /**
+     * Optional. Day of month. Must be from 1 to 31 and valid for the year and
+     * month, or 0 if specifying a datetime without a day.
+     *
+     * @generated from field: int32 day = 3;
+     */
+    day: number;
+
+    /**
+     * Optional. Hours of day in 24 hour format. Should be from 0 to 23, defaults
+     * to 0 (midnight). An API may choose to allow the value "24:00:00" for
+     * scenarios like business closing time.
+     *
+     * @generated from field: int32 hours = 4;
+     */
+    hours: number;
+
+    /**
+     * Optional. Minutes of hour of day. Must be from 0 to 59, defaults to 0.
+     *
+     * @generated from field: int32 minutes = 5;
+     */
+    minutes: number;
+
+    /**
+     * Optional. Seconds of minutes of the time. Must normally be from 0 to 59,
+     * defaults to 0. An API may allow the value 60 if it allows leap-seconds.
+     *
+     * @generated from field: int32 seconds = 6;
+     */
+    seconds: number;
+
+    /**
+     * Optional. Fractions of seconds in nanoseconds. Must be from 0 to
+     * 999,999,999, defaults to 0.
+     *
+     * @generated from field: int32 nanos = 7;
+     */
+    nanos: number;
+
+    /**
+     * Optional. Specifies either the UTC offset or the time zone of the DateTime.
+     * Choose carefully between them, considering that time zone data may change
+     * in the future (for example, a country modifies their DST start/end dates,
+     * and future DateTimes in the affected range had already been stored).
+     * If omitted, the DateTime is considered to be in local time.
+     *
+     * @generated from oneof google.type.DateTime.time_offset
+     */
+    timeOffset:
+        | {
+              /**
+               * UTC offset. Must be whole seconds, between -18 hours and +18 hours.
+               * For example, a UTC offset of -4:00 would be represented as
+               * { seconds: -14400 }.
+               *
+               * @generated from field: google.protobuf.Duration utc_offset = 8;
+               */
+              value: Duration;
+              case: 'utcOffset';
+          }
+        | {
+              /**
+               * Time zone.
+               *
+               * @generated from field: google.type.TimeZone time_zone = 9;
+               */
+              value: TimeZone;
+              case: 'timeZone';
+          }
+        | { case: undefined; value?: undefined };
 };
 
 /**
  * Describes the message google.type.DateTime.
  * Use `create(DateTimeSchema)` to create a new message.
  */
-export const DateTimeSchema: GenMessage<DateTime> = /*@__PURE__*/
-  messageDesc(file_google_type_datetime, 0);
+export const DateTimeSchema: GenMessage<DateTime> =
+    /*@__PURE__*/
+    messageDesc(file_google_type_datetime, 0);
 
 /**
  * Represents a time zone from the
@@ -156,26 +164,26 @@ export const DateTimeSchema: GenMessage<DateTime> = /*@__PURE__*/
  *
  * @generated from message google.type.TimeZone
  */
-export type TimeZone = Message<"google.type.TimeZone"> & {
-  /**
-   * IANA Time Zone Database time zone. For example "America/New_York".
-   *
-   * @generated from field: string id = 1;
-   */
-  id: string;
+export type TimeZone = Message<'google.type.TimeZone'> & {
+    /**
+     * IANA Time Zone Database time zone. For example "America/New_York".
+     *
+     * @generated from field: string id = 1;
+     */
+    id: string;
 
-  /**
-   * Optional. IANA Time Zone Database version number. For example "2019a".
-   *
-   * @generated from field: string version = 2;
-   */
-  version: string;
+    /**
+     * Optional. IANA Time Zone Database version number. For example "2019a".
+     *
+     * @generated from field: string version = 2;
+     */
+    version: string;
 };
 
 /**
  * Describes the message google.type.TimeZone.
  * Use `create(TimeZoneSchema)` to create a new message.
  */
-export const TimeZoneSchema: GenMessage<TimeZone> = /*@__PURE__*/
-  messageDesc(file_google_type_datetime, 1);
-
+export const TimeZoneSchema: GenMessage<TimeZone> =
+    /*@__PURE__*/
+    messageDesc(file_google_type_datetime, 1);

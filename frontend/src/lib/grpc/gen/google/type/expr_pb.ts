@@ -16,15 +16,18 @@
 // @generated from file google/type/expr.proto (package google.type, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
-import type { Message } from "@bufbuild/protobuf";
+import type { GenFile, GenMessage } from '@bufbuild/protobuf/codegenv2';
+import { fileDesc, messageDesc } from '@bufbuild/protobuf/codegenv2';
+import type { Message } from '@bufbuild/protobuf';
 
 /**
  * Describes the file google/type/expr.proto.
  */
-export const file_google_type_expr: GenFile = /*@__PURE__*/
-  fileDesc("ChZnb29nbGUvdHlwZS9leHByLnByb3RvEgtnb29nbGUudHlwZSJQCgRFeHByEhIKCmV4cHJlc3Npb24YASABKAkSDQoFdGl0bGUYAiABKAkSEwoLZGVzY3JpcHRpb24YAyABKAkSEAoIbG9jYXRpb24YBCABKAlCWgoPY29tLmdvb2dsZS50eXBlQglFeHByUHJvdG9QAVo0Z29vZ2xlLmdvbGFuZy5vcmcvZ2VucHJvdG8vZ29vZ2xlYXBpcy90eXBlL2V4cHI7ZXhwcqICA0dUUGIGcHJvdG8z");
+export const file_google_type_expr: GenFile =
+    /*@__PURE__*/
+    fileDesc(
+        'ChZnb29nbGUvdHlwZS9leHByLnByb3RvEgtnb29nbGUudHlwZSJQCgRFeHByEhIKCmV4cHJlc3Npb24YASABKAkSDQoFdGl0bGUYAiABKAkSEwoLZGVzY3JpcHRpb24YAyABKAkSEAoIbG9jYXRpb24YBCABKAlCWgoPY29tLmdvb2dsZS50eXBlQglFeHByUHJvdG9QAVo0Z29vZ2xlLmdvbGFuZy5vcmcvZ2VucHJvdG8vZ29vZ2xlYXBpcy90eXBlL2V4cHI7ZXhwcqICA0dUUGIGcHJvdG8z'
+    );
 
 /**
  * Represents a textual expression in the Common Expression Language (CEL)
@@ -61,45 +64,45 @@ export const file_google_type_expr: GenFile = /*@__PURE__*/
  *
  * @generated from message google.type.Expr
  */
-export type Expr = Message<"google.type.Expr"> & {
-  /**
-   * Textual representation of an expression in Common Expression Language
-   * syntax.
-   *
-   * @generated from field: string expression = 1;
-   */
-  expression: string;
+export type Expr = Message<'google.type.Expr'> & {
+    /**
+     * Textual representation of an expression in Common Expression Language
+     * syntax.
+     *
+     * @generated from field: string expression = 1;
+     */
+    expression: string;
 
-  /**
-   * Optional. Title for the expression, i.e. a short string describing
-   * its purpose. This can be used e.g. in UIs which allow to enter the
-   * expression.
-   *
-   * @generated from field: string title = 2;
-   */
-  title: string;
+    /**
+     * Optional. Title for the expression, i.e. a short string describing
+     * its purpose. This can be used e.g. in UIs which allow to enter the
+     * expression.
+     *
+     * @generated from field: string title = 2;
+     */
+    title: string;
 
-  /**
-   * Optional. Description of the expression. This is a longer text which
-   * describes the expression, e.g. when hovered over it in a UI.
-   *
-   * @generated from field: string description = 3;
-   */
-  description: string;
+    /**
+     * Optional. Description of the expression. This is a longer text which
+     * describes the expression, e.g. when hovered over it in a UI.
+     *
+     * @generated from field: string description = 3;
+     */
+    description: string;
 
-  /**
-   * Optional. String indicating the location of the expression for error
-   * reporting, e.g. a file name and a position in the file.
-   *
-   * @generated from field: string location = 4;
-   */
-  location: string;
+    /**
+     * Optional. String indicating the location of the expression for error
+     * reporting, e.g. a file name and a position in the file.
+     *
+     * @generated from field: string location = 4;
+     */
+    location: string;
 };
 
 /**
  * Describes the message google.type.Expr.
  * Use `create(ExprSchema)` to create a new message.
  */
-export const ExprSchema: GenMessage<Expr> = /*@__PURE__*/
-  messageDesc(file_google_type_expr, 0);
-
+export const ExprSchema: GenMessage<Expr> =
+    /*@__PURE__*/
+    messageDesc(file_google_type_expr, 0);

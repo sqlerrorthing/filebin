@@ -16,15 +16,18 @@
 // @generated from file google/type/latlng.proto (package google.type, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
-import type { Message } from "@bufbuild/protobuf";
+import type { GenFile, GenMessage } from '@bufbuild/protobuf/codegenv2';
+import { fileDesc, messageDesc } from '@bufbuild/protobuf/codegenv2';
+import type { Message } from '@bufbuild/protobuf';
 
 /**
  * Describes the file google/type/latlng.proto.
  */
-export const file_google_type_latlng: GenFile = /*@__PURE__*/
-  fileDesc("Chhnb29nbGUvdHlwZS9sYXRsbmcucHJvdG8SC2dvb2dsZS50eXBlIi0KBkxhdExuZxIQCghsYXRpdHVkZRgBIAEoARIRCglsb25naXR1ZGUYAiABKAFCYAoPY29tLmdvb2dsZS50eXBlQgtMYXRMbmdQcm90b1ABWjhnb29nbGUuZ29sYW5nLm9yZy9nZW5wcm90by9nb29nbGVhcGlzL3R5cGUvbGF0bG5nO2xhdGxuZ6ICA0dUUGIGcHJvdG8z");
+export const file_google_type_latlng: GenFile =
+    /*@__PURE__*/
+    fileDesc(
+        'Chhnb29nbGUvdHlwZS9sYXRsbmcucHJvdG8SC2dvb2dsZS50eXBlIi0KBkxhdExuZxIQCghsYXRpdHVkZRgBIAEoARIRCglsb25naXR1ZGUYAiABKAFCYAoPY29tLmdvb2dsZS50eXBlQgtMYXRMbmdQcm90b1ABWjhnb29nbGUuZ29sYW5nLm9yZy9nZW5wcm90by9nb29nbGVhcGlzL3R5cGUvbGF0bG5nO2xhdGxuZ6ICA0dUUGIGcHJvdG8z'
+    );
 
 /**
  * An object that represents a latitude/longitude pair. This is expressed as a
@@ -35,26 +38,26 @@ export const file_google_type_latlng: GenFile = /*@__PURE__*/
  *
  * @generated from message google.type.LatLng
  */
-export type LatLng = Message<"google.type.LatLng"> & {
-  /**
-   * The latitude in degrees. It must be in the range [-90.0, +90.0].
-   *
-   * @generated from field: double latitude = 1;
-   */
-  latitude: number;
+export type LatLng = Message<'google.type.LatLng'> & {
+    /**
+     * The latitude in degrees. It must be in the range [-90.0, +90.0].
+     *
+     * @generated from field: double latitude = 1;
+     */
+    latitude: number;
 
-  /**
-   * The longitude in degrees. It must be in the range [-180.0, +180.0].
-   *
-   * @generated from field: double longitude = 2;
-   */
-  longitude: number;
+    /**
+     * The longitude in degrees. It must be in the range [-180.0, +180.0].
+     *
+     * @generated from field: double longitude = 2;
+     */
+    longitude: number;
 };
 
 /**
  * Describes the message google.type.LatLng.
  * Use `create(LatLngSchema)` to create a new message.
  */
-export const LatLngSchema: GenMessage<LatLng> = /*@__PURE__*/
-  messageDesc(file_google_type_latlng, 0);
-
+export const LatLngSchema: GenMessage<LatLng> =
+    /*@__PURE__*/
+    messageDesc(file_google_type_latlng, 0);
