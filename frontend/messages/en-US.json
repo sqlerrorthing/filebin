@@ -26,7 +26,7 @@
     "files": "{count} of {max}"
   },
   "share": {
-    "enter-code": "Code",
+    "enter-code": "Enter a 6-digit code",
     "title": "Folder Share",
     "join": "Join",
     "connecting": "Connection to session",

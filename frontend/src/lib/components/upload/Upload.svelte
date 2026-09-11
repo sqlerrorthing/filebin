@@ -62,11 +62,25 @@
         }
     }
 
+    function isInput(target: HTMLElement): boolean {
+        const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
+        const isEditable = target.hasAttribute('contenteditable') || target.isContentEditable;
+
+        return isInput || isEditable
+    }
+
     function handlePaste(event: ClipboardEvent) {
-        const activeEl = document.activeElement;
-        if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.hasAttribute('contenteditable'))) {
+        const target = event.target as HTMLElement | null;
+
+        if (target && isInput(target)) {
+            return
+        }
+
+        const activeEl = document.activeElement as HTMLElement | null;
+        if (activeEl && activeEl !== document.body && isInput(activeEl)) {
             return;
         }
+
         const items = event.clipboardData?.items;
         if (!items) return;
 

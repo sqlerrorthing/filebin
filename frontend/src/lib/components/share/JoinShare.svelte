@@ -15,6 +15,7 @@
     import {localizeHref} from "$lib/paraglide/runtime";
     import {onDestroy} from "svelte";
     import * as m from "$lib/paraglide/messages";
+    import CodeInput from "$lib/components/share/join-share/CodeInput.svelte";
 
     type JoinState =
         | { step: "input"; errorMessage?: string }
@@ -43,15 +44,7 @@
         joinState = { step: "error", message };
     }
 
-    async function handleJoin(e: Event) {
-        e.preventDefault();
-        const trimmedCode = code.trim();
-
-        if (trimmedCode.length !== 6) {
-            joinState = { step: "input", errorMessage: m["share.invalid-code"]({digits: 6}) };
-            return;
-        }
-
+    async function handleJoin(code: string): Promise<boolean> {
         try {
             joinState = { step: "connecting" };
             abortController = new AbortController();
@@ -61,7 +54,7 @@
 
             const stream = shareClient.join(
                 create(JoinRequestSchema, {
-                    code: trimmedCode,
+                    code,
                     publicKey: pubKeyBytes,
                 }),
                 { signal: abortController.signal }
@@ -88,14 +81,18 @@
                         const keyString = await exportKey(folderKey);
 
                         await goto(localizeHref(`/${folderId!!.value}#${keyString}`));
-                        return;
+                        return true;
                     }
                 }
             }
         } catch (err: any) {
-            if (abortController?.signal.aborted) return;
+            if (abortController?.signal.aborted) return false;
             showError(err?.message || String(err));
+
+            return false;
         }
+
+        return true;
     }
 </script>
 
@@ -107,26 +104,21 @@
 
     {#if joinState.step === "input" || joinState.step === "error"}
         {@const s = joinState}
-        <form onsubmit={handleJoin} class="flex gap-2 flex-col sm:flex-row">
-            <input
-                    type="text"
-                    placeholder={m["share.enter-code"]()}
-                    bind:value={code}
-                    class="flex-1 px-3 py-2 border bg-background text-foreground tracking-widest font-mono uppercase outline-none focus:border-primary"
-            />
-            <button
-                    type="submit"
-                    class="px-4 py-2 bg-primary text-primary-foreground font-medium hover:bg-accent-foreground cursor-pointer"
-            >
-                {m["share.join"]()}
-            </button>
-        </form>
 
-        {#if s.step === "input" && s.errorMessage}
-            <span class="text-destructive text-sm">{s.errorMessage}</span>
-        {:else if s.step === "error"}
-            <span class="text-destructive text-sm">{s.message}</span>
-        {/if}
+        <div class="flex flex-col gap-2 justify-center items-center">
+            <p class="text-sm font-medium">{m["share.enter-code"]()}</p>
+
+            <CodeInput
+                    length={6}
+                    onComplete={handleJoin}
+            />
+
+            {#if s.step === "input" && s.errorMessage}
+                <span class="text-destructive text-sm">{s.errorMessage}</span>
+            {:else if s.step === "error"}
+                <span class="text-destructive text-sm">{s.message}</span>
+            {/if}
+        </div>
     {:else if joinState.step === "connecting"}
         <div class="flex flex-col items-center justify-center py-4 gap-3 text-muted-foreground">
             <div class="flex items-center gap-2">

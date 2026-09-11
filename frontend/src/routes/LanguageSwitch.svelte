@@ -15,7 +15,7 @@
                     currentLocale === l && "border-foreground"
                 )}
                 onclick={() => setLocale(l)}
-                title={m.language()}
+                title={m.language(undefined, {locale: l})}
         >
             <img src="/flags/{region}.svg" alt={l} class="w-5 h-4 object-cover select-none pointer-events-none"/>
         </button>
