@@ -1,5 +1,6 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
+  "language": "Русский",
   "head": {
     "title": "Анонимное файловое хранилище.\nМы уважаем вашу приватность!"
   },
