@@ -39,7 +39,6 @@
     "decrypting-and-open": "Decrypting folder key and opening",
     "share": "Share this code with the recipient. Waiting for them to join",
     "copy-code": "Copy code",
-    "rotate": "Code rotates automatically",
     "success": "Folder shared successfully!",
     "invalid-code": "Please enter a valid {digits}-digit code"
   },

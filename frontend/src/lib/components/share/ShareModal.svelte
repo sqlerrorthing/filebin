@@ -20,6 +20,29 @@
     let shareState = $state<ShareState>({ step: "loading"});
     let copied = $state(false);
 
+    let secondsLeft = $state(0);
+
+    $effect(() => {
+        if (shareState.step !== "waiting") return;
+
+        secondsLeft = shareState.ttl;
+
+        const interval = setInterval(() => {
+            secondsLeft = Math.max(0, secondsLeft - 1);
+            if (secondsLeft === 0) {
+                clearInterval(interval);
+            }
+        }, 1000);
+
+        return () => clearInterval(interval);
+    });
+
+    let formattedTime = $derived(() => {
+        const minutes = Math.floor(secondsLeft / 60);
+        const seconds = secondsLeft % 60;
+        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    });
+
     const abortController = new AbortController();
     onDestroy(() => abortController.abort());
 
@@ -154,7 +177,7 @@
                 </div>
                 <div class="flex items-center gap-2 text-xs text-muted-foreground">
                     <LoaderCircle class="animate-spin w-3 h-3"/>
-                    {m["share.rotate"]()}
+                    <span>{formattedTime()}</span>
                 </div>
             </div>
         {:else if shareState.step === "sas"}
