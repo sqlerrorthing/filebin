@@ -223,9 +223,7 @@
     {/if}
 
     <button
-        class={cn("\
-            bg-primary text-primary-foreground \ hover:bg-accent-foreground flex cursor-pointer justify-center gap-3 px-4 py-2
-            shadow-sm sm:w-48",
+        class={cn("bg-primary text-primary-foreground hover:bg-accent-foreground flex cursor-pointer justify-center gap-3 px-4 py-2 shadow-sm sm:w-48",
             loading && "bg-muted-foreground"
         )}
         onclick={() => fileInput?.click()}
