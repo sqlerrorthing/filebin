@@ -16,51 +16,54 @@
 // @generated from file google/iam/v1/options.proto (package google.iam.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
-import type { Message } from "@bufbuild/protobuf";
+import type { GenFile, GenMessage } from '@bufbuild/protobuf/codegenv2';
+import { fileDesc, messageDesc } from '@bufbuild/protobuf/codegenv2';
+import type { Message } from '@bufbuild/protobuf';
 
 /**
  * Describes the file google/iam/v1/options.proto.
  */
-export const file_google_iam_v1_options: GenFile = /*@__PURE__*/
-  fileDesc("Chtnb29nbGUvaWFtL3YxL29wdGlvbnMucHJvdG8SDWdvb2dsZS5pYW0udjEiNAoQR2V0UG9saWN5T3B0aW9ucxIgChhyZXF1ZXN0ZWRfcG9saWN5X3ZlcnNpb24YASABKAVCfQoRY29tLmdvb2dsZS5pYW0udjFCDE9wdGlvbnNQcm90b1ABWiljbG91ZC5nb29nbGUuY29tL2dvL2lhbS9hcGl2MS9pYW1wYjtpYW1wYvgBAaoCE0dvb2dsZS5DbG91ZC5JYW0uVjHKAhNHb29nbGVcQ2xvdWRcSWFtXFYxYgZwcm90bzM");
+export const file_google_iam_v1_options: GenFile =
+    /*@__PURE__*/
+    fileDesc(
+        'Chtnb29nbGUvaWFtL3YxL29wdGlvbnMucHJvdG8SDWdvb2dsZS5pYW0udjEiNAoQR2V0UG9saWN5T3B0aW9ucxIgChhyZXF1ZXN0ZWRfcG9saWN5X3ZlcnNpb24YASABKAVCfQoRY29tLmdvb2dsZS5pYW0udjFCDE9wdGlvbnNQcm90b1ABWiljbG91ZC5nb29nbGUuY29tL2dvL2lhbS9hcGl2MS9pYW1wYjtpYW1wYvgBAaoCE0dvb2dsZS5DbG91ZC5JYW0uVjHKAhNHb29nbGVcQ2xvdWRcSWFtXFYxYgZwcm90bzM'
+    );
 
 /**
  * Encapsulates settings provided to GetIamPolicy.
  *
  * @generated from message google.iam.v1.GetPolicyOptions
  */
-export type GetPolicyOptions = Message<"google.iam.v1.GetPolicyOptions"> & {
-  /**
-   * Optional. The maximum policy version that will be used to format the
-   * policy.
-   *
-   * Valid values are 0, 1, and 3. Requests specifying an invalid value will be
-   * rejected.
-   *
-   * Requests for policies with any conditional role bindings must specify
-   * version 3. Policies with no conditional role bindings may specify any valid
-   * value or leave the field unset.
-   *
-   * The policy in the response might use the policy version that you specified,
-   * or it might use a lower policy version. For example, if you specify version
-   * 3, but the policy has no conditional role bindings, the response uses
-   * version 1.
-   *
-   * To learn which resources support conditions in their IAM policies, see the
-   * [IAM
-   * documentation](https://cloud.google.com/iam/help/conditions/resource-policies).
-   *
-   * @generated from field: int32 requested_policy_version = 1;
-   */
-  requestedPolicyVersion: number;
+export type GetPolicyOptions = Message<'google.iam.v1.GetPolicyOptions'> & {
+    /**
+     * Optional. The maximum policy version that will be used to format the
+     * policy.
+     *
+     * Valid values are 0, 1, and 3. Requests specifying an invalid value will be
+     * rejected.
+     *
+     * Requests for policies with any conditional role bindings must specify
+     * version 3. Policies with no conditional role bindings may specify any valid
+     * value or leave the field unset.
+     *
+     * The policy in the response might use the policy version that you specified,
+     * or it might use a lower policy version. For example, if you specify version
+     * 3, but the policy has no conditional role bindings, the response uses
+     * version 1.
+     *
+     * To learn which resources support conditions in their IAM policies, see the
+     * [IAM
+     * documentation](https://cloud.google.com/iam/help/conditions/resource-policies).
+     *
+     * @generated from field: int32 requested_policy_version = 1;
+     */
+    requestedPolicyVersion: number;
 };
 
 /**
  * Describes the message google.iam.v1.GetPolicyOptions.
  * Use `create(GetPolicyOptionsSchema)` to create a new message.
  */
-export const GetPolicyOptionsSchema: GenMessage<GetPolicyOptions> = /*@__PURE__*/
-  messageDesc(file_google_iam_v1_options, 0);
-
+export const GetPolicyOptionsSchema: GenMessage<GetPolicyOptions> =
+    /*@__PURE__*/
+    messageDesc(file_google_iam_v1_options, 0);

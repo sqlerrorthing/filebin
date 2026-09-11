@@ -1,23 +1,52 @@
-import { exportKeyToArray } from "./index";
+import { exportKeyToArray } from './index';
 
 const EMOJIS = [
-    "🐶", "🐱", "🦊", "🐼", "🐨", "🦁", "🐯", "🐰",
-    "🦄", "🐙", "🦀", "🐬", "🐳", "🦅", "🦉", "🐝",
+    '🐶',
+    '🐱',
+    '🦊',
+    '🐼',
+    '🐨',
+    '🦁',
+    '🐯',
+    '🐰',
+    '🦄',
+    '🐙',
+    '🦀',
+    '🐬',
+    '🐳',
+    '🦅',
+    '🦉',
+    '🐝',
 
-    "🍎", "🍐", "🍊", "🍋", "🍌", "🍉", "🍇", "🍓",
-    "🍒", "🥑", "🍍", "🥥", "🥝", "🍅", "🍆", "🌽"
+    '🍎',
+    '🍐',
+    '🍊',
+    '🍋',
+    '🍌',
+    '🍉',
+    '🍇',
+    '🍓',
+    '🍒',
+    '🥑',
+    '🍍',
+    '🥥',
+    '🥝',
+    '🍅',
+    '🍆',
+    '🌽',
 ];
 
 export async function generateEcdhKeyPair(): Promise<CryptoKeyPair> {
-    return await window.crypto.subtle.generateKey(
-        { name: "X25519" },
-        true,
-        ["deriveKey", "deriveBits"]
-    );
+    return await window.crypto.subtle.generateKey({ name: 'X25519' }, true, [
+        'deriveKey',
+        'deriveBits',
+    ]);
 }
 
-export async function exportPublicKey(publicKey: CryptoKey): Promise<Uint8Array> {
-    const raw = await window.crypto.subtle.exportKey("raw", publicKey);
+export async function exportPublicKey(
+    publicKey: CryptoKey
+): Promise<Uint8Array> {
+    const raw = await window.crypto.subtle.exportKey('raw', publicKey);
     return new Uint8Array(raw);
 }
 
@@ -26,16 +55,16 @@ export async function deriveSharedSecretKey(
     peerPublicKeyBytes: Uint8Array
 ): Promise<CryptoKey> {
     const peerPublicKey = await window.crypto.subtle.importKey(
-        "raw",
+        'raw',
         new Uint8Array(peerPublicKeyBytes),
-        { name: "X25519" },
+        { name: 'X25519' },
         true,
         []
     );
 
     const sharedBits = await window.crypto.subtle.deriveBits(
         {
-            name: "X25519",
+            name: 'X25519',
             public: peerPublicKey,
         },
         privateKey,
@@ -43,17 +72,22 @@ export async function deriveSharedSecretKey(
     );
 
     return await window.crypto.subtle.importKey(
-        "raw",
+        'raw',
         sharedBits,
-        { name: "AES-GCM", length: 256 },
+        { name: 'AES-GCM', length: 256 },
         true,
-        ["encrypt", "decrypt"]
+        ['encrypt', 'decrypt']
     );
 }
 
-export async function generateSasEmojis(sharedSecretKey: CryptoKey): Promise<string[]> {
+export async function generateSasEmojis(
+    sharedSecretKey: CryptoKey
+): Promise<string[]> {
     const rawKey = await exportKeyToArray(sharedSecretKey);
-    const hashBuffer = await window.crypto.subtle.digest("SHA-256", new Uint8Array(rawKey));
+    const hashBuffer = await window.crypto.subtle.digest(
+        'SHA-256',
+        new Uint8Array(rawKey)
+    );
     const hashBytes = new Uint8Array(hashBuffer);
 
     const emojis: string[] = [];
@@ -72,7 +106,7 @@ export async function encryptFolderKey(
     const iv = window.crypto.getRandomValues(new Uint8Array(12));
 
     const ciphertext = await window.crypto.subtle.encrypt(
-        { name: "AES-GCM", iv },
+        { name: 'AES-GCM', iv },
         sharedSecretKey,
         new Uint8Array(folderKeyRaw)
     );
@@ -89,22 +123,22 @@ export async function decryptFolderKey(
     encryptedData: Uint8Array
 ): Promise<CryptoKey> {
     if (encryptedData.length < 12) {
-        throw new Error("Invalid encrypted folder key length");
+        throw new Error('Invalid encrypted folder key length');
     }
     const iv = encryptedData.slice(0, 12);
     const ciphertext = encryptedData.slice(12);
 
     const decryptedBuffer = await window.crypto.subtle.decrypt(
-        { name: "AES-GCM", iv },
+        { name: 'AES-GCM', iv },
         sharedSecretKey,
         new Uint8Array(ciphertext)
     );
 
     return await window.crypto.subtle.importKey(
-        "raw",
+        'raw',
         decryptedBuffer,
-        { name: "AES-GCM", length: 256 },
+        { name: 'AES-GCM', length: 256 },
         true,
-        ["encrypt", "decrypt"]
+        ['encrypt', 'decrypt']
     );
 }

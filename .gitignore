@@ -1,5 +1,5 @@
 **/target
 .idea
 /node_modules
-/.svelte-kit
-/.tw-patch
+frontend/.svelte-kit
+frontend/.tw-patch

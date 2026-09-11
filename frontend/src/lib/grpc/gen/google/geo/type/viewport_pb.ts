@@ -17,17 +17,21 @@
 // @generated from file google/geo/type/viewport.proto (package google.geo.type, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
-import type { LatLng } from "../../type/latlng_pb";
-import { file_google_type_latlng } from "../../type/latlng_pb";
-import type { Message } from "@bufbuild/protobuf";
+import type { GenFile, GenMessage } from '@bufbuild/protobuf/codegenv2';
+import { fileDesc, messageDesc } from '@bufbuild/protobuf/codegenv2';
+import type { LatLng } from '../../type/latlng_pb';
+import { file_google_type_latlng } from '../../type/latlng_pb';
+import type { Message } from '@bufbuild/protobuf';
 
 /**
  * Describes the file google/geo/type/viewport.proto.
  */
-export const file_google_geo_type_viewport: GenFile = /*@__PURE__*/
-  fileDesc("Ch5nb29nbGUvZ2VvL3R5cGUvdmlld3BvcnQucHJvdG8SD2dvb2dsZS5nZW8udHlwZSJPCghWaWV3cG9ydBIgCgNsb3cYASABKAsyEy5nb29nbGUudHlwZS5MYXRMbmcSIQoEaGlnaBgCIAEoCzITLmdvb2dsZS50eXBlLkxhdExuZ0JvChNjb20uZ29vZ2xlLmdlby50eXBlQg1WaWV3cG9ydFByb3RvUAFaQGdvb2dsZS5nb2xhbmcub3JnL2dlbnByb3RvL2dvb2dsZWFwaXMvZ2VvL3R5cGUvdmlld3BvcnQ7dmlld3BvcnSiAgRHR1RQYgZwcm90bzM", [file_google_type_latlng]);
+export const file_google_geo_type_viewport: GenFile =
+    /*@__PURE__*/
+    fileDesc(
+        'Ch5nb29nbGUvZ2VvL3R5cGUvdmlld3BvcnQucHJvdG8SD2dvb2dsZS5nZW8udHlwZSJPCghWaWV3cG9ydBIgCgNsb3cYASABKAsyEy5nb29nbGUudHlwZS5MYXRMbmcSIQoEaGlnaBgCIAEoCzITLmdvb2dsZS50eXBlLkxhdExuZ0JvChNjb20uZ29vZ2xlLmdlby50eXBlQg1WaWV3cG9ydFByb3RvUAFaQGdvb2dsZS5nb2xhbmcub3JnL2dlbnByb3RvL2dvb2dsZWFwaXMvZ2VvL3R5cGUvdmlld3BvcnQ7dmlld3BvcnSiAgRHR1RQYgZwcm90bzM',
+        [file_google_type_latlng]
+    );
 
 /**
  * A latitude-longitude viewport, represented as two diagonally opposite `low`
@@ -68,26 +72,26 @@ export const file_google_geo_type_viewport: GenFile = /*@__PURE__*/
  *
  * @generated from message google.geo.type.Viewport
  */
-export type Viewport = Message<"google.geo.type.Viewport"> & {
-  /**
-   * Required. The low point of the viewport.
-   *
-   * @generated from field: google.type.LatLng low = 1;
-   */
-  low?: LatLng | undefined;
+export type Viewport = Message<'google.geo.type.Viewport'> & {
+    /**
+     * Required. The low point of the viewport.
+     *
+     * @generated from field: google.type.LatLng low = 1;
+     */
+    low?: LatLng | undefined;
 
-  /**
-   * Required. The high point of the viewport.
-   *
-   * @generated from field: google.type.LatLng high = 2;
-   */
-  high?: LatLng | undefined;
+    /**
+     * Required. The high point of the viewport.
+     *
+     * @generated from field: google.type.LatLng high = 2;
+     */
+    high?: LatLng | undefined;
 };
 
 /**
  * Describes the message google.geo.type.Viewport.
  * Use `create(ViewportSchema)` to create a new message.
  */
-export const ViewportSchema: GenMessage<Viewport> = /*@__PURE__*/
-  messageDesc(file_google_geo_type_viewport, 0);
-
+export const ViewportSchema: GenMessage<Viewport> =
+    /*@__PURE__*/
+    messageDesc(file_google_geo_type_viewport, 0);

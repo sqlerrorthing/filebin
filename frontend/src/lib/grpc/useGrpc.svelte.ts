@@ -1,4 +1,4 @@
-import {type CallOptions, ConnectError} from "@connectrpc/connect";
+import { type CallOptions, ConnectError } from '@connectrpc/connect';
 
 export function useGrpc<Req, Res>(
     rpcMethod: (request: Req, options?: CallOptions) => Promise<Res>
@@ -9,9 +9,12 @@ export function useGrpc<Req, Res>(
 
     let abortController: AbortController | null = null;
 
-    async function call(request: Req, options?: CallOptions): Promise<Res | null> {
+    async function call(
+        request: Req,
+        options?: CallOptions
+    ): Promise<Res | null> {
         if (abortController) {
-            abortController.abort("Cancelled by a new request");
+            abortController.abort('Cancelled by a new request');
         }
 
         const controller = new AbortController();
@@ -19,14 +22,18 @@ export function useGrpc<Req, Res>(
         const currentSignal = controller.signal;
 
         if (options?.signal) {
-            options.signal.addEventListener('abort', () => {
-                controller.abort(options.signal?.reason);
-            }, { once: true });
+            options.signal.addEventListener(
+                'abort',
+                () => {
+                    controller.abort(options.signal?.reason);
+                },
+                { once: true }
+            );
         }
 
         const mergedOptions: CallOptions = {
             ...options,
-            signal: currentSignal
+            signal: currentSignal,
         };
 
         loading = true;
@@ -43,7 +50,7 @@ export function useGrpc<Req, Res>(
                 return null;
             }
 
-            console.error("gRPC Error:", err);
+            console.error('gRPC Error:', err);
 
             if (err instanceof ConnectError) {
                 error = err;
@@ -65,7 +72,7 @@ export function useGrpc<Req, Res>(
 
     function abort() {
         if (abortController) {
-            abortController.abort("Manual abort");
+            abortController.abort('Manual abort');
             abortController = null;
         }
         loading = false;
@@ -78,9 +85,15 @@ export function useGrpc<Req, Res>(
     }
 
     return {
-        get data() { return data; },
-        get error() { return error; },
-        get loading() { return loading; },
+        get data() {
+            return data;
+        },
+        get error() {
+            return error;
+        },
+        get loading() {
+            return loading;
+        },
         call,
         reset,
     };
@@ -88,16 +101,19 @@ export function useGrpc<Req, Res>(
 
 export function useStreamGrpc<Req, Res>(
     rpcMethod: (request: Req, options?: CallOptions) => AsyncIterable<Res>
-){
+) {
     let latestData = $state<Res | null>(null);
     let loading = $state(false);
     let error = $state<ConnectError | Error | null>(null);
 
     let abortController: AbortController | null = null;
 
-    async function* call(request: Req, options?: CallOptions): AsyncGenerator<Res, void, unknown> {
+    async function* call(
+        request: Req,
+        options?: CallOptions
+    ): AsyncGenerator<Res, void, unknown> {
         if (abortController) {
-            abortController.abort("Cancelled by a new stream request");
+            abortController.abort('Cancelled by a new stream request');
         }
 
         const controller = new AbortController();
@@ -106,7 +122,7 @@ export function useStreamGrpc<Req, Res>(
 
         const mergedOptions: CallOptions = {
             ...options,
-            signal: currentSignal
+            signal: currentSignal,
         };
 
         loading = true;
@@ -126,7 +142,7 @@ export function useStreamGrpc<Req, Res>(
         } catch (err: unknown) {
             if (currentSignal.aborted) return;
 
-            console.error("gRPC Stream Error:", err);
+            console.error('gRPC Stream Error:', err);
             if (err instanceof ConnectError || err instanceof Error) {
                 error = err;
             } else {
@@ -142,7 +158,7 @@ export function useStreamGrpc<Req, Res>(
 
     function abort() {
         if (abortController) {
-            abortController.abort("Manual abort");
+            abortController.abort('Manual abort');
             abortController = null;
         }
         loading = false;
@@ -155,11 +171,17 @@ export function useStreamGrpc<Req, Res>(
     }
 
     return {
-        get latestData() { return latestData; },
-        get error() { return error; },
-        get loading() { return loading; },
+        get latestData() {
+            return latestData;
+        },
+        get error() {
+            return error;
+        },
+        get loading() {
+            return loading;
+        },
         call,
         reset,
-        abort
+        abort,
     };
 }

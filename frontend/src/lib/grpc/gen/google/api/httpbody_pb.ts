@@ -16,17 +16,21 @@
 // @generated from file google/api/httpbody.proto (package google.api, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
-import type { Any } from "@bufbuild/protobuf/wkt";
-import { file_google_protobuf_any } from "@bufbuild/protobuf/wkt";
-import type { Message } from "@bufbuild/protobuf";
+import type { GenFile, GenMessage } from '@bufbuild/protobuf/codegenv2';
+import { fileDesc, messageDesc } from '@bufbuild/protobuf/codegenv2';
+import type { Any } from '@bufbuild/protobuf/wkt';
+import { file_google_protobuf_any } from '@bufbuild/protobuf/wkt';
+import type { Message } from '@bufbuild/protobuf';
 
 /**
  * Describes the file google/api/httpbody.proto.
  */
-export const file_google_api_httpbody: GenFile = /*@__PURE__*/
-  fileDesc("Chlnb29nbGUvYXBpL2h0dHBib2R5LnByb3RvEgpnb29nbGUuYXBpIlgKCEh0dHBCb2R5EhQKDGNvbnRlbnRfdHlwZRgBIAEoCRIMCgRkYXRhGAIgASgMEigKCmV4dGVuc2lvbnMYAyADKAsyFC5nb29nbGUucHJvdG9idWYuQW55QmUKDmNvbS5nb29nbGUuYXBpQg1IdHRwQm9keVByb3RvUAFaO2dvb2dsZS5nb2xhbmcub3JnL2dlbnByb3RvL2dvb2dsZWFwaXMvYXBpL2h0dHBib2R5O2h0dHBib2R5ogIER0FQSWIGcHJvdG8z", [file_google_protobuf_any]);
+export const file_google_api_httpbody: GenFile =
+    /*@__PURE__*/
+    fileDesc(
+        'Chlnb29nbGUvYXBpL2h0dHBib2R5LnByb3RvEgpnb29nbGUuYXBpIlgKCEh0dHBCb2R5EhQKDGNvbnRlbnRfdHlwZRgBIAEoCRIMCgRkYXRhGAIgASgMEigKCmV4dGVuc2lvbnMYAyADKAsyFC5nb29nbGUucHJvdG9idWYuQW55QmUKDmNvbS5nb29nbGUuYXBpQg1IdHRwQm9keVByb3RvUAFaO2dvb2dsZS5nb2xhbmcub3JnL2dlbnByb3RvL2dvb2dsZWFwaXMvYXBpL2h0dHBib2R5O2h0dHBib2R5ogIER0FQSWIGcHJvdG8z',
+        [file_google_protobuf_any]
+    );
 
 /**
  * Message that represents an arbitrary HTTP body. It should only be used for
@@ -75,34 +79,34 @@ export const file_google_api_httpbody: GenFile = /*@__PURE__*/
  *
  * @generated from message google.api.HttpBody
  */
-export type HttpBody = Message<"google.api.HttpBody"> & {
-  /**
-   * The HTTP Content-Type header value specifying the content type of the body.
-   *
-   * @generated from field: string content_type = 1;
-   */
-  contentType: string;
+export type HttpBody = Message<'google.api.HttpBody'> & {
+    /**
+     * The HTTP Content-Type header value specifying the content type of the body.
+     *
+     * @generated from field: string content_type = 1;
+     */
+    contentType: string;
 
-  /**
-   * The HTTP request/response body as raw binary.
-   *
-   * @generated from field: bytes data = 2;
-   */
-  data: Uint8Array;
+    /**
+     * The HTTP request/response body as raw binary.
+     *
+     * @generated from field: bytes data = 2;
+     */
+    data: Uint8Array;
 
-  /**
-   * Application specific response metadata. Must be set in the first response
-   * for streaming APIs.
-   *
-   * @generated from field: repeated google.protobuf.Any extensions = 3;
-   */
-  extensions: Any[];
+    /**
+     * Application specific response metadata. Must be set in the first response
+     * for streaming APIs.
+     *
+     * @generated from field: repeated google.protobuf.Any extensions = 3;
+     */
+    extensions: Any[];
 };
 
 /**
  * Describes the message google.api.HttpBody.
  * Use `create(HttpBodySchema)` to create a new message.
  */
-export const HttpBodySchema: GenMessage<HttpBody> = /*@__PURE__*/
-  messageDesc(file_google_api_httpbody, 0);
-
+export const HttpBodySchema: GenMessage<HttpBody> =
+    /*@__PURE__*/
+    messageDesc(file_google_api_httpbody, 0);

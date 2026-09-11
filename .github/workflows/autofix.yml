@@ -9,7 +9,30 @@ permissions:
   contents: read
 
 jobs:
-  autofix:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+              - 'proto/**'
+
+            frontend:
+              - 'frontend/**'
+              - 'proto/**'
+
+  autofix-backend:
+    needs: changes
+    if: >-
+      needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -30,6 +53,34 @@ jobs:
           cd ./backend
           cargo clippy --fix --workspace --allow-staged --allow-dirty --no-deps
           cargo fmt --all
+
+      - uses: autofix-ci/action@c5b2d67aa2274e7b5a18224e8171550871fc7e4a
+        if: ${{ always() }}
+        with:
+          fail-fast: false
+
+  autofix-frontend:
+    needs: changes
+    if: >-
+      needs.changes.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: 'pnpm'
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - run: pnpm install --frozen-lockfile --ignore-workspace
+        working-directory: frontend
+
+      - run: pnpm --ignore-workspace exec prettier --write .
+        working-directory: frontend
 
       - uses: autofix-ci/action@c5b2d67aa2274e7b5a18224e8171550871fc7e4a
         if: ${{ always() }}
