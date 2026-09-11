@@ -187,7 +187,5 @@ jobs:
 
     steps:
       - run: |
-          curl -X POST "https://${{ secrets.DEPLOY_SERVER }}/hooks/pull?token=${{ secrets.DEPLOY_TOKEN }}" \
-            --fail \
-            --show-error \
-            --silent
+          curl -fsS -X POST "https://${{ secrets.DEPLOY_SERVER }}/hooks/pull?token=${{ secrets.DEPLOY_TOKEN }}" \
+            -H "X-Deploy-Secret: ${{ secrets.CF_DEPLOY_SECRET }}"
