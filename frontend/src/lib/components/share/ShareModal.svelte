@@ -21,7 +21,6 @@
     let copied = $state(false);
 
     const abortController = new AbortController();
-
     onDestroy(() => abortController.abort());
 
     function handleClose() {
