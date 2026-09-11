@@ -16,17 +16,25 @@
 // @generated from file google/iam/v1/policy.proto (package google.iam.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenEnum, GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
-import { enumDesc, fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
-import type { Expr } from "../../type/expr_pb";
-import { file_google_type_expr } from "../../type/expr_pb";
-import type { Message } from "@bufbuild/protobuf";
+import type {
+    GenEnum,
+    GenFile,
+    GenMessage,
+} from '@bufbuild/protobuf/codegenv2';
+import { enumDesc, fileDesc, messageDesc } from '@bufbuild/protobuf/codegenv2';
+import type { Expr } from '../../type/expr_pb';
+import { file_google_type_expr } from '../../type/expr_pb';
+import type { Message } from '@bufbuild/protobuf';
 
 /**
  * Describes the file google/iam/v1/policy.proto.
  */
-export const file_google_iam_v1_policy: GenFile = /*@__PURE__*/
-  fileDesc("Chpnb29nbGUvaWFtL3YxL3BvbGljeS5wcm90bxINZ29vZ2xlLmlhbS52MSKEAQoGUG9saWN5Eg8KB3ZlcnNpb24YASABKAUSKAoIYmluZGluZ3MYBCADKAsyFi5nb29nbGUuaWFtLnYxLkJpbmRpbmcSMQoNYXVkaXRfY29uZmlncxgGIAMoCzIaLmdvb2dsZS5pYW0udjEuQXVkaXRDb25maWcSDAoEZXRhZxgDIAEoDCJOCgdCaW5kaW5nEgwKBHJvbGUYASABKAkSDwoHbWVtYmVycxgCIAMoCRIkCgljb25kaXRpb24YAyABKAsyES5nb29nbGUudHlwZS5FeHByIlgKC0F1ZGl0Q29uZmlnEg8KB3NlcnZpY2UYASABKAkSOAoRYXVkaXRfbG9nX2NvbmZpZ3MYAyADKAsyHS5nb29nbGUuaWFtLnYxLkF1ZGl0TG9nQ29uZmlnIrcBCg5BdWRpdExvZ0NvbmZpZxI3Cghsb2dfdHlwZRgBIAEoDjIlLmdvb2dsZS5pYW0udjEuQXVkaXRMb2dDb25maWcuTG9nVHlwZRIYChBleGVtcHRlZF9tZW1iZXJzGAIgAygJIlIKB0xvZ1R5cGUSGAoUTE9HX1RZUEVfVU5TUEVDSUZJRUQQABIOCgpBRE1JTl9SRUFEEAESDgoKREFUQV9XUklURRACEg0KCURBVEFfUkVBRBADIoABCgtQb2xpY3lEZWx0YRIzCg5iaW5kaW5nX2RlbHRhcxgBIAMoCzIbLmdvb2dsZS5pYW0udjEuQmluZGluZ0RlbHRhEjwKE2F1ZGl0X2NvbmZpZ19kZWx0YXMYAiADKAsyHy5nb29nbGUuaWFtLnYxLkF1ZGl0Q29uZmlnRGVsdGEivQEKDEJpbmRpbmdEZWx0YRIyCgZhY3Rpb24YASABKA4yIi5nb29nbGUuaWFtLnYxLkJpbmRpbmdEZWx0YS5BY3Rpb24SDAoEcm9sZRgCIAEoCRIOCgZtZW1iZXIYAyABKAkSJAoJY29uZGl0aW9uGAQgASgLMhEuZ29vZ2xlLnR5cGUuRXhwciI1CgZBY3Rpb24SFgoSQUNUSU9OX1VOU1BFQ0lGSUVEEAASBwoDQUREEAESCgoGUkVNT1ZFEAIivQEKEEF1ZGl0Q29uZmlnRGVsdGESNgoGYWN0aW9uGAEgASgOMiYuZ29vZ2xlLmlhbS52MS5BdWRpdENvbmZpZ0RlbHRhLkFjdGlvbhIPCgdzZXJ2aWNlGAIgASgJEhcKD2V4ZW1wdGVkX21lbWJlchgDIAEoCRIQCghsb2dfdHlwZRgEIAEoCSI1CgZBY3Rpb24SFgoSQUNUSU9OX1VOU1BFQ0lGSUVEEAASBwoDQUREEAESCgoGUkVNT1ZFEAJCfAoRY29tLmdvb2dsZS5pYW0udjFCC1BvbGljeVByb3RvUAFaKWNsb3VkLmdvb2dsZS5jb20vZ28vaWFtL2FwaXYxL2lhbXBiO2lhbXBi+AEBqgITR29vZ2xlLkNsb3VkLklhbS5WMcoCE0dvb2dsZVxDbG91ZFxJYW1cVjFiBnByb3RvMw", [file_google_type_expr]);
+export const file_google_iam_v1_policy: GenFile =
+    /*@__PURE__*/
+    fileDesc(
+        'Chpnb29nbGUvaWFtL3YxL3BvbGljeS5wcm90bxINZ29vZ2xlLmlhbS52MSKEAQoGUG9saWN5Eg8KB3ZlcnNpb24YASABKAUSKAoIYmluZGluZ3MYBCADKAsyFi5nb29nbGUuaWFtLnYxLkJpbmRpbmcSMQoNYXVkaXRfY29uZmlncxgGIAMoCzIaLmdvb2dsZS5pYW0udjEuQXVkaXRDb25maWcSDAoEZXRhZxgDIAEoDCJOCgdCaW5kaW5nEgwKBHJvbGUYASABKAkSDwoHbWVtYmVycxgCIAMoCRIkCgljb25kaXRpb24YAyABKAsyES5nb29nbGUudHlwZS5FeHByIlgKC0F1ZGl0Q29uZmlnEg8KB3NlcnZpY2UYASABKAkSOAoRYXVkaXRfbG9nX2NvbmZpZ3MYAyADKAsyHS5nb29nbGUuaWFtLnYxLkF1ZGl0TG9nQ29uZmlnIrcBCg5BdWRpdExvZ0NvbmZpZxI3Cghsb2dfdHlwZRgBIAEoDjIlLmdvb2dsZS5pYW0udjEuQXVkaXRMb2dDb25maWcuTG9nVHlwZRIYChBleGVtcHRlZF9tZW1iZXJzGAIgAygJIlIKB0xvZ1R5cGUSGAoUTE9HX1RZUEVfVU5TUEVDSUZJRUQQABIOCgpBRE1JTl9SRUFEEAESDgoKREFUQV9XUklURRACEg0KCURBVEFfUkVBRBADIoABCgtQb2xpY3lEZWx0YRIzCg5iaW5kaW5nX2RlbHRhcxgBIAMoCzIbLmdvb2dsZS5pYW0udjEuQmluZGluZ0RlbHRhEjwKE2F1ZGl0X2NvbmZpZ19kZWx0YXMYAiADKAsyHy5nb29nbGUuaWFtLnYxLkF1ZGl0Q29uZmlnRGVsdGEivQEKDEJpbmRpbmdEZWx0YRIyCgZhY3Rpb24YASABKA4yIi5nb29nbGUuaWFtLnYxLkJpbmRpbmdEZWx0YS5BY3Rpb24SDAoEcm9sZRgCIAEoCRIOCgZtZW1iZXIYAyABKAkSJAoJY29uZGl0aW9uGAQgASgLMhEuZ29vZ2xlLnR5cGUuRXhwciI1CgZBY3Rpb24SFgoSQUNUSU9OX1VOU1BFQ0lGSUVEEAASBwoDQUREEAESCgoGUkVNT1ZFEAIivQEKEEF1ZGl0Q29uZmlnRGVsdGESNgoGYWN0aW9uGAEgASgOMiYuZ29vZ2xlLmlhbS52MS5BdWRpdENvbmZpZ0RlbHRhLkFjdGlvbhIPCgdzZXJ2aWNlGAIgASgJEhcKD2V4ZW1wdGVkX21lbWJlchgDIAEoCRIQCghsb2dfdHlwZRgEIAEoCSI1CgZBY3Rpb24SFgoSQUNUSU9OX1VOU1BFQ0lGSUVEEAASBwoDQUREEAESCgoGUkVNT1ZFEAJCfAoRY29tLmdvb2dsZS5pYW0udjFCC1BvbGljeVByb3RvUAFaKWNsb3VkLmdvb2dsZS5jb20vZ28vaWFtL2FwaXYxL2lhbXBiO2lhbXBi+AEBqgITR29vZ2xlLkNsb3VkLklhbS5WMcoCE0dvb2dsZVxDbG91ZFxJYW1cVjFiBnByb3RvMw',
+        [file_google_type_expr]
+    );
 
 /**
  * An Identity and Access Management (IAM) policy, which specifies access
@@ -105,176 +113,178 @@ export const file_google_iam_v1_policy: GenFile = /*@__PURE__*/
  *
  * @generated from message google.iam.v1.Policy
  */
-export type Policy = Message<"google.iam.v1.Policy"> & {
-  /**
-   * Specifies the format of the policy.
-   *
-   * Valid values are `0`, `1`, and `3`. Requests that specify an invalid value
-   * are rejected.
-   *
-   * Any operation that affects conditional role bindings must specify version
-   * `3`. This requirement applies to the following operations:
-   *
-   * * Getting a policy that includes a conditional role binding
-   * * Adding a conditional role binding to a policy
-   * * Changing a conditional role binding in a policy
-   * * Removing any role binding, with or without a condition, from a policy
-   *   that includes conditions
-   *
-   * **Important:** If you use IAM Conditions, you must include the `etag` field
-   * whenever you call `setIamPolicy`. If you omit this field, then IAM allows
-   * you to overwrite a version `3` policy with a version `1` policy, and all of
-   * the conditions in the version `3` policy are lost.
-   *
-   * If a policy does not include any conditions, operations on that policy may
-   * specify any valid version or leave the field unset.
-   *
-   * To learn which resources support conditions in their IAM policies, see the
-   * [IAM
-   * documentation](https://cloud.google.com/iam/help/conditions/resource-policies).
-   *
-   * @generated from field: int32 version = 1;
-   */
-  version: number;
+export type Policy = Message<'google.iam.v1.Policy'> & {
+    /**
+     * Specifies the format of the policy.
+     *
+     * Valid values are `0`, `1`, and `3`. Requests that specify an invalid value
+     * are rejected.
+     *
+     * Any operation that affects conditional role bindings must specify version
+     * `3`. This requirement applies to the following operations:
+     *
+     * * Getting a policy that includes a conditional role binding
+     * * Adding a conditional role binding to a policy
+     * * Changing a conditional role binding in a policy
+     * * Removing any role binding, with or without a condition, from a policy
+     *   that includes conditions
+     *
+     * **Important:** If you use IAM Conditions, you must include the `etag` field
+     * whenever you call `setIamPolicy`. If you omit this field, then IAM allows
+     * you to overwrite a version `3` policy with a version `1` policy, and all of
+     * the conditions in the version `3` policy are lost.
+     *
+     * If a policy does not include any conditions, operations on that policy may
+     * specify any valid version or leave the field unset.
+     *
+     * To learn which resources support conditions in their IAM policies, see the
+     * [IAM
+     * documentation](https://cloud.google.com/iam/help/conditions/resource-policies).
+     *
+     * @generated from field: int32 version = 1;
+     */
+    version: number;
 
-  /**
-   * Associates a list of `members`, or principals, with a `role`. Optionally,
-   * may specify a `condition` that determines how and when the `bindings` are
-   * applied. Each of the `bindings` must contain at least one principal.
-   *
-   * The `bindings` in a `Policy` can refer to up to 1,500 principals; up to 250
-   * of these principals can be Google groups. Each occurrence of a principal
-   * counts towards these limits. For example, if the `bindings` grant 50
-   * different roles to `user:alice@example.com`, and not to any other
-   * principal, then you can add another 1,450 principals to the `bindings` in
-   * the `Policy`.
-   *
-   * @generated from field: repeated google.iam.v1.Binding bindings = 4;
-   */
-  bindings: Binding[];
+    /**
+     * Associates a list of `members`, or principals, with a `role`. Optionally,
+     * may specify a `condition` that determines how and when the `bindings` are
+     * applied. Each of the `bindings` must contain at least one principal.
+     *
+     * The `bindings` in a `Policy` can refer to up to 1,500 principals; up to 250
+     * of these principals can be Google groups. Each occurrence of a principal
+     * counts towards these limits. For example, if the `bindings` grant 50
+     * different roles to `user:alice@example.com`, and not to any other
+     * principal, then you can add another 1,450 principals to the `bindings` in
+     * the `Policy`.
+     *
+     * @generated from field: repeated google.iam.v1.Binding bindings = 4;
+     */
+    bindings: Binding[];
 
-  /**
-   * Specifies cloud audit logging configuration for this policy.
-   *
-   * @generated from field: repeated google.iam.v1.AuditConfig audit_configs = 6;
-   */
-  auditConfigs: AuditConfig[];
+    /**
+     * Specifies cloud audit logging configuration for this policy.
+     *
+     * @generated from field: repeated google.iam.v1.AuditConfig audit_configs = 6;
+     */
+    auditConfigs: AuditConfig[];
 
-  /**
-   * `etag` is used for optimistic concurrency control as a way to help
-   * prevent simultaneous updates of a policy from overwriting each other.
-   * It is strongly suggested that systems make use of the `etag` in the
-   * read-modify-write cycle to perform policy updates in order to avoid race
-   * conditions: An `etag` is returned in the response to `getIamPolicy`, and
-   * systems are expected to put that etag in the request to `setIamPolicy` to
-   * ensure that their change will be applied to the same version of the policy.
-   *
-   * **Important:** If you use IAM Conditions, you must include the `etag` field
-   * whenever you call `setIamPolicy`. If you omit this field, then IAM allows
-   * you to overwrite a version `3` policy with a version `1` policy, and all of
-   * the conditions in the version `3` policy are lost.
-   *
-   * @generated from field: bytes etag = 3;
-   */
-  etag: Uint8Array;
+    /**
+     * `etag` is used for optimistic concurrency control as a way to help
+     * prevent simultaneous updates of a policy from overwriting each other.
+     * It is strongly suggested that systems make use of the `etag` in the
+     * read-modify-write cycle to perform policy updates in order to avoid race
+     * conditions: An `etag` is returned in the response to `getIamPolicy`, and
+     * systems are expected to put that etag in the request to `setIamPolicy` to
+     * ensure that their change will be applied to the same version of the policy.
+     *
+     * **Important:** If you use IAM Conditions, you must include the `etag` field
+     * whenever you call `setIamPolicy`. If you omit this field, then IAM allows
+     * you to overwrite a version `3` policy with a version `1` policy, and all of
+     * the conditions in the version `3` policy are lost.
+     *
+     * @generated from field: bytes etag = 3;
+     */
+    etag: Uint8Array;
 };
 
 /**
  * Describes the message google.iam.v1.Policy.
  * Use `create(PolicySchema)` to create a new message.
  */
-export const PolicySchema: GenMessage<Policy> = /*@__PURE__*/
-  messageDesc(file_google_iam_v1_policy, 0);
+export const PolicySchema: GenMessage<Policy> =
+    /*@__PURE__*/
+    messageDesc(file_google_iam_v1_policy, 0);
 
 /**
  * Associates `members`, or principals, with a `role`.
  *
  * @generated from message google.iam.v1.Binding
  */
-export type Binding = Message<"google.iam.v1.Binding"> & {
-  /**
-   * Role that is assigned to the list of `members`, or principals.
-   * For example, `roles/viewer`, `roles/editor`, or `roles/owner`.
-   *
-   * @generated from field: string role = 1;
-   */
-  role: string;
+export type Binding = Message<'google.iam.v1.Binding'> & {
+    /**
+     * Role that is assigned to the list of `members`, or principals.
+     * For example, `roles/viewer`, `roles/editor`, or `roles/owner`.
+     *
+     * @generated from field: string role = 1;
+     */
+    role: string;
 
-  /**
-   * Specifies the principals requesting access for a Google Cloud resource.
-   * `members` can have the following values:
-   *
-   * * `allUsers`: A special identifier that represents anyone who is
-   *    on the internet; with or without a Google account.
-   *
-   * * `allAuthenticatedUsers`: A special identifier that represents anyone
-   *    who is authenticated with a Google account or a service account.
-   *
-   * * `user:{emailid}`: An email address that represents a specific Google
-   *    account. For example, `alice@example.com` .
-   *
-   *
-   * * `serviceAccount:{emailid}`: An email address that represents a service
-   *    account. For example, `my-other-app@appspot.gserviceaccount.com`.
-   *
-   * * `group:{emailid}`: An email address that represents a Google group.
-   *    For example, `admins@example.com`.
-   *
-   * * `deleted:user:{emailid}?uid={uniqueid}`: An email address (plus unique
-   *    identifier) representing a user that has been recently deleted. For
-   *    example, `alice@example.com?uid=123456789012345678901`. If the user is
-   *    recovered, this value reverts to `user:{emailid}` and the recovered user
-   *    retains the role in the binding.
-   *
-   * * `deleted:serviceAccount:{emailid}?uid={uniqueid}`: An email address (plus
-   *    unique identifier) representing a service account that has been recently
-   *    deleted. For example,
-   *    `my-other-app@appspot.gserviceaccount.com?uid=123456789012345678901`.
-   *    If the service account is undeleted, this value reverts to
-   *    `serviceAccount:{emailid}` and the undeleted service account retains the
-   *    role in the binding.
-   *
-   * * `deleted:group:{emailid}?uid={uniqueid}`: An email address (plus unique
-   *    identifier) representing a Google group that has been recently
-   *    deleted. For example, `admins@example.com?uid=123456789012345678901`. If
-   *    the group is recovered, this value reverts to `group:{emailid}` and the
-   *    recovered group retains the role in the binding.
-   *
-   *
-   * * `domain:{domain}`: The G Suite domain (primary) that represents all the
-   *    users of that domain. For example, `google.com` or `example.com`.
-   *
-   *
-   *
-   * @generated from field: repeated string members = 2;
-   */
-  members: string[];
+    /**
+     * Specifies the principals requesting access for a Google Cloud resource.
+     * `members` can have the following values:
+     *
+     * * `allUsers`: A special identifier that represents anyone who is
+     *    on the internet; with or without a Google account.
+     *
+     * * `allAuthenticatedUsers`: A special identifier that represents anyone
+     *    who is authenticated with a Google account or a service account.
+     *
+     * * `user:{emailid}`: An email address that represents a specific Google
+     *    account. For example, `alice@example.com` .
+     *
+     *
+     * * `serviceAccount:{emailid}`: An email address that represents a service
+     *    account. For example, `my-other-app@appspot.gserviceaccount.com`.
+     *
+     * * `group:{emailid}`: An email address that represents a Google group.
+     *    For example, `admins@example.com`.
+     *
+     * * `deleted:user:{emailid}?uid={uniqueid}`: An email address (plus unique
+     *    identifier) representing a user that has been recently deleted. For
+     *    example, `alice@example.com?uid=123456789012345678901`. If the user is
+     *    recovered, this value reverts to `user:{emailid}` and the recovered user
+     *    retains the role in the binding.
+     *
+     * * `deleted:serviceAccount:{emailid}?uid={uniqueid}`: An email address (plus
+     *    unique identifier) representing a service account that has been recently
+     *    deleted. For example,
+     *    `my-other-app@appspot.gserviceaccount.com?uid=123456789012345678901`.
+     *    If the service account is undeleted, this value reverts to
+     *    `serviceAccount:{emailid}` and the undeleted service account retains the
+     *    role in the binding.
+     *
+     * * `deleted:group:{emailid}?uid={uniqueid}`: An email address (plus unique
+     *    identifier) representing a Google group that has been recently
+     *    deleted. For example, `admins@example.com?uid=123456789012345678901`. If
+     *    the group is recovered, this value reverts to `group:{emailid}` and the
+     *    recovered group retains the role in the binding.
+     *
+     *
+     * * `domain:{domain}`: The G Suite domain (primary) that represents all the
+     *    users of that domain. For example, `google.com` or `example.com`.
+     *
+     *
+     *
+     * @generated from field: repeated string members = 2;
+     */
+    members: string[];
 
-  /**
-   * The condition that is associated with this binding.
-   *
-   * If the condition evaluates to `true`, then this binding applies to the
-   * current request.
-   *
-   * If the condition evaluates to `false`, then this binding does not apply to
-   * the current request. However, a different role binding might grant the same
-   * role to one or more of the principals in this binding.
-   *
-   * To learn which resources support conditions in their IAM policies, see the
-   * [IAM
-   * documentation](https://cloud.google.com/iam/help/conditions/resource-policies).
-   *
-   * @generated from field: google.type.Expr condition = 3;
-   */
-  condition?: Expr | undefined;
+    /**
+     * The condition that is associated with this binding.
+     *
+     * If the condition evaluates to `true`, then this binding applies to the
+     * current request.
+     *
+     * If the condition evaluates to `false`, then this binding does not apply to
+     * the current request. However, a different role binding might grant the same
+     * role to one or more of the principals in this binding.
+     *
+     * To learn which resources support conditions in their IAM policies, see the
+     * [IAM
+     * documentation](https://cloud.google.com/iam/help/conditions/resource-policies).
+     *
+     * @generated from field: google.type.Expr condition = 3;
+     */
+    condition?: Expr | undefined;
 };
 
 /**
  * Describes the message google.iam.v1.Binding.
  * Use `create(BindingSchema)` to create a new message.
  */
-export const BindingSchema: GenMessage<Binding> = /*@__PURE__*/
-  messageDesc(file_google_iam_v1_policy, 1);
+export const BindingSchema: GenMessage<Binding> =
+    /*@__PURE__*/
+    messageDesc(file_google_iam_v1_policy, 1);
 
 /**
  * Specifies the audit configuration for a service.
@@ -331,30 +341,31 @@ export const BindingSchema: GenMessage<Binding> = /*@__PURE__*/
  *
  * @generated from message google.iam.v1.AuditConfig
  */
-export type AuditConfig = Message<"google.iam.v1.AuditConfig"> & {
-  /**
-   * Specifies a service that will be enabled for audit logging.
-   * For example, `storage.googleapis.com`, `cloudsql.googleapis.com`.
-   * `allServices` is a special value that covers all services.
-   *
-   * @generated from field: string service = 1;
-   */
-  service: string;
+export type AuditConfig = Message<'google.iam.v1.AuditConfig'> & {
+    /**
+     * Specifies a service that will be enabled for audit logging.
+     * For example, `storage.googleapis.com`, `cloudsql.googleapis.com`.
+     * `allServices` is a special value that covers all services.
+     *
+     * @generated from field: string service = 1;
+     */
+    service: string;
 
-  /**
-   * The configuration for logging of each type of permission.
-   *
-   * @generated from field: repeated google.iam.v1.AuditLogConfig audit_log_configs = 3;
-   */
-  auditLogConfigs: AuditLogConfig[];
+    /**
+     * The configuration for logging of each type of permission.
+     *
+     * @generated from field: repeated google.iam.v1.AuditLogConfig audit_log_configs = 3;
+     */
+    auditLogConfigs: AuditLogConfig[];
 };
 
 /**
  * Describes the message google.iam.v1.AuditConfig.
  * Use `create(AuditConfigSchema)` to create a new message.
  */
-export const AuditConfigSchema: GenMessage<AuditConfig> = /*@__PURE__*/
-  messageDesc(file_google_iam_v1_policy, 2);
+export const AuditConfigSchema: GenMessage<AuditConfig> =
+    /*@__PURE__*/
+    messageDesc(file_google_iam_v1_policy, 2);
 
 /**
  * Provides the configuration for logging a type of permissions.
@@ -379,31 +390,32 @@ export const AuditConfigSchema: GenMessage<AuditConfig> = /*@__PURE__*/
  *
  * @generated from message google.iam.v1.AuditLogConfig
  */
-export type AuditLogConfig = Message<"google.iam.v1.AuditLogConfig"> & {
-  /**
-   * The log type that this config enables.
-   *
-   * @generated from field: google.iam.v1.AuditLogConfig.LogType log_type = 1;
-   */
-  logType: AuditLogConfig_LogType;
+export type AuditLogConfig = Message<'google.iam.v1.AuditLogConfig'> & {
+    /**
+     * The log type that this config enables.
+     *
+     * @generated from field: google.iam.v1.AuditLogConfig.LogType log_type = 1;
+     */
+    logType: AuditLogConfig_LogType;
 
-  /**
-   * Specifies the identities that do not cause logging for this type of
-   * permission.
-   * Follows the same format of
-   * [Binding.members][google.iam.v1.Binding.members].
-   *
-   * @generated from field: repeated string exempted_members = 2;
-   */
-  exemptedMembers: string[];
+    /**
+     * Specifies the identities that do not cause logging for this type of
+     * permission.
+     * Follows the same format of
+     * [Binding.members][google.iam.v1.Binding.members].
+     *
+     * @generated from field: repeated string exempted_members = 2;
+     */
+    exemptedMembers: string[];
 };
 
 /**
  * Describes the message google.iam.v1.AuditLogConfig.
  * Use `create(AuditLogConfigSchema)` to create a new message.
  */
-export const AuditLogConfigSchema: GenMessage<AuditLogConfig> = /*@__PURE__*/
-  messageDesc(file_google_iam_v1_policy, 3);
+export const AuditLogConfigSchema: GenMessage<AuditLogConfig> =
+    /*@__PURE__*/
+    messageDesc(file_google_iam_v1_policy, 3);
 
 /**
  * The list of valid permission types for which logging can be configured.
@@ -412,68 +424,70 @@ export const AuditLogConfigSchema: GenMessage<AuditLogConfig> = /*@__PURE__*/
  * @generated from enum google.iam.v1.AuditLogConfig.LogType
  */
 export enum AuditLogConfig_LogType {
-  /**
-   * Default case. Should never be this.
-   *
-   * @generated from enum value: LOG_TYPE_UNSPECIFIED = 0;
-   */
-  LOG_TYPE_UNSPECIFIED = 0,
+    /**
+     * Default case. Should never be this.
+     *
+     * @generated from enum value: LOG_TYPE_UNSPECIFIED = 0;
+     */
+    LOG_TYPE_UNSPECIFIED = 0,
 
-  /**
-   * Admin reads. Example: CloudIAM getIamPolicy
-   *
-   * @generated from enum value: ADMIN_READ = 1;
-   */
-  ADMIN_READ = 1,
+    /**
+     * Admin reads. Example: CloudIAM getIamPolicy
+     *
+     * @generated from enum value: ADMIN_READ = 1;
+     */
+    ADMIN_READ = 1,
 
-  /**
-   * Data writes. Example: CloudSQL Users create
-   *
-   * @generated from enum value: DATA_WRITE = 2;
-   */
-  DATA_WRITE = 2,
+    /**
+     * Data writes. Example: CloudSQL Users create
+     *
+     * @generated from enum value: DATA_WRITE = 2;
+     */
+    DATA_WRITE = 2,
 
-  /**
-   * Data reads. Example: CloudSQL Users list
-   *
-   * @generated from enum value: DATA_READ = 3;
-   */
-  DATA_READ = 3,
+    /**
+     * Data reads. Example: CloudSQL Users list
+     *
+     * @generated from enum value: DATA_READ = 3;
+     */
+    DATA_READ = 3,
 }
 
 /**
  * Describes the enum google.iam.v1.AuditLogConfig.LogType.
  */
-export const AuditLogConfig_LogTypeSchema: GenEnum<AuditLogConfig_LogType> = /*@__PURE__*/
-  enumDesc(file_google_iam_v1_policy, 3, 0);
+export const AuditLogConfig_LogTypeSchema: GenEnum<AuditLogConfig_LogType> =
+    /*@__PURE__*/
+    enumDesc(file_google_iam_v1_policy, 3, 0);
 
 /**
  * The difference delta between two policies.
  *
  * @generated from message google.iam.v1.PolicyDelta
  */
-export type PolicyDelta = Message<"google.iam.v1.PolicyDelta"> & {
-  /**
-   * The delta for Bindings between two policies.
-   *
-   * @generated from field: repeated google.iam.v1.BindingDelta binding_deltas = 1;
-   */
-  bindingDeltas: BindingDelta[];
+export type PolicyDelta = Message<'google.iam.v1.PolicyDelta'> & {
+    /**
+     * The delta for Bindings between two policies.
+     *
+     * @generated from field: repeated google.iam.v1.BindingDelta binding_deltas = 1;
+     */
+    bindingDeltas: BindingDelta[];
 
-  /**
-   * The delta for AuditConfigs between two policies.
-   *
-   * @generated from field: repeated google.iam.v1.AuditConfigDelta audit_config_deltas = 2;
-   */
-  auditConfigDeltas: AuditConfigDelta[];
+    /**
+     * The delta for AuditConfigs between two policies.
+     *
+     * @generated from field: repeated google.iam.v1.AuditConfigDelta audit_config_deltas = 2;
+     */
+    auditConfigDeltas: AuditConfigDelta[];
 };
 
 /**
  * Describes the message google.iam.v1.PolicyDelta.
  * Use `create(PolicyDeltaSchema)` to create a new message.
  */
-export const PolicyDeltaSchema: GenMessage<PolicyDelta> = /*@__PURE__*/
-  messageDesc(file_google_iam_v1_policy, 4);
+export const PolicyDeltaSchema: GenMessage<PolicyDelta> =
+    /*@__PURE__*/
+    messageDesc(file_google_iam_v1_policy, 4);
 
 /**
  * One delta entry for Binding. Each individual change (only one member in each
@@ -481,47 +495,48 @@ export const PolicyDeltaSchema: GenMessage<PolicyDelta> = /*@__PURE__*/
  *
  * @generated from message google.iam.v1.BindingDelta
  */
-export type BindingDelta = Message<"google.iam.v1.BindingDelta"> & {
-  /**
-   * The action that was performed on a Binding.
-   * Required
-   *
-   * @generated from field: google.iam.v1.BindingDelta.Action action = 1;
-   */
-  action: BindingDelta_Action;
+export type BindingDelta = Message<'google.iam.v1.BindingDelta'> & {
+    /**
+     * The action that was performed on a Binding.
+     * Required
+     *
+     * @generated from field: google.iam.v1.BindingDelta.Action action = 1;
+     */
+    action: BindingDelta_Action;
 
-  /**
-   * Role that is assigned to `members`.
-   * For example, `roles/viewer`, `roles/editor`, or `roles/owner`.
-   * Required
-   *
-   * @generated from field: string role = 2;
-   */
-  role: string;
+    /**
+     * Role that is assigned to `members`.
+     * For example, `roles/viewer`, `roles/editor`, or `roles/owner`.
+     * Required
+     *
+     * @generated from field: string role = 2;
+     */
+    role: string;
 
-  /**
-   * A single identity requesting access for a Google Cloud resource.
-   * Follows the same format of Binding.members.
-   * Required
-   *
-   * @generated from field: string member = 3;
-   */
-  member: string;
+    /**
+     * A single identity requesting access for a Google Cloud resource.
+     * Follows the same format of Binding.members.
+     * Required
+     *
+     * @generated from field: string member = 3;
+     */
+    member: string;
 
-  /**
-   * The condition that is associated with this binding.
-   *
-   * @generated from field: google.type.Expr condition = 4;
-   */
-  condition?: Expr | undefined;
+    /**
+     * The condition that is associated with this binding.
+     *
+     * @generated from field: google.type.Expr condition = 4;
+     */
+    condition?: Expr | undefined;
 };
 
 /**
  * Describes the message google.iam.v1.BindingDelta.
  * Use `create(BindingDeltaSchema)` to create a new message.
  */
-export const BindingDeltaSchema: GenMessage<BindingDelta> = /*@__PURE__*/
-  messageDesc(file_google_iam_v1_policy, 5);
+export const BindingDeltaSchema: GenMessage<BindingDelta> =
+    /*@__PURE__*/
+    messageDesc(file_google_iam_v1_policy, 5);
 
 /**
  * The type of action performed on a Binding in a policy.
@@ -529,33 +544,34 @@ export const BindingDeltaSchema: GenMessage<BindingDelta> = /*@__PURE__*/
  * @generated from enum google.iam.v1.BindingDelta.Action
  */
 export enum BindingDelta_Action {
-  /**
-   * Unspecified.
-   *
-   * @generated from enum value: ACTION_UNSPECIFIED = 0;
-   */
-  ACTION_UNSPECIFIED = 0,
+    /**
+     * Unspecified.
+     *
+     * @generated from enum value: ACTION_UNSPECIFIED = 0;
+     */
+    ACTION_UNSPECIFIED = 0,
 
-  /**
-   * Addition of a Binding.
-   *
-   * @generated from enum value: ADD = 1;
-   */
-  ADD = 1,
+    /**
+     * Addition of a Binding.
+     *
+     * @generated from enum value: ADD = 1;
+     */
+    ADD = 1,
 
-  /**
-   * Removal of a Binding.
-   *
-   * @generated from enum value: REMOVE = 2;
-   */
-  REMOVE = 2,
+    /**
+     * Removal of a Binding.
+     *
+     * @generated from enum value: REMOVE = 2;
+     */
+    REMOVE = 2,
 }
 
 /**
  * Describes the enum google.iam.v1.BindingDelta.Action.
  */
-export const BindingDelta_ActionSchema: GenEnum<BindingDelta_Action> = /*@__PURE__*/
-  enumDesc(file_google_iam_v1_policy, 5, 0);
+export const BindingDelta_ActionSchema: GenEnum<BindingDelta_Action> =
+    /*@__PURE__*/
+    enumDesc(file_google_iam_v1_policy, 5, 0);
 
 /**
  * One delta entry for AuditConfig. Each individual change (only one
@@ -563,50 +579,51 @@ export const BindingDelta_ActionSchema: GenEnum<BindingDelta_Action> = /*@__PURE
  *
  * @generated from message google.iam.v1.AuditConfigDelta
  */
-export type AuditConfigDelta = Message<"google.iam.v1.AuditConfigDelta"> & {
-  /**
-   * The action that was performed on an audit configuration in a policy.
-   * Required
-   *
-   * @generated from field: google.iam.v1.AuditConfigDelta.Action action = 1;
-   */
-  action: AuditConfigDelta_Action;
+export type AuditConfigDelta = Message<'google.iam.v1.AuditConfigDelta'> & {
+    /**
+     * The action that was performed on an audit configuration in a policy.
+     * Required
+     *
+     * @generated from field: google.iam.v1.AuditConfigDelta.Action action = 1;
+     */
+    action: AuditConfigDelta_Action;
 
-  /**
-   * Specifies a service that was configured for Cloud Audit Logging.
-   * For example, `storage.googleapis.com`, `cloudsql.googleapis.com`.
-   * `allServices` is a special value that covers all services.
-   * Required
-   *
-   * @generated from field: string service = 2;
-   */
-  service: string;
+    /**
+     * Specifies a service that was configured for Cloud Audit Logging.
+     * For example, `storage.googleapis.com`, `cloudsql.googleapis.com`.
+     * `allServices` is a special value that covers all services.
+     * Required
+     *
+     * @generated from field: string service = 2;
+     */
+    service: string;
 
-  /**
-   * A single identity that is exempted from "data access" audit
-   * logging for the `service` specified above.
-   * Follows the same format of Binding.members.
-   *
-   * @generated from field: string exempted_member = 3;
-   */
-  exemptedMember: string;
+    /**
+     * A single identity that is exempted from "data access" audit
+     * logging for the `service` specified above.
+     * Follows the same format of Binding.members.
+     *
+     * @generated from field: string exempted_member = 3;
+     */
+    exemptedMember: string;
 
-  /**
-   * Specifies the log_type that was be enabled. ADMIN_ACTIVITY is always
-   * enabled, and cannot be configured.
-   * Required
-   *
-   * @generated from field: string log_type = 4;
-   */
-  logType: string;
+    /**
+     * Specifies the log_type that was be enabled. ADMIN_ACTIVITY is always
+     * enabled, and cannot be configured.
+     * Required
+     *
+     * @generated from field: string log_type = 4;
+     */
+    logType: string;
 };
 
 /**
  * Describes the message google.iam.v1.AuditConfigDelta.
  * Use `create(AuditConfigDeltaSchema)` to create a new message.
  */
-export const AuditConfigDeltaSchema: GenMessage<AuditConfigDelta> = /*@__PURE__*/
-  messageDesc(file_google_iam_v1_policy, 6);
+export const AuditConfigDeltaSchema: GenMessage<AuditConfigDelta> =
+    /*@__PURE__*/
+    messageDesc(file_google_iam_v1_policy, 6);
 
 /**
  * The type of action performed on an audit configuration in a policy.
@@ -614,31 +631,31 @@ export const AuditConfigDeltaSchema: GenMessage<AuditConfigDelta> = /*@__PURE__*
  * @generated from enum google.iam.v1.AuditConfigDelta.Action
  */
 export enum AuditConfigDelta_Action {
-  /**
-   * Unspecified.
-   *
-   * @generated from enum value: ACTION_UNSPECIFIED = 0;
-   */
-  ACTION_UNSPECIFIED = 0,
+    /**
+     * Unspecified.
+     *
+     * @generated from enum value: ACTION_UNSPECIFIED = 0;
+     */
+    ACTION_UNSPECIFIED = 0,
 
-  /**
-   * Addition of an audit configuration.
-   *
-   * @generated from enum value: ADD = 1;
-   */
-  ADD = 1,
+    /**
+     * Addition of an audit configuration.
+     *
+     * @generated from enum value: ADD = 1;
+     */
+    ADD = 1,
 
-  /**
-   * Removal of an audit configuration.
-   *
-   * @generated from enum value: REMOVE = 2;
-   */
-  REMOVE = 2,
+    /**
+     * Removal of an audit configuration.
+     *
+     * @generated from enum value: REMOVE = 2;
+     */
+    REMOVE = 2,
 }
 
 /**
  * Describes the enum google.iam.v1.AuditConfigDelta.Action.
  */
-export const AuditConfigDelta_ActionSchema: GenEnum<AuditConfigDelta_Action> = /*@__PURE__*/
-  enumDesc(file_google_iam_v1_policy, 6, 0);
-
+export const AuditConfigDelta_ActionSchema: GenEnum<AuditConfigDelta_Action> =
+    /*@__PURE__*/
+    enumDesc(file_google_iam_v1_policy, 6, 0);

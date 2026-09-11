@@ -16,17 +16,25 @@
 // @generated from file google/api/routing.proto (package google.api, syntax proto3)
 /* eslint-disable */
 
-import type { GenExtension, GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
-import { extDesc, fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
-import type { MethodOptions } from "@bufbuild/protobuf/wkt";
-import { file_google_protobuf_descriptor } from "@bufbuild/protobuf/wkt";
-import type { Message } from "@bufbuild/protobuf";
+import type {
+    GenExtension,
+    GenFile,
+    GenMessage,
+} from '@bufbuild/protobuf/codegenv2';
+import { extDesc, fileDesc, messageDesc } from '@bufbuild/protobuf/codegenv2';
+import type { MethodOptions } from '@bufbuild/protobuf/wkt';
+import { file_google_protobuf_descriptor } from '@bufbuild/protobuf/wkt';
+import type { Message } from '@bufbuild/protobuf';
 
 /**
  * Describes the file google/api/routing.proto.
  */
-export const file_google_api_routing: GenFile = /*@__PURE__*/
-  fileDesc("Chhnb29nbGUvYXBpL3JvdXRpbmcucHJvdG8SCmdvb2dsZS5hcGkiRwoLUm91dGluZ1J1bGUSOAoScm91dGluZ19wYXJhbWV0ZXJzGAIgAygLMhwuZ29vZ2xlLmFwaS5Sb3V0aW5nUGFyYW1ldGVyIjgKEFJvdXRpbmdQYXJhbWV0ZXISDQoFZmllbGQYASABKAkSFQoNcGF0aF90ZW1wbGF0ZRgCIAEoCTpUCgdyb3V0aW5nEh4uZ29vZ2xlLnByb3RvYnVmLk1ldGhvZE9wdGlvbnMYscq8IiABKAsyFy5nb29nbGUuYXBpLlJvdXRpbmdSdWxlUgdyb3V0aW5nQmoKDmNvbS5nb29nbGUuYXBpQgxSb3V0aW5nUHJvdG9QAVpBZ29vZ2xlLmdvbGFuZy5vcmcvZ2VucHJvdG8vZ29vZ2xlYXBpcy9hcGkvYW5ub3RhdGlvbnM7YW5ub3RhdGlvbnOiAgRHQVBJYgZwcm90bzM", [file_google_protobuf_descriptor]);
+export const file_google_api_routing: GenFile =
+    /*@__PURE__*/
+    fileDesc(
+        'Chhnb29nbGUvYXBpL3JvdXRpbmcucHJvdG8SCmdvb2dsZS5hcGkiRwoLUm91dGluZ1J1bGUSOAoScm91dGluZ19wYXJhbWV0ZXJzGAIgAygLMhwuZ29vZ2xlLmFwaS5Sb3V0aW5nUGFyYW1ldGVyIjgKEFJvdXRpbmdQYXJhbWV0ZXISDQoFZmllbGQYASABKAkSFQoNcGF0aF90ZW1wbGF0ZRgCIAEoCTpUCgdyb3V0aW5nEh4uZ29vZ2xlLnByb3RvYnVmLk1ldGhvZE9wdGlvbnMYscq8IiABKAsyFy5nb29nbGUuYXBpLlJvdXRpbmdSdWxlUgdyb3V0aW5nQmoKDmNvbS5nb29nbGUuYXBpQgxSb3V0aW5nUHJvdG9QAVpBZ29vZ2xlLmdvbGFuZy5vcmcvZ2VucHJvdG8vZ29vZ2xlYXBpcy9hcGkvYW5ub3RhdGlvbnM7YW5ub3RhdGlvbnOiAgRHQVBJYgZwcm90bzM',
+        [file_google_protobuf_descriptor]
+    );
 
 /**
  * Specifies the routing information that should be sent along with the request
@@ -395,113 +403,115 @@ export const file_google_api_routing: GenFile = /*@__PURE__*/
  *
  * @generated from message google.api.RoutingRule
  */
-export type RoutingRule = Message<"google.api.RoutingRule"> & {
-  /**
-   * A collection of Routing Parameter specifications.
-   * **NOTE:** If multiple Routing Parameters describe the same key
-   * (via the `path_template` field or via the `field` field when
-   * `path_template` is not provided), "last one wins" rule
-   * determines which Parameter gets used.
-   * See the examples for more details.
-   *
-   * @generated from field: repeated google.api.RoutingParameter routing_parameters = 2;
-   */
-  routingParameters: RoutingParameter[];
+export type RoutingRule = Message<'google.api.RoutingRule'> & {
+    /**
+     * A collection of Routing Parameter specifications.
+     * **NOTE:** If multiple Routing Parameters describe the same key
+     * (via the `path_template` field or via the `field` field when
+     * `path_template` is not provided), "last one wins" rule
+     * determines which Parameter gets used.
+     * See the examples for more details.
+     *
+     * @generated from field: repeated google.api.RoutingParameter routing_parameters = 2;
+     */
+    routingParameters: RoutingParameter[];
 };
 
 /**
  * Describes the message google.api.RoutingRule.
  * Use `create(RoutingRuleSchema)` to create a new message.
  */
-export const RoutingRuleSchema: GenMessage<RoutingRule> = /*@__PURE__*/
-  messageDesc(file_google_api_routing, 0);
+export const RoutingRuleSchema: GenMessage<RoutingRule> =
+    /*@__PURE__*/
+    messageDesc(file_google_api_routing, 0);
 
 /**
  * A projection from an input message to the GRPC or REST header.
  *
  * @generated from message google.api.RoutingParameter
  */
-export type RoutingParameter = Message<"google.api.RoutingParameter"> & {
-  /**
-   * A request field to extract the header key-value pair from.
-   *
-   * @generated from field: string field = 1;
-   */
-  field: string;
+export type RoutingParameter = Message<'google.api.RoutingParameter'> & {
+    /**
+     * A request field to extract the header key-value pair from.
+     *
+     * @generated from field: string field = 1;
+     */
+    field: string;
 
-  /**
-   * A pattern matching the key-value field. Optional.
-   * If not specified, the whole field specified in the `field` field will be
-   * taken as value, and its name used as key. If specified, it MUST contain
-   * exactly one named segment (along with any number of unnamed segments) The
-   * pattern will be matched over the field specified in the `field` field, then
-   * if the match is successful:
-   * - the name of the single named segment will be used as a header name,
-   * - the match value of the segment will be used as a header value;
-   * if the match is NOT successful, nothing will be sent.
-   *
-   * Example:
-   *
-   *               -- This is a field in the request message
-   *              |   that the header value will be extracted from.
-   *              |
-   *              |                     -- This is the key name in the
-   *              |                    |   routing header.
-   *              V                    |
-   *     field: "table_name"           v
-   *     path_template: "projects/*\/{table_location=instances/*}/tables/*"
-   *                                                ^            ^
-   *                                                |            |
-   *       In the {} brackets is the pattern that --             |
-   *       specifies what to extract from the                    |
-   *       field as a value to be sent.                          |
-   *                                                             |
-   *      The string in the field must match the whole pattern --
-   *      before brackets, inside brackets, after brackets.
-   *
-   * When looking at this specific example, we can see that:
-   * - A key-value pair with the key `table_location`
-   *   and the value matching `instances/*` should be added
-   *   to the x-goog-request-params routing header.
-   * - The value is extracted from the request message's `table_name` field
-   *   if it matches the full pattern specified:
-   *   `projects/*\/instances/*\/tables/*`.
-   *
-   * **NB:** If the `path_template` field is not provided, the key name is
-   * equal to the field name, and the whole field should be sent as a value.
-   * This makes the pattern for the field and the value functionally equivalent
-   * to `**`, and the configuration
-   *
-   *     {
-   *       field: "table_name"
-   *     }
-   *
-   * is a functionally equivalent shorthand to:
-   *
-   *     {
-   *       field: "table_name"
-   *       path_template: "{table_name=**}"
-   *     }
-   *
-   * See Example 1 for more details.
-   *
-   * @generated from field: string path_template = 2;
-   */
-  pathTemplate: string;
+    /**
+     * A pattern matching the key-value field. Optional.
+     * If not specified, the whole field specified in the `field` field will be
+     * taken as value, and its name used as key. If specified, it MUST contain
+     * exactly one named segment (along with any number of unnamed segments) The
+     * pattern will be matched over the field specified in the `field` field, then
+     * if the match is successful:
+     * - the name of the single named segment will be used as a header name,
+     * - the match value of the segment will be used as a header value;
+     * if the match is NOT successful, nothing will be sent.
+     *
+     * Example:
+     *
+     *               -- This is a field in the request message
+     *              |   that the header value will be extracted from.
+     *              |
+     *              |                     -- This is the key name in the
+     *              |                    |   routing header.
+     *              V                    |
+     *     field: "table_name"           v
+     *     path_template: "projects/*\/{table_location=instances/*}/tables/*"
+     *                                                ^            ^
+     *                                                |            |
+     *       In the {} brackets is the pattern that --             |
+     *       specifies what to extract from the                    |
+     *       field as a value to be sent.                          |
+     *                                                             |
+     *      The string in the field must match the whole pattern --
+     *      before brackets, inside brackets, after brackets.
+     *
+     * When looking at this specific example, we can see that:
+     * - A key-value pair with the key `table_location`
+     *   and the value matching `instances/*` should be added
+     *   to the x-goog-request-params routing header.
+     * - The value is extracted from the request message's `table_name` field
+     *   if it matches the full pattern specified:
+     *   `projects/*\/instances/*\/tables/*`.
+     *
+     * **NB:** If the `path_template` field is not provided, the key name is
+     * equal to the field name, and the whole field should be sent as a value.
+     * This makes the pattern for the field and the value functionally equivalent
+     * to `**`, and the configuration
+     *
+     *     {
+     *       field: "table_name"
+     *     }
+     *
+     * is a functionally equivalent shorthand to:
+     *
+     *     {
+     *       field: "table_name"
+     *       path_template: "{table_name=**}"
+     *     }
+     *
+     * See Example 1 for more details.
+     *
+     * @generated from field: string path_template = 2;
+     */
+    pathTemplate: string;
 };
 
 /**
  * Describes the message google.api.RoutingParameter.
  * Use `create(RoutingParameterSchema)` to create a new message.
  */
-export const RoutingParameterSchema: GenMessage<RoutingParameter> = /*@__PURE__*/
-  messageDesc(file_google_api_routing, 1);
+export const RoutingParameterSchema: GenMessage<RoutingParameter> =
+    /*@__PURE__*/
+    messageDesc(file_google_api_routing, 1);
 
 /**
  * See RoutingRule.
  *
  * @generated from extension: google.api.RoutingRule routing = 72295729;
  */
-export const routing: GenExtension<MethodOptions, RoutingRule> = /*@__PURE__*/
-  extDesc(file_google_api_routing, 0);
-
+export const routing: GenExtension<MethodOptions, RoutingRule> =
+    /*@__PURE__*/
+    extDesc(file_google_api_routing, 0);

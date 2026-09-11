@@ -1,11 +1,11 @@
 <script lang="ts">
-    import {cn} from "$lib/utils";
+    import { cn } from '$lib/utils';
 
     let {
         length = 6,
         pattern = /[0-9]$/,
         uppercase = true,
-        onComplete
+        onComplete,
     }: {
         length?: number;
         pattern?: RegExp;
@@ -27,7 +27,7 @@
 
         if (!val) {
             values[index] = '';
-            return
+            return;
         }
 
         if (uppercase) {
@@ -110,23 +110,24 @@
     }
 </script>
 
-<div class="flex justify-center gap-1.5 sm:gap-2 w-full max-w-sm mx-auto">
+<div class="mx-auto flex w-full max-w-sm justify-center gap-1.5 sm:gap-2">
     {#each Array(length) as _, i}
         <input
-                bind:this={inputRefs[i]}
-                type="text"
-                inputmode="text"
-                maxlength="1"
-                value={values[i]}
-                oninput={(e) => handleInput(i, e)}
-                onkeydown={(e) => handleKeyDown(i, e)}
-                onfocus={handleFocus}
-                onpaste={(e) => handlePaste(i, e)}
-                class={cn(
-                    "flex-1 min-w-0 aspect-5/6 max-w-10 text-center border border-dashed border-muted-foreground bg-background text-foreground tracking-widest font-mono text-[clamp(1rem,4vw,1.125rem)] p-0 outline-none focus:border-solid focus:border-primary",
-                    (values[i]?.trim().length ?? 0) > 0 && "border-solid border-primary",
-                    uppercase && "uppercase"
-                )}
+            bind:this={inputRefs[i]}
+            type="text"
+            inputmode="text"
+            maxlength="1"
+            value={values[i]}
+            oninput={(e) => handleInput(i, e)}
+            onkeydown={(e) => handleKeyDown(i, e)}
+            onfocus={handleFocus}
+            onpaste={(e) => handlePaste(i, e)}
+            class={cn(
+                'border-muted-foreground bg-background text-foreground focus:border-primary aspect-5/6 max-w-10 min-w-0 flex-1 border border-dashed p-0 text-center font-mono text-[clamp(1rem,4vw,1.125rem)] tracking-widest outline-none focus:border-solid',
+                (values[i]?.trim().length ?? 0) > 0 &&
+                    'border-primary border-solid',
+                uppercase && 'uppercase'
+            )}
         />
     {/each}
 </div>

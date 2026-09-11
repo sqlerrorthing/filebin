@@ -16,16 +16,20 @@
 // @generated from file google/type/color.proto (package google.type, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
-import { file_google_protobuf_wrappers } from "@bufbuild/protobuf/wkt";
-import type { Message } from "@bufbuild/protobuf";
+import type { GenFile, GenMessage } from '@bufbuild/protobuf/codegenv2';
+import { fileDesc, messageDesc } from '@bufbuild/protobuf/codegenv2';
+import { file_google_protobuf_wrappers } from '@bufbuild/protobuf/wkt';
+import type { Message } from '@bufbuild/protobuf';
 
 /**
  * Describes the file google/type/color.proto.
  */
-export const file_google_type_color: GenFile = /*@__PURE__*/
-  fileDesc("Chdnb29nbGUvdHlwZS9jb2xvci5wcm90bxILZ29vZ2xlLnR5cGUiXQoFQ29sb3ISCwoDcmVkGAEgASgCEg0KBWdyZWVuGAIgASgCEgwKBGJsdWUYAyABKAISKgoFYWxwaGEYBCABKAsyGy5nb29nbGUucHJvdG9idWYuRmxvYXRWYWx1ZUJdCg9jb20uZ29vZ2xlLnR5cGVCCkNvbG9yUHJvdG9QAVo2Z29vZ2xlLmdvbGFuZy5vcmcvZ2VucHJvdG8vZ29vZ2xlYXBpcy90eXBlL2NvbG9yO2NvbG9yogIDR1RQYgZwcm90bzM", [file_google_protobuf_wrappers]);
+export const file_google_type_color: GenFile =
+    /*@__PURE__*/
+    fileDesc(
+        'Chdnb29nbGUvdHlwZS9jb2xvci5wcm90bxILZ29vZ2xlLnR5cGUiXQoFQ29sb3ISCwoDcmVkGAEgASgCEg0KBWdyZWVuGAIgASgCEgwKBGJsdWUYAyABKAISKgoFYWxwaGEYBCABKAsyGy5nb29nbGUucHJvdG9idWYuRmxvYXRWYWx1ZUJdCg9jb20uZ29vZ2xlLnR5cGVCCkNvbG9yUHJvdG9QAVo2Z29vZ2xlLmdvbGFuZy5vcmcvZ2VucHJvdG8vZ29vZ2xlYXBpcy90eXBlL2NvbG9yO2NvbG9yogIDR1RQYgZwcm90bzM',
+        [file_google_protobuf_wrappers]
+    );
 
 /**
  * Represents a color in the RGBA color space. This representation is designed
@@ -155,50 +159,50 @@ export const file_google_type_color: GenFile = /*@__PURE__*/
  *
  * @generated from message google.type.Color
  */
-export type Color = Message<"google.type.Color"> & {
-  /**
-   * The amount of red in the color as a value in the interval [0, 1].
-   *
-   * @generated from field: float red = 1;
-   */
-  red: number;
+export type Color = Message<'google.type.Color'> & {
+    /**
+     * The amount of red in the color as a value in the interval [0, 1].
+     *
+     * @generated from field: float red = 1;
+     */
+    red: number;
 
-  /**
-   * The amount of green in the color as a value in the interval [0, 1].
-   *
-   * @generated from field: float green = 2;
-   */
-  green: number;
+    /**
+     * The amount of green in the color as a value in the interval [0, 1].
+     *
+     * @generated from field: float green = 2;
+     */
+    green: number;
 
-  /**
-   * The amount of blue in the color as a value in the interval [0, 1].
-   *
-   * @generated from field: float blue = 3;
-   */
-  blue: number;
+    /**
+     * The amount of blue in the color as a value in the interval [0, 1].
+     *
+     * @generated from field: float blue = 3;
+     */
+    blue: number;
 
-  /**
-   * The fraction of this color that should be applied to the pixel. That is,
-   * the final pixel color is defined by the equation:
-   *
-   *   `pixel color = alpha * (this color) + (1.0 - alpha) * (background color)`
-   *
-   * This means that a value of 1.0 corresponds to a solid color, whereas
-   * a value of 0.0 corresponds to a completely transparent color. This
-   * uses a wrapper message rather than a simple float scalar so that it is
-   * possible to distinguish between a default value and the value being unset.
-   * If omitted, this color object is rendered as a solid color
-   * (as if the alpha value had been explicitly given a value of 1.0).
-   *
-   * @generated from field: google.protobuf.FloatValue alpha = 4;
-   */
-  alpha?: number | undefined;
+    /**
+     * The fraction of this color that should be applied to the pixel. That is,
+     * the final pixel color is defined by the equation:
+     *
+     *   `pixel color = alpha * (this color) + (1.0 - alpha) * (background color)`
+     *
+     * This means that a value of 1.0 corresponds to a solid color, whereas
+     * a value of 0.0 corresponds to a completely transparent color. This
+     * uses a wrapper message rather than a simple float scalar so that it is
+     * possible to distinguish between a default value and the value being unset.
+     * If omitted, this color object is rendered as a solid color
+     * (as if the alpha value had been explicitly given a value of 1.0).
+     *
+     * @generated from field: google.protobuf.FloatValue alpha = 4;
+     */
+    alpha?: number | undefined;
 };
 
 /**
  * Describes the message google.type.Color.
  * Use `create(ColorSchema)` to create a new message.
  */
-export const ColorSchema: GenMessage<Color> = /*@__PURE__*/
-  messageDesc(file_google_type_color, 0);
-
+export const ColorSchema: GenMessage<Color> =
+    /*@__PURE__*/
+    messageDesc(file_google_type_color, 0);

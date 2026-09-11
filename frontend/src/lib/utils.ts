@@ -5,7 +5,10 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-export function formatBytes(bytes: number | bigint, decimals: number = 2): string {
+export function formatBytes(
+    bytes: number | bigint,
+    decimals: number = 2
+): string {
     if (bytes === 0) return '0 Bytes';
     const numBytes = Number(bytes ?? 0);
 

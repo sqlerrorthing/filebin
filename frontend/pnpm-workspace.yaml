@@ -1,4 +1,4 @@
 allowBuilds:
-  '@bufbuild/buf': false
-  '@tailwindcss/oxide': true
-  esbuild: true
+    '@bufbuild/buf': false
+    '@tailwindcss/oxide': true
+    esbuild: true

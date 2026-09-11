@@ -16,17 +16,21 @@
 // @generated from file google/api/expr/v1alpha1/explain.proto (package google.api.expr.v1alpha1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
-import type { Value } from "./value_pb";
-import { file_google_api_expr_v1alpha1_value } from "./value_pb";
-import type { Message } from "@bufbuild/protobuf";
+import type { GenFile, GenMessage } from '@bufbuild/protobuf/codegenv2';
+import { fileDesc, messageDesc } from '@bufbuild/protobuf/codegenv2';
+import type { Value } from './value_pb';
+import { file_google_api_expr_v1alpha1_value } from './value_pb';
+import type { Message } from '@bufbuild/protobuf';
 
 /**
  * Describes the file google/api/expr/v1alpha1/explain.proto.
  */
-export const file_google_api_expr_v1alpha1_explain: GenFile = /*@__PURE__*/
-  fileDesc("CiZnb29nbGUvYXBpL2V4cHIvdjFhbHBoYTEvZXhwbGFpbi5wcm90bxIYZ29vZ2xlLmFwaS5leHByLnYxYWxwaGExIqsBCgdFeHBsYWluEi8KBnZhbHVlcxgBIAMoCzIfLmdvb2dsZS5hcGkuZXhwci52MWFscGhhMS5WYWx1ZRI+CgpleHByX3N0ZXBzGAIgAygLMiouZ29vZ2xlLmFwaS5leHByLnYxYWxwaGExLkV4cGxhaW4uRXhwclN0ZXAaKwoIRXhwclN0ZXASCgoCaWQYASABKAMSEwoLdmFsdWVfaW5kZXgYAiABKAU6AhgBQmwKHGNvbS5nb29nbGUuYXBpLmV4cHIudjFhbHBoYTFCDEV4cGxhaW5Qcm90b1ABWjxnb29nbGUuZ29sYW5nLm9yZy9nZW5wcm90by9nb29nbGVhcGlzL2FwaS9leHByL3YxYWxwaGExO2V4cHJiBnByb3RvMw", [file_google_api_expr_v1alpha1_value]);
+export const file_google_api_expr_v1alpha1_explain: GenFile =
+    /*@__PURE__*/
+    fileDesc(
+        'CiZnb29nbGUvYXBpL2V4cHIvdjFhbHBoYTEvZXhwbGFpbi5wcm90bxIYZ29vZ2xlLmFwaS5leHByLnYxYWxwaGExIqsBCgdFeHBsYWluEi8KBnZhbHVlcxgBIAMoCzIfLmdvb2dsZS5hcGkuZXhwci52MWFscGhhMS5WYWx1ZRI+CgpleHByX3N0ZXBzGAIgAygLMiouZ29vZ2xlLmFwaS5leHByLnYxYWxwaGExLkV4cGxhaW4uRXhwclN0ZXAaKwoIRXhwclN0ZXASCgoCaWQYASABKAMSEwoLdmFsdWVfaW5kZXgYAiABKAU6AhgBQmwKHGNvbS5nb29nbGUuYXBpLmV4cHIudjFhbHBoYTFCDEV4cGxhaW5Qcm90b1ABWjxnb29nbGUuZ29sYW5nLm9yZy9nZW5wcm90by9nb29nbGVhcGlzL2FwaS9leHByL3YxYWxwaGExO2V4cHJiBnByb3RvMw',
+        [file_google_api_expr_v1alpha1_value]
+    );
 
 /**
  * Values of intermediate expressions produced when evaluating expression.
@@ -35,27 +39,27 @@ export const file_google_api_expr_v1alpha1_explain: GenFile = /*@__PURE__*/
  * @generated from message google.api.expr.v1alpha1.Explain
  * @deprecated
  */
-export type Explain = Message<"google.api.expr.v1alpha1.Explain"> & {
-  /**
-   * All of the observed values.
-   *
-   * The field value_index is an index in the values list.
-   * Separating values from steps is needed to remove redundant values.
-   *
-   * @generated from field: repeated google.api.expr.v1alpha1.Value values = 1;
-   */
-  values: Value[];
+export type Explain = Message<'google.api.expr.v1alpha1.Explain'> & {
+    /**
+     * All of the observed values.
+     *
+     * The field value_index is an index in the values list.
+     * Separating values from steps is needed to remove redundant values.
+     *
+     * @generated from field: repeated google.api.expr.v1alpha1.Value values = 1;
+     */
+    values: Value[];
 
-  /**
-   * List of steps.
-   *
-   * Repeated evaluations of the same expression generate new ExprStep
-   * instances. The order of such ExprStep instances matches the order of
-   * elements returned by Comprehension.iter_range.
-   *
-   * @generated from field: repeated google.api.expr.v1alpha1.Explain.ExprStep expr_steps = 2;
-   */
-  exprSteps: Explain_ExprStep[];
+    /**
+     * List of steps.
+     *
+     * Repeated evaluations of the same expression generate new ExprStep
+     * instances. The order of such ExprStep instances matches the order of
+     * elements returned by Comprehension.iter_range.
+     *
+     * @generated from field: repeated google.api.expr.v1alpha1.Explain.ExprStep expr_steps = 2;
+     */
+    exprSteps: Explain_ExprStep[];
 };
 
 /**
@@ -63,8 +67,9 @@ export type Explain = Message<"google.api.expr.v1alpha1.Explain"> & {
  * Use `create(ExplainSchema)` to create a new message.
  * @deprecated
  */
-export const ExplainSchema: GenMessage<Explain> = /*@__PURE__*/
-  messageDesc(file_google_api_expr_v1alpha1_explain, 0);
+export const ExplainSchema: GenMessage<Explain> =
+    /*@__PURE__*/
+    messageDesc(file_google_api_expr_v1alpha1_explain, 0);
 
 /**
  * ID and value index of one step.
@@ -72,27 +77,28 @@ export const ExplainSchema: GenMessage<Explain> = /*@__PURE__*/
  * @generated from message google.api.expr.v1alpha1.Explain.ExprStep
  * @deprecated
  */
-export type Explain_ExprStep = Message<"google.api.expr.v1alpha1.Explain.ExprStep"> & {
-  /**
-   * ID of corresponding Expr node.
-   *
-   * @generated from field: int64 id = 1;
-   */
-  id: bigint;
+export type Explain_ExprStep =
+    Message<'google.api.expr.v1alpha1.Explain.ExprStep'> & {
+        /**
+         * ID of corresponding Expr node.
+         *
+         * @generated from field: int64 id = 1;
+         */
+        id: bigint;
 
-  /**
-   * Index of the value in the values list.
-   *
-   * @generated from field: int32 value_index = 2;
-   */
-  valueIndex: number;
-};
+        /**
+         * Index of the value in the values list.
+         *
+         * @generated from field: int32 value_index = 2;
+         */
+        valueIndex: number;
+    };
 
 /**
  * Describes the message google.api.expr.v1alpha1.Explain.ExprStep.
  * Use `create(Explain_ExprStepSchema)` to create a new message.
  * @deprecated
  */
-export const Explain_ExprStepSchema: GenMessage<Explain_ExprStep> = /*@__PURE__*/
-  messageDesc(file_google_api_expr_v1alpha1_explain, 0, 0);
-
+export const Explain_ExprStepSchema: GenMessage<Explain_ExprStep> =
+    /*@__PURE__*/
+    messageDesc(file_google_api_expr_v1alpha1_explain, 0, 0);

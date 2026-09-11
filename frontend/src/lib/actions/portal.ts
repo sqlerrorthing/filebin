@@ -6,6 +6,6 @@ export function portal(node: HTMLElement) {
             if (node.parentNode) {
                 node.parentNode.removeChild(node);
             }
-        }
+        },
     };
 }
