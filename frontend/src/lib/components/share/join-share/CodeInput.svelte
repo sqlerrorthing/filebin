@@ -6,11 +6,13 @@
         pattern = /[0-9]$/,
         uppercase = true,
         onComplete,
+        onFocus = () => {}
     }: {
         length?: number;
         pattern?: RegExp;
         uppercase?: boolean;
         onComplete: (code: string) => boolean | Promise<boolean>;
+        onFocus: () => void;
     } = $props();
 
     let values = $state<string[]>([]);
@@ -114,6 +116,7 @@
     }
 
     function handleFocus(e: FocusEvent) {
+        onFocus();
         const target = e.target as HTMLInputElement;
         target.select();
     }

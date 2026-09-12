@@ -17,6 +17,8 @@
     import * as m from "$lib/paraglide/messages";
     import CodeInput from "$lib/components/share/join-share/CodeInput.svelte";
 
+    const digits = 6;
+
     type JoinState =
         | { step: "input"; errorMessage?: string }
         | { step: "connecting" }
@@ -101,6 +103,14 @@
 
         return true;
     }
+
+    function clearError() {
+        if (joinState.step === "input") {
+            joinState.errorMessage = undefined;
+        } else if (joinState.step === "error") {
+            joinState = { step: "input" };
+        }
+    }
 </script>
 
 <div
@@ -116,9 +126,9 @@
         {@const s = joinState}
 
         <div class="flex flex-col items-center justify-center gap-2">
-            <p class="text-sm font-medium">{m["share.modal.enter-code"]()}</p>
+            <p class="text-sm font-medium">{m["share.modal.enter-code"]({ len: digits })}</p>
 
-            <CodeInput length={6} onComplete={handleJoin} />
+            <CodeInput length={6} onComplete={handleJoin} onFocus={clearError} />
 
             {#if s.step === "input" && s.errorMessage}
                 <span class="text-destructive text-sm">{s.errorMessage}</span>
