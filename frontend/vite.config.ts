@@ -25,9 +25,9 @@ export default defineConfig({
             adapter: adapter(),
         }),
         Icons({
-            compiler: "svelte",
-            autoInstall: true
-        })
+            compiler: 'svelte',
+            autoInstall: true,
+        }),
     ],
     ssr: {
         noExternal: ['@lucide/svelte', '@inlang/paraglide-js-svelte'],
@@ -48,7 +48,7 @@ export default defineConfig({
                 unsafe: true,
                 unsafe_arrows: true,
                 unsafe_methods: true,
-                unsafe_proto: true
+                unsafe_proto: true,
             },
             mangle: {
                 toplevel: true,
