@@ -36,7 +36,7 @@
     "share": {
         "modal": {
             "title": "Folder Share",
-            "enter-code": "Enter a 6-digit code",
+            "enter-code": "Enter a {len}-digit code",
             "action-hint": "Share this code with the recipient. Waiting for them to join"
         },
         "session": {

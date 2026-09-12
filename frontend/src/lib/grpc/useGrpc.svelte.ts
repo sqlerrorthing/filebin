@@ -1,4 +1,4 @@
-import { type CallOptions, ConnectError } from '@connectrpc/connect';
+import { type CallOptions, ConnectError } from "@connectrpc/connect";
 
 export function useGrpc<Req, Res>(
     rpcMethod: (request: Req, options?: CallOptions) => Promise<Res>
@@ -14,7 +14,7 @@ export function useGrpc<Req, Res>(
         options?: CallOptions
     ): Promise<Res | null> {
         if (abortController) {
-            abortController.abort('Cancelled by a new request');
+            abortController.abort("Cancelled by a new request");
         }
 
         const controller = new AbortController();
@@ -23,7 +23,7 @@ export function useGrpc<Req, Res>(
 
         if (options?.signal) {
             options.signal.addEventListener(
-                'abort',
+                "abort",
                 () => {
                     controller.abort(options.signal?.reason);
                 },
@@ -50,7 +50,7 @@ export function useGrpc<Req, Res>(
                 return null;
             }
 
-            console.error('gRPC Error:', err);
+            console.error("gRPC Error:", err);
 
             if (err instanceof ConnectError) {
                 error = err;
@@ -72,7 +72,7 @@ export function useGrpc<Req, Res>(
 
     function abort() {
         if (abortController) {
-            abortController.abort('Manual abort');
+            abortController.abort("Manual abort");
             abortController = null;
         }
         loading = false;
@@ -113,7 +113,7 @@ export function useStreamGrpc<Req, Res>(
         options?: CallOptions
     ): AsyncGenerator<Res, void, unknown> {
         if (abortController) {
-            abortController.abort('Cancelled by a new stream request');
+            abortController.abort("Cancelled by a new stream request");
         }
 
         const controller = new AbortController();
@@ -142,7 +142,7 @@ export function useStreamGrpc<Req, Res>(
         } catch (err: unknown) {
             if (currentSignal.aborted) return;
 
-            console.error('gRPC Stream Error:', err);
+            console.error("gRPC Stream Error:", err);
             if (err instanceof ConnectError || err instanceof Error) {
                 error = err;
             } else {
@@ -158,7 +158,7 @@ export function useStreamGrpc<Req, Res>(
 
     function abort() {
         if (abortController) {
-            abortController.abort('Manual abort');
+            abortController.abort("Manual abort");
             abortController = null;
         }
         loading = false;

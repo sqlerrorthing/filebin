@@ -1,23 +1,23 @@
-import { paraglideVitePlugin } from '@inlang/paraglide-js';
-import tailwindcss from '@tailwindcss/vite';
-import adapter from '@sveltejs/adapter-node';
-import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig } from 'vite';
-import Icons from 'unplugin-icons/vite';
+import { paraglideVitePlugin } from "@inlang/paraglide-js";
+import tailwindcss from "@tailwindcss/vite";
+import adapter from "@sveltejs/adapter-node";
+import { sveltekit } from "@sveltejs/kit/vite";
+import { defineConfig } from "vite";
+import Icons from "unplugin-icons/vite";
 
 export default defineConfig({
     plugins: [
         paraglideVitePlugin({
-            project: './project.inlang',
-            outdir: './src/lib/paraglide',
+            project: "./project.inlang",
+            outdir: "./src/lib/paraglide",
             emitTsDeclarations: true,
-            strategy: ['url', 'baseLocale'],
+            strategy: ["url", "baseLocale"],
         }),
         tailwindcss(),
         sveltekit({
             compilerOptions: {
                 runes: ({ filename }) =>
-                    filename.split(/[/\\]/).includes('node_modules')
+                    filename.split(/[/\\]/).includes("node_modules")
                         ? undefined
                         : true,
             },
@@ -27,20 +27,20 @@ export default defineConfig({
             adapter: adapter(),
         }),
         Icons({
-            compiler: 'svelte',
+            compiler: "svelte",
             autoInstall: true,
         }),
     ],
     ssr: {
-        noExternal: ['@lucide/svelte', '@inlang/paraglide-js-svelte'],
-        external: ['@noble/ciphers', '@noble/hashes'],
+        noExternal: ["@lucide/svelte", "@inlang/paraglide-js-svelte"],
+        external: ["@noble/ciphers", "@noble/hashes"],
     },
     optimizeDeps: {
-        exclude: ['@noble/ciphers', '@noble/hashes'],
+        exclude: ["@noble/ciphers", "@noble/hashes"],
     },
     build: {
-        target: 'esnext',
-        minify: 'terser',
+        target: "esnext",
+        minify: "terser",
         terserOptions: {
             compress: {
                 passes: 3,
@@ -61,7 +61,7 @@ export default defineConfig({
             },
         },
 
-        cssMinify: 'lightningcss',
+        cssMinify: "lightningcss",
 
         sourcemap: false,
 

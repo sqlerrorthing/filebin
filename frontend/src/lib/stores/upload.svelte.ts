@@ -1,46 +1,46 @@
-import { bufferToBase64, encryptBlob, exportKeyToArray } from '$lib/crypt';
-import { fileClient, useGrpc } from '$lib/grpc';
-import { create } from '@bufbuild/protobuf';
+import { bufferToBase64, encryptBlob, exportKeyToArray } from "$lib/crypt";
+import { fileClient, useGrpc } from "$lib/grpc";
+import { create } from "@bufbuild/protobuf";
 import {
     FileMetadataSchema,
     type FileView,
     InitiateUploadRequestSchema,
     UploadChunkRequestSchema,
-} from '$lib/grpc/gen/folder/v1/files_pb';
-import type { OwnedFolderRef } from '$lib/grpc/gen/folder/v1/common_pb';
-import { ctr } from '@noble/ciphers/aes.js';
-import { ghash } from '@noble/ciphers/_polyval.js';
+} from "$lib/grpc/gen/folder/v1/files_pb";
+import type { OwnedFolderRef } from "$lib/grpc/gen/folder/v1/common_pb";
+import { ctr } from "@noble/ciphers/aes.js";
+import { ghash } from "@noble/ciphers/_polyval.js";
 import {
     AlgorithmSchema,
     EncryptedVaultSchema,
     VersionSchema,
-} from '$lib/grpc/gen/folder/v1/encryption_pb';
+} from "$lib/grpc/gen/folder/v1/encryption_pb";
 
 type Status =
     | {
-          case: 'pending';
+          case: "pending";
       }
     | {
-          case: 'uploading';
+          case: "uploading";
           progress: number;
           controller: AbortController;
       }
     | {
-          case: 'completed';
+          case: "completed";
           file: FileView;
       }
     | {
-          case: 'error';
+          case: "error";
           error: string;
       }
     | {
-          case: 'canceled';
+          case: "canceled";
       };
 
 export class UploadItem {
     id = $state<string>();
     file = $state<File>();
-    status = $state<Status>({ case: 'pending' });
+    status = $state<Status>({ case: "pending" });
 
     constructor(file: File) {
         this.file = file;
@@ -58,7 +58,7 @@ class UploadStore {
         const newItems = Array.from(files).map((file) => {
             const item = new UploadItem(file);
             item.id = crypto.randomUUID();
-            item.status.case = 'pending';
+            item.status.case = "pending";
             return item;
         });
 
@@ -73,11 +73,11 @@ class UploadStore {
         const item = this.items.find((i) => i.id === id);
 
         if (item) {
-            if (item.status.case === 'uploading') {
+            if (item.status.case === "uploading") {
                 item.status.controller.abort();
             }
 
-            item.status.case = 'pending';
+            item.status.case = "pending";
             await this.#uploadFile(item, key, ownedFolderRef);
         }
     }
@@ -85,18 +85,18 @@ class UploadStore {
     removeUpload(id: string) {
         const item = this.items.find((i) => i.id === id);
         if (item) {
-            if (item.status.case === 'uploading') {
+            if (item.status.case === "uploading") {
                 item.status.controller.abort();
             }
 
-            item.status.case = 'canceled';
+            item.status.case = "canceled";
             this.items = this.items.filter((i) => i.id !== id);
         }
     }
 
     cancelAll() {
         for (const item of this.items) {
-            if (item.status.case === 'uploading') {
+            if (item.status.case === "uploading") {
                 this.removeUpload(item.id!!);
             }
         }
@@ -110,7 +110,7 @@ class UploadStore {
         const controller = new AbortController();
 
         item.status = {
-            case: 'uploading',
+            case: "uploading",
             controller,
             progress: 0,
         };
@@ -144,10 +144,10 @@ class UploadStore {
 
             if (!initResponse) {
                 item.status = {
-                    case: 'error',
+                    case: "error",
                     error:
                         useInitUpload.error?.message ||
-                        'Upload initiated failed',
+                        "Upload initiated failed",
                 };
 
                 return;
@@ -211,7 +211,7 @@ class UploadStore {
 
             while (offset < totalSize) {
                 if (signal.aborted)
-                    throw new DOMException('Aborted', 'AbortError');
+                    throw new DOMException("Aborted", "AbortError");
 
                 const currentChunkSize = Math.min(
                     chunkSize,
@@ -269,7 +269,7 @@ class UploadStore {
                         iv: bufferToBase64(iv),
                         tag: bufferToBase64(tag),
                         version: create(VersionSchema, { value: 1 }),
-                        algo: create(AlgorithmSchema, { value: 'aes-256-gcm' }),
+                        algo: create(AlgorithmSchema, { value: "aes-256-gcm" }),
                     });
 
                     await useUploadChunk.call(
@@ -288,7 +288,7 @@ class UploadStore {
                         useUploadChunk.error
                     );
                     item.status = {
-                        case: 'error',
+                        case: "error",
                         error: useUploadChunk.error.message,
                     };
                     return;
@@ -297,29 +297,29 @@ class UploadStore {
                 chunkIndex++;
             }
 
-            if (useUploadChunk.data?.result.case !== 'file') {
+            if (useUploadChunk.data?.result.case !== "file") {
                 item.status = {
-                    case: 'error',
-                    error: 'Server didnt return file',
+                    case: "error",
+                    error: "Server didnt return file",
                 };
 
                 return;
             }
 
             item.status = {
-                case: 'completed',
+                case: "completed",
                 file: useUploadChunk.data?.result?.value!!,
             };
-            console.log('[Upload] 14. Upload completed successfully');
+            console.log("[Upload] 14. Upload completed successfully");
         } catch (error: any) {
-            console.error('[Upload] Caught error in catch block:', error);
-            if (signal.aborted || error?.name === 'AbortError') {
-                item.status = { case: 'canceled' };
-                console.log('Upload was canceled by signal');
+            console.error("[Upload] Caught error in catch block:", error);
+            if (signal.aborted || error?.name === "AbortError") {
+                item.status = { case: "canceled" };
+                console.log("Upload was canceled by signal");
             } else {
                 item.status = {
-                    case: 'error',
-                    error: error?.message || error || 'Unknown upload error',
+                    case: "error",
+                    error: error?.message || error || "Unknown upload error",
                 };
             }
         }

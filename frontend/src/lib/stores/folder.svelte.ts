@@ -4,11 +4,11 @@ import {
     type FolderToken,
     FolderTokenSchema,
     OwnedFolderRefSchema,
-} from '$lib/grpc/gen/folder/v1/common_pb';
-import { decryptBlobAsString } from '$lib/crypt';
-import * as m from '$lib/paraglide/messages';
-import { create } from '@bufbuild/protobuf';
-import type { DateTime } from '$lib/grpc/gen/google/type/datetime_pb';
+} from "$lib/grpc/gen/folder/v1/common_pb";
+import { decryptBlobAsString } from "$lib/crypt";
+import * as m from "$lib/paraglide/messages";
+import { create } from "@bufbuild/protobuf";
+import type { DateTime } from "$lib/grpc/gen/google/type/datetime_pb";
 
 export interface DecryptedFolder {
     name: string;
@@ -39,8 +39,8 @@ class ActiveFolder {
                 createdAt: folder.createdAt!!,
             };
         } catch (e) {
-            console.error('Failed to decrypt folder:', e);
-            this.error = m['crypto.errors.decrypt']();
+            console.error("Failed to decrypt folder:", e);
+            this.error = m["crypto.errors.decrypt"]();
         } finally {
             this.isDecrypting = false;
         }
@@ -48,31 +48,31 @@ class ActiveFolder {
 
     private isTokenValid(token: FolderToken): boolean {
         try {
-            const base64Url = token.value.split('.')[1];
+            const base64Url = token.value.split(".")[1];
             if (!base64Url) return false;
 
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
             const jsonPayload = decodeURIComponent(
                 atob(base64)
-                    .split('')
+                    .split("")
                     .map(
                         (c) =>
-                            '%' +
-                            ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+                            "%" +
+                            ("00" + c.charCodeAt(0).toString(16)).slice(-2)
                     )
-                    .join('')
+                    .join("")
             );
 
             const payload = JSON.parse(jsonPayload);
 
-            if (payload && typeof payload.exp === 'number') {
+            if (payload && typeof payload.exp === "number") {
                 const currentTime = Math.floor(Date.now() / 1000);
                 return payload.exp > currentTime;
             }
 
             return false;
         } catch (error) {
-            console.error('Failed to parse JWT token:', error);
+            console.error("Failed to parse JWT token:", error);
             return false;
         }
     }

@@ -1,10 +1,10 @@
-import { encryptBlob } from '$lib/crypt';
-import { folderClient, useGrpc } from '$lib/grpc';
-import { create } from '@bufbuild/protobuf';
+import { encryptBlob } from "$lib/crypt";
+import { folderClient, useGrpc } from "$lib/grpc";
+import { create } from "@bufbuild/protobuf";
 import {
     FolderNameSchema,
     type OwnedFolder,
-} from '$lib/grpc/gen/folder/v1/common_pb';
+} from "$lib/grpc/gen/folder/v1/common_pb";
 
 export async function createFolder(
     key: CryptoKey,

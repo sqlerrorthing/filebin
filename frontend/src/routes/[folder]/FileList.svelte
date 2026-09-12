@@ -3,27 +3,27 @@
         FileId,
         FolderId,
         FolderToken,
-    } from '$lib/grpc/gen/folder/v1/common_pb';
-    import { fileClient, useGrpc, useStreamGrpc } from '$lib/grpc';
-    import { LoaderCircle } from '@lucide/svelte';
-    import { create } from '@bufbuild/protobuf';
+    } from "$lib/grpc/gen/folder/v1/common_pb";
+    import { fileClient, useGrpc, useStreamGrpc } from "$lib/grpc";
+    import { LoaderCircle } from "@lucide/svelte";
+    import { create } from "@bufbuild/protobuf";
     import {
         DownloadRequestSchema,
         type FileView,
         ListFilesRequestSchema,
-    } from '$lib/grpc/gen/folder/v1/files_pb';
-    import type { UploadItem } from '$lib/stores/upload.svelte';
-    import ErrorBanner from '$lib/components/error/ErrorBanner.svelte';
-    import FileEntry from './FileEntry.svelte';
-    import { decryptBlob } from '$lib/crypt';
-    import * as m from '$lib/paraglide/messages';
-    import type { NewFile } from '$lib/grpc/gen/folder/v1/updates_pb';
-    import UploadEntry from './UploadEntry.svelte';
-    import { limitsStore } from '$lib/stores/limits.svelte';
+    } from "$lib/grpc/gen/folder/v1/files_pb";
+    import type { UploadItem } from "$lib/stores/upload.svelte";
+    import ErrorBanner from "$lib/components/error/ErrorBanner.svelte";
+    import FileEntry from "./FileEntry.svelte";
+    import { decryptBlob } from "$lib/crypt";
+    import * as m from "$lib/paraglide/messages";
+    import type { NewFile } from "$lib/grpc/gen/folder/v1/updates_pb";
+    import UploadEntry from "./UploadEntry.svelte";
+    import { limitsStore } from "$lib/stores/limits.svelte";
     import {
         EncryptedBlobsSchema,
         type EncryptedVault,
-    } from '$lib/grpc/gen/folder/v1/encryption_pb';
+    } from "$lib/grpc/gen/folder/v1/encryption_pb";
 
     let {
         id = $bindable(),
@@ -55,7 +55,7 @@
     const isLoading = $derived(localLoading || useListFiles.loading);
 
     const activeUploads = $derived(
-        uploading.filter((u) => u.status.case !== 'canceled')
+        uploading.filter((u) => u.status.case !== "canceled")
     );
 
     export interface Metadata {
@@ -167,17 +167,17 @@
                 })
             );
         } catch (e) {
-            console.error('Error file decryption: ', e);
+            console.error("Error file decryption: ", e);
             return;
         }
 
         const blob = new Blob([decryptedData as Uint8Array<ArrayBuffer>]);
         const url = URL.createObjectURL(blob);
 
-        const a = document.createElement('a');
-        a.style.display = 'none';
+        const a = document.createElement("a");
+        a.style.display = "none";
         a.href = url;
-        a.download = file.metadata.path || 'downloaded_file';
+        a.download = file.metadata.path || "downloaded_file";
 
         document.body.appendChild(a);
         a.click();
@@ -234,9 +234,9 @@
 {:else if files}
     <div class="flex flex-col gap-1">
         <span
-            >{m['files.counter']({
+            >{m["files.counter"]({
                 count: files.size,
-                max: limitsStore.data?.maxFilesPerFolder ?? '...',
+                max: limitsStore.data?.maxFilesPerFolder ?? "...",
             })}</span
         >
         {#each filesArray as file (file.id)}

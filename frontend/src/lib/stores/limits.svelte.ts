@@ -1,4 +1,4 @@
-import { folderClient, useGrpc } from '$lib/grpc';
+import { folderClient, useGrpc } from "$lib/grpc";
 
 class LimitsStore {
     #grpc = useGrpc(folderClient.limits);
