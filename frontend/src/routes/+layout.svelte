@@ -6,7 +6,7 @@
     import { ModeWatcher, toggleMode } from "mode-watcher";
     import icon from "$lib/assets/icon_32x32.png";
     import LangSelectDropdown from "./LangSelectDropdown.svelte";
-    import {localizeHref} from "$lib/paraglide/runtime";
+    import { localizeHref } from "$lib/paraglide/runtime";
 
     let { children } = $props();
 

@@ -1,6 +1,6 @@
 <script lang="ts">
-    import {cn} from "$lib/utils";
-    import {getLocale, locales, setLocale} from "$lib/paraglide/runtime";
+    import { cn } from "$lib/utils";
+    import { getLocale, locales, setLocale } from "$lib/paraglide/runtime";
     import { Check } from "@lucide/svelte";
     import * as m from "$lib/paraglide/messages";
 
@@ -11,20 +11,20 @@
     }
 </script>
 
-<div class="border-border bg-popover absolute right-0
-        z-50 mt-2 w-64 rounded-md border p-1 shadow-md"
+<div
+    class="border-border bg-popover absolute right-0 z-50 mt-2 w-64 rounded-md
+        border p-1 shadow-md"
 >
     {#each locales as lang}
         <button
-                type="button"
-                onclick={() => changeLanguage(lang)}
-                class={cn(`
-                    hover:bg-accent
-                    hover:text-accent-foreground flex gap-2 w-full
-                    rounded-sm items-center
-                    px-3 py-1.5 text-sm transition-colors`,
-                    currentLocale && "text-primary font-bold"
-                )}
+            type="button"
+            onclick={() => changeLanguage(lang)}
+            class={cn(
+                ` hover:bg-accent hover:text-accent-foreground flex w-full
+                items-center gap-2 rounded-sm px-3 py-1.5 text-sm
+                transition-colors`,
+                currentLocale && "text-primary font-bold"
+            )}
         >
             <img
                 src="/lang/{lang}.svg"
@@ -34,13 +34,13 @@
 
             <span>
                 {m[`languages.${lang}`]({}, { locale: lang })}
-                <span class="italic text-muted-foreground ml-2 font-thin">
+                <span class="text-muted-foreground ml-2 font-thin italic">
                     {m[`languages.${lang}`]()}
                 </span>
             </span>
 
             {#if lang === currentLocale}
-                <Check class="w-3 h-auto ml-auto" />
+                <Check class="ml-auto h-auto w-3" />
             {/if}
         </button>
     {/each}
