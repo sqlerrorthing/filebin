@@ -21,7 +21,9 @@ export default defineConfig({
                         ? undefined
                         : true,
             },
-
+            paths: {
+                relative: false
+            },
             adapter: adapter(),
         }),
         Icons({
