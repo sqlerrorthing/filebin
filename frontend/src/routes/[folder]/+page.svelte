@@ -67,9 +67,9 @@
 
             if (useGetFolder.error instanceof ConnectError) {
                 if (useGetFolder.error.code === Code.NotFound) {
-                    localError = m['folders.not-found']();
+                    localError = m["folders.errors.not-found"]();
                 } else if (useGetFolder.error.code === Code.InvalidArgument) {
-                    localError = m['folders.incorrect-id']();
+                    localError = m["folders.errors.incorrect-id"]();
                 } else {
                     localError = useGetFolder.error.toString();
                 }
@@ -224,7 +224,7 @@
                         {#if isConfirming}
                             <Check class="h-4 w-4" />
                             <span class="text-sm/2"
-                                >{m['files.delete-confirm']()}</span
+                                >{m["common.actions.confirm"]()}</span
                             >
                         {:else}
                             <Trash class="h-4 w-4" />

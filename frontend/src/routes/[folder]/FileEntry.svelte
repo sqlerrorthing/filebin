@@ -10,7 +10,6 @@
         FileArchive,
         FileCode,
         FileSpreadsheet,
-        LoaderCircle,
     } from '@lucide/svelte';
     import type { DecryptedFileView } from './FileList.svelte';
     import { formatBytes } from '$lib/utils';

@@ -7,7 +7,6 @@
     import { RenameRequestSchema } from '$lib/grpc/gen/folder/v1/folder_pb';
     import {
         FolderNameSchema,
-        OwnedFolderRefSchema,
     } from '$lib/grpc/gen/folder/v1/common_pb';
 
     let isSyncing = $state(false);

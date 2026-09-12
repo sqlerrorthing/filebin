@@ -42,9 +42,9 @@
 
             <span class="text-muted-foreground text-sm">
                 <ParaglideMessage
-                    message={m['footer.made']}
+                    message={m['footer.made-by']}
                     inputs={{
-                        author: 's',
+                        author: 'sqlerrorthing',
                         authorUrl: 'https://github.com/sqlerrorthing',
                     }}
                 >
@@ -62,7 +62,7 @@
 
             <span class="text-muted-foreground text-sm">
                 <ParaglideMessage
-                    message={m['footer.source']}
+                    message={m["footer.source-code"]}
                     inputs={{
                         url: 'https://github.com/sqlerrorthing/filebin',
                         platform: 'Github',

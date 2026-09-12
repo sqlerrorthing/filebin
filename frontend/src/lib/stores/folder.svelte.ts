@@ -40,7 +40,7 @@ class ActiveFolder {
             };
         } catch (e) {
             console.error('Failed to decrypt folder:', e);
-            this.error = m['crypt.errors.decrypt']();
+            this.error = m["crypto.errors.decrypt"]();
         } finally {
             this.isDecrypting = false;
         }

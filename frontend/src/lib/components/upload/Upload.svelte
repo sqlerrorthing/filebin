@@ -33,7 +33,7 @@
                 const key = await generateCryptoKey();
                 const folder = await createFolder(
                     key,
-                    m['folders.base-name']()
+                    m["folders.default-name"]()
                 );
 
                 await activeFolder.set(folder.folder!!, key, folder.token!!);
@@ -217,7 +217,7 @@
             <p
                 class="bg-background text-primary rounded px-4 py-2 font-medium shadow"
             >
-                {m['files.drop-here']()}
+                {m["files.drop-zone"]()}
             </p>
         </div>
     {/if}
@@ -235,6 +235,6 @@
         {:else}
             <FileUp />
         {/if}
-        {m['files.upload']()}
+        {m["common.actions.upload"]()}
     </button>
 </div>

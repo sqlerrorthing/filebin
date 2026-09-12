@@ -25,7 +25,6 @@
         | { step: 'error'; message: string };
 
     let joinState = $state<JoinState>({ step: 'input' });
-    let code = $state('');
 
     let abortController: AbortController | null = null;
 
@@ -37,7 +36,6 @@
             abortController = null;
         }
         joinState = { step: 'input' };
-        code = '';
     }
 
     function showError(message: string) {
@@ -110,14 +108,14 @@
 >
     <h3 class="text-md flex items-center gap-2 font-semibold">
         <KeyRound class="text-primary h-5 w-5" />
-        {m['share.title']()}
+        {m["share.modal.title"]()}
     </h3>
 
     {#if joinState.step === 'input' || joinState.step === 'error'}
         {@const s = joinState}
 
         <div class="flex flex-col items-center justify-center gap-2">
-            <p class="text-sm font-medium">{m['share.enter-code']()}</p>
+            <p class="text-sm font-medium">{m["share.modal.enter-code"]()}</p>
 
             <CodeInput length={6} onComplete={handleJoin} />
 
@@ -133,21 +131,21 @@
         >
             <div class="flex items-center gap-2">
                 <LoaderCircle class="text-primary h-5 w-5 animate-spin" />
-                {m['share.connecting']()}
+                {m["share.session.connecting"]()}
             </div>
             <button
                 type="button"
                 class="bg-muted hover:bg-muted/80 text-foreground cursor-pointer px-3 py-1 text-xs"
                 onclick={cancelSession}
             >
-                {m['general.close']()}
+                {m["common.actions.close"]()}
             </button>
         </div>
     {:else if joinState.step === 'sas'}
         {@const s = joinState}
         <div class="flex flex-col items-center justify-center gap-3 py-2">
             <div class="text-muted-foreground text-center text-xs">
-                {m['share.verify-emojis']()}
+                {m["share.verification.verify-sender"]()}
             </div>
             <div
                 class="bg-muted flex max-w-full flex-wrap items-center justify-center gap-2 p-4 sm:gap-4"
@@ -159,14 +157,14 @@
             </div>
             <div class="text-primary flex items-center gap-2 text-xs">
                 <LoaderCircle class="h-3 w-3 animate-spin" />
-                {m['share.waiting-confirm']()}
+                {m["share.session.waiting-sender"]()}
             </div>
             <button
                 type="button"
                 class="bg-muted hover:bg-muted/80 text-foreground mt-2 cursor-pointer px-3 py-1 text-xs"
                 onclick={cancelSession}
             >
-                {m['general.close']()}
+                {m["common.actions.close"]()}
             </button>
         </div>
     {:else if joinState.step === 'decrypting'}
@@ -174,7 +172,7 @@
             class="text-muted-foreground flex items-center justify-center gap-2 py-4"
         >
             <LoaderCircle class="text-primary h-5 w-5 animate-spin" />
-            {m['share.decrypting-and-open']()}
+            {m["share.session.decrypting"]()}
         </div>
     {/if}
 </div>
