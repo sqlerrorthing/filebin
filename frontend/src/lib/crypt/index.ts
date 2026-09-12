@@ -4,33 +4,33 @@ import {
     EncryptedBlobsSchema,
     EncryptedVaultSchema,
     VersionSchema,
-} from '$lib/grpc/gen/folder/v1/encryption_pb';
-import { create } from '@bufbuild/protobuf';
+} from "$lib/grpc/gen/folder/v1/encryption_pb";
+import { create } from "@bufbuild/protobuf";
 
 export async function generateCryptoKey(): Promise<CryptoKey> {
     return await window.crypto.subtle.generateKey(
-        { name: 'AES-GCM', length: 256 },
+        { name: "AES-GCM", length: 256 },
         true,
-        ['encrypt', 'decrypt']
+        ["encrypt", "decrypt"]
     );
 }
 
 export async function exportKey(key: CryptoKey): Promise<string> {
     return (await exportKeyToArray(key)).toBase64({
-        alphabet: 'base64url',
+        alphabet: "base64url",
         omitPadding: true,
     });
 }
 
 export async function exportKeyToArray(key: CryptoKey): Promise<Uint8Array> {
-    const exportedKey = await window.crypto.subtle.exportKey('raw', key);
+    const exportedKey = await window.crypto.subtle.exportKey("raw", key);
     return new Uint8Array(exportedKey);
 }
 
 export function bufferToBase64(buffer: ArrayBuffer | Uint8Array): string {
     const bytes =
         buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
-    let binary = '';
+    let binary = "";
     for (let i = 0; i < bytes.byteLength; i++) {
         binary += String.fromCharCode(bytes[i]);
     }
@@ -41,15 +41,15 @@ export async function importKeyFromUrlSafe(
     urlSafeString: string
 ): Promise<CryptoKey> {
     const bytes = Uint8Array.fromBase64(urlSafeString, {
-        alphabet: 'base64url',
+        alphabet: "base64url",
     });
 
     return await window.crypto.subtle.importKey(
-        'raw',
+        "raw",
         bytes,
-        { name: 'AES-GCM', length: 256 },
+        { name: "AES-GCM", length: 256 },
         true,
-        ['encrypt', 'decrypt']
+        ["encrypt", "decrypt"]
     );
 }
 
@@ -60,7 +60,7 @@ export async function encryptBlob(
     const iv = window.crypto.getRandomValues(new Uint8Array(12));
 
     const encryptedName = await window.crypto.subtle.encrypt(
-        { name: 'AES-GCM', iv },
+        { name: "AES-GCM", iv },
         key,
         array
     );
@@ -74,7 +74,7 @@ export async function encryptBlob(
     });
 
     const algo = create(AlgorithmSchema, {
-        value: 'aes-256-gcm',
+        value: "aes-256-gcm",
     });
 
     const encryptedVault = create(EncryptedVaultSchema, {
@@ -91,7 +91,7 @@ export async function encryptBlob(
 }
 
 function base64ToBuffer(base64: string): Uint8Array {
-    return Uint8Array.fromBase64(base64, { alphabet: 'base64' });
+    return Uint8Array.fromBase64(base64, { alphabet: "base64" });
 }
 
 export async function decryptBlob(
@@ -99,7 +99,7 @@ export async function decryptBlob(
     encryptedBlob: EncryptedBlobs
 ): Promise<Uint8Array> {
     if (!encryptedBlob.meta) {
-        throw new Error('Missing encrypted blob metadata');
+        throw new Error("Missing encrypted blob metadata");
     }
 
     const { iv: ivBase64, tag: tagBase64 } = encryptedBlob.meta;
@@ -107,7 +107,7 @@ export async function decryptBlob(
 
     if (!ivBase64 || !tagBase64 || !ciphertext) {
         throw new Error(
-            'Invalid encrypted blob structure: missing iv, tag or data'
+            "Invalid encrypted blob structure: missing iv, tag or data"
         );
     }
 
@@ -119,7 +119,7 @@ export async function decryptBlob(
     encryptedData.set(tag, ciphertext.length);
 
     const decryptedBuffer = await window.crypto.subtle.decrypt(
-        { name: 'AES-GCM', iv: new Uint8Array(iv) },
+        { name: "AES-GCM", iv: new Uint8Array(iv) },
         key,
         encryptedData
     );

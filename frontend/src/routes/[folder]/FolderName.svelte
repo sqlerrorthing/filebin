@@ -1,11 +1,11 @@
 <script lang="ts">
-    import { activeFolder } from '$lib/stores/folder.svelte';
-    import { LoaderCircle, Pencil } from '@lucide/svelte';
-    import { encryptBlob } from '$lib/crypt';
-    import { folderClient, useGrpc } from '$lib/grpc';
-    import { create } from '@bufbuild/protobuf';
-    import { RenameRequestSchema } from '$lib/grpc/gen/folder/v1/folder_pb';
-    import { FolderNameSchema } from '$lib/grpc/gen/folder/v1/common_pb';
+    import { activeFolder } from "$lib/stores/folder.svelte";
+    import { LoaderCircle, Pencil } from "@lucide/svelte";
+    import { encryptBlob } from "$lib/crypt";
+    import { folderClient, useGrpc } from "$lib/grpc";
+    import { create } from "@bufbuild/protobuf";
+    import { RenameRequestSchema } from "$lib/grpc/gen/folder/v1/folder_pb";
+    import { FolderNameSchema } from "$lib/grpc/gen/folder/v1/common_pb";
 
     let isSyncing = $state(false);
     let syncError = $state<string | null>(null);
@@ -73,16 +73,20 @@
                     type="text"
                     bind:value={activeFolder.decrypted.name}
                     oninput={handleInput}
-                    class="border-b-2 bg-transparent px-1 text-2xl font-bold transition-colors outline-none hover:border-gray-300 focus:border-blue-500"
+                    class="border-b-2 bg-transparent px-1 text-2xl font-bold
+                        transition-colors outline-none hover:border-gray-300
+                        focus:border-blue-500"
                 />
 
                 {#if isSyncing}
                     <LoaderCircle
-                        class="absolute -right-6 h-4 w-4 animate-spin text-gray-500"
+                        class="absolute -right-6 h-4 w-4 animate-spin
+                            text-gray-500"
                     />
                 {:else}
                     <Pencil
-                        class="absolute -right-6 h-4 w-4 text-gray-400 opacity-0 hover:opacity-100"
+                        class="absolute -right-6 h-4 w-4 text-gray-400 opacity-0
+                            hover:opacity-100"
                     />
                 {/if}
             </div>

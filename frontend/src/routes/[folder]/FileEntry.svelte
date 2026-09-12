@@ -10,9 +10,9 @@
         FileArchive,
         FileCode,
         FileSpreadsheet,
-    } from '@lucide/svelte';
-    import type { DecryptedFileView } from './FileList.svelte';
-    import { formatBytes } from '$lib/utils';
+    } from "@lucide/svelte";
+    import type { DecryptedFileView } from "./FileList.svelte";
+    import { formatBytes } from "$lib/utils";
 
     let {
         file = $bindable(),
@@ -49,29 +49,29 @@
         }
     }
 
-    function getFileIcon(mimeType: string = '') {
-        if (mimeType.startsWith('image/')) return FileImage;
-        if (mimeType.startsWith('video/')) return FileVideo;
-        if (mimeType.startsWith('audio/')) return FileAudio;
-        if (mimeType.includes('pdf') || mimeType.includes('text/'))
+    function getFileIcon(mimeType: string = "") {
+        if (mimeType.startsWith("image/")) return FileImage;
+        if (mimeType.startsWith("video/")) return FileVideo;
+        if (mimeType.startsWith("audio/")) return FileAudio;
+        if (mimeType.includes("pdf") || mimeType.includes("text/"))
             return FileText;
         if (
-            mimeType.includes('zip') ||
-            mimeType.includes('tar') ||
-            mimeType.includes('compressed')
+            mimeType.includes("zip") ||
+            mimeType.includes("tar") ||
+            mimeType.includes("compressed")
         )
             return FileArchive;
         if (
-            mimeType.includes('json') ||
-            mimeType.includes('javascript') ||
-            mimeType.includes('html') ||
-            mimeType.includes('xml')
+            mimeType.includes("json") ||
+            mimeType.includes("javascript") ||
+            mimeType.includes("html") ||
+            mimeType.includes("xml")
         )
             return FileCode;
         if (
-            mimeType.includes('sheet') ||
-            mimeType.includes('excel') ||
-            mimeType.includes('csv')
+            mimeType.includes("sheet") ||
+            mimeType.includes("excel") ||
+            mimeType.includes("csv")
         )
             return FileSpreadsheet;
 
@@ -105,7 +105,7 @@
                 class="flex cursor-pointer justify-center"
                 onclick={clickDownload}
                 disabled={isDownloading}
-                title={isDownloading ? `${progress}%` : ''}
+                title={isDownloading ? `${progress}%` : ""}
             >
                 {#if isDownloading}
                     <svg
@@ -130,7 +130,8 @@
                             r={radius}
                             stroke-dasharray={circumference}
                             stroke-dashoffset={strokeDashoffset}
-                            class="origin-center -rotate-90 animate-spin transition-all duration-200 ease-out"
+                            class="origin-center -rotate-90 animate-spin
+                                transition-all duration-200 ease-out"
                         />
                     </svg>
                 {:else}

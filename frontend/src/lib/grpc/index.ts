@@ -1,3 +1,3 @@
-export * from './client';
+export * from "./client";
 
-export * from './useGrpc.svelte';
+export * from "./useGrpc.svelte";

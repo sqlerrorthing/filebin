@@ -1,7 +1,7 @@
 <script lang="ts">
-    import { setLocale, getLocale, locales } from '$lib/paraglide/runtime';
-    import { cn } from '$lib/utils';
-    import * as m from '$lib/paraglide/messages';
+    import { setLocale, getLocale, locales } from "$lib/paraglide/runtime";
+    import { cn } from "$lib/utils";
+    import * as m from "$lib/paraglide/messages";
 
     const currentLocale = getLocale();
 </script>
@@ -11,11 +11,11 @@
         {@const region = new Intl.Locale(l).region?.toLowerCase() || l}
         <button
             class={cn(
-                'cursor-pointer border border-dotted border-transparent p-0.5',
-                currentLocale === l && 'border-foreground'
+                "cursor-pointer border border-dotted border-transparent p-0.5",
+                currentLocale === l && "border-foreground"
             )}
             onclick={() => setLocale(l)}
-            title={m['display-language'](undefined, { locale: l })}
+            title={m["display-language"](undefined, { locale: l })}
         >
             <img
                 src="/lang/{region}.svg"

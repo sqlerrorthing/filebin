@@ -1,6 +1,6 @@
-import { paraglideMiddleware } from '$lib/paraglide/server';
-import type { Handle } from '@sveltejs/kit';
-import { getTextDirection } from '$lib/paraglide/runtime';
+import { paraglideMiddleware } from "$lib/paraglide/server";
+import type { Handle } from "@sveltejs/kit";
+import { getTextDirection } from "$lib/paraglide/runtime";
 
 export const handle: Handle = ({ event, resolve }) => {
     return paraglideMiddleware(
@@ -11,8 +11,8 @@ export const handle: Handle = ({ event, resolve }) => {
             return resolve(event, {
                 transformPageChunk: ({ html }) => {
                     return html
-                        .replace('%lang%', locale)
-                        .replace('%dir%', getTextDirection(locale));
+                        .replace("%lang%", locale)
+                        .replace("%dir%", getTextDirection(locale));
                 },
             });
         }

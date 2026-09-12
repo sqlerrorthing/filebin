@@ -1,15 +1,15 @@
 <script lang="ts">
-    import { FileUp, LoaderCircle } from '@lucide/svelte';
-    import * as m from '$lib/paraglide/messages';
-    import { exportKey, generateCryptoKey } from '$lib/crypt';
-    import { createFolder } from '$lib/folders/create';
-    import { cn } from '$lib/utils';
-    import { goto } from '$app/navigation';
-    import { onMount } from 'svelte';
-    import { activeFolder } from '$lib/stores/folder.svelte.js';
-    import { localizeHref } from '$lib/paraglide/runtime';
-    import { uploadStore } from '$lib/stores/upload.svelte.js';
-    import { portal } from '$lib/actions/portal';
+    import { FileUp, LoaderCircle } from "@lucide/svelte";
+    import * as m from "$lib/paraglide/messages";
+    import { exportKey, generateCryptoKey } from "$lib/crypt";
+    import { createFolder } from "$lib/folders/create";
+    import { cn } from "$lib/utils";
+    import { goto } from "$app/navigation";
+    import { onMount } from "svelte";
+    import { activeFolder } from "$lib/stores/folder.svelte.js";
+    import { localizeHref } from "$lib/paraglide/runtime";
+    import { uploadStore } from "$lib/stores/upload.svelte.js";
+    import { portal } from "$lib/actions/portal";
 
     let loading = $state(false);
     let error = $state<string | null>(null);
@@ -33,7 +33,7 @@
                 const key = await generateCryptoKey();
                 const folder = await createFolder(
                     key,
-                    m['folders.default-name']()
+                    m["folders.default-name"]()
                 );
 
                 await activeFolder.set(folder.folder!!, key, folder.token!!);
@@ -54,34 +54,34 @@
 
     function getExtensionFromMime(mime: string): string {
         switch (mime) {
-            case 'image/png':
-                return 'png';
-            case 'image/jpeg':
-                return 'jpg';
-            case 'image/gif':
-                return 'gif';
-            case 'image/webp':
-                return 'webp';
-            case 'image/svg+xml':
-                return 'svg';
-            case 'video/mp4':
-                return 'mp4';
-            case 'video/webm':
-                return 'webm';
-            case 'video/ogg':
-                return 'ogv';
-            case 'text/plain':
-                return 'txt';
+            case "image/png":
+                return "png";
+            case "image/jpeg":
+                return "jpg";
+            case "image/gif":
+                return "gif";
+            case "image/webp":
+                return "webp";
+            case "image/svg+xml":
+                return "svg";
+            case "video/mp4":
+                return "mp4";
+            case "video/webm":
+                return "webm";
+            case "video/ogg":
+                return "ogv";
+            case "text/plain":
+                return "txt";
             default:
-                return 'bin';
+                return "bin";
         }
     }
 
     function isInput(target: HTMLElement): boolean {
         const isInput =
-            target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
+            target.tagName === "INPUT" || target.tagName === "TEXTAREA";
         const isEditable =
-            target.hasAttribute('contenteditable') || target.isContentEditable;
+            target.hasAttribute("contenteditable") || target.isContentEditable;
 
         return isInput || isEditable;
     }
@@ -104,19 +104,19 @@
         const files: File[] = [];
 
         for (const item of items) {
-            if (item.kind === 'file') {
+            if (item.kind === "file") {
                 const file = item.getAsFile();
                 if (!file) continue;
 
                 if (
-                    file.type.startsWith('video/') ||
-                    file.type.startsWith('image/')
+                    file.type.startsWith("video/") ||
+                    file.type.startsWith("image/")
                 ) {
                     let fileName = file.name;
                     if (
                         !fileName ||
-                        fileName === 'image.png' ||
-                        fileName === 'blob'
+                        fileName === "image.png" ||
+                        fileName === "blob"
                     ) {
                         const ext = getExtensionFromMime(file.type);
                         fileName = `clipboard.${ext}`;
@@ -131,19 +131,19 @@
                 } else {
                     const ext = getExtensionFromMime(file.type);
                     const fileName =
-                        file.name && file.name !== 'blob'
+                        file.name && file.name !== "blob"
                             ? file.name
                             : `clipboard.${ext}`;
                     const binFile = new File([file], fileName, {
-                        type: file.type || 'application/octet-stream',
+                        type: file.type || "application/octet-stream",
                     });
                     files.push(binFile);
                 }
-            } else if (item.kind === 'string' && item.type === 'text/plain') {
+            } else if (item.kind === "string" && item.type === "text/plain") {
                 item.getAsString((text) => {
                     if (!text) return;
                     const textFile = new File([text], `clipboard.txt`, {
-                        type: 'text/plain',
+                        type: "text/plain",
                     });
                     handleUpload([textFile]);
                 });
@@ -183,9 +183,9 @@
         loading = false;
         error = null;
 
-        document.addEventListener('paste', handlePaste);
+        document.addEventListener("paste", handlePaste);
         return () => {
-            document.removeEventListener('paste', handlePaste);
+            document.removeEventListener("paste", handlePaste);
         };
     });
 </script>
@@ -212,20 +212,24 @@
     {#if isDragging}
         <div
             use:portal
-            class="bg-primary/10 border-primary pointer-events-none fixed inset-0 z-50 flex items-center justify-center border-2 border-dashed"
+            class="bg-primary/10 border-primary pointer-events-none fixed
+                inset-0 z-50 flex items-center justify-center border-2
+                border-dashed"
         >
             <p
-                class="bg-background text-primary rounded px-4 py-2 font-medium shadow"
+                class="bg-background text-primary rounded px-4 py-2 font-medium
+                    shadow"
             >
-                {m['files.drop-zone']()}
+                {m["files.drop-zone"]()}
             </p>
         </div>
     {/if}
 
     <button
         class={cn(
-            'bg-primary text-primary-foreground hover:bg-accent-foreground flex cursor-pointer justify-center gap-3 px-4 py-2 shadow-sm sm:w-48',
-            loading && 'bg-muted-foreground'
+            `bg-primary text-primary-foreground hover:bg-accent-foreground flex
+            cursor-pointer justify-center gap-3 px-4 py-2 shadow-sm sm:w-48`,
+            loading && "bg-muted-foreground"
         )}
         onclick={() => fileInput?.click()}
         disabled={loading}
@@ -235,6 +239,6 @@
         {:else}
             <FileUp />
         {/if}
-        {m['common.actions.upload']()}
+        {m["common.actions.upload"]()}
     </button>
 </div>
