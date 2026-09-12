@@ -2,9 +2,9 @@
     import * as m from "$lib/paraglide/messages";
 
     let {
-        basicKey
+        basicKey,
     }: {
-        basicKey: string
+        basicKey: string;
     } = $props();
 </script>
 
