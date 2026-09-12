@@ -18,7 +18,7 @@
             title={m['display-language'](undefined, { locale: l })}
         >
             <img
-                src="/flags/{region}.svg"
+                src="/lang/{region}.svg"
                 alt={l}
                 class="pointer-events-none h-4 w-5 object-cover select-none"
             />

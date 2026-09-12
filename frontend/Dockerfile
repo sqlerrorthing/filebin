@@ -8,39 +8,45 @@ RUN corepack enable
 
 FROM base AS deps
 
-COPY frontend/package.json frontend/pnpm-lock.yaml ./
-COPY frontend/pnpm-workspace.yaml ./
+WORKDIR /app/frontend
+
+COPY frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./
 
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store,sharing=locked \
     pnpm install --frozen-lockfile
 
 FROM base AS builder
 
-COPY --from=deps /app/node_modules ./node_modules
+WORKDIR /app/frontend
 
-COPY frontend/. .
+COPY --from=deps /app/frontend/node_modules ./node_modules
 
+COPY frontend /app/frontend
+COPY proto /app/proto
+
+RUN pnpm run proto:generate
 RUN pnpm build
 
 FROM base AS prod-deps
 
-COPY frontend/package.json frontend/pnpm-lock.yaml ./
-COPY frontend/pnpm-workspace.yaml ./
+WORKDIR /app/frontend
+
+COPY frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./
 
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store,sharing=locked \
     pnpm install --prod --frozen-lockfile --ignore-scripts
 
 FROM node:24-alpine AS runtime
 
-WORKDIR /app
+WORKDIR /app/frontend
 
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=3000
 
-COPY --from=builder /app/build ./build
-COPY --from=builder /app/package.json ./package.json
-COPY --from=prod-deps /app/node_modules ./node_modules
+COPY --from=builder /app/frontend/build ./build
+COPY --from=builder /app/frontend/package.json ./package.json
+COPY --from=prod-deps /app/frontend/node_modules ./node_modules
 
 USER node
 
