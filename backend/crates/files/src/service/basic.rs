@@ -1,6 +1,7 @@
 use crate::repository::FilesRepository;
 use crate::service::FilesService;
 use crate::storage::{FilesStorage, HasRawMultipartUploadHandle, IntoRawMultipartUploadHandle};
+use byte_unit::Byte;
 use bytes::Bytes;
 use derive_new::new;
 use domain::models::files::{NewFile, UploadFileData};
@@ -11,7 +12,6 @@ use id_generator::service::IdGeneratorService;
 use service::business;
 use service::error::ServiceError;
 use std::fmt::Debug;
-use byte_unit::Byte;
 use thiserror::Error;
 use tracing::{Level, error, span};
 use updates::service::UpdatesService;

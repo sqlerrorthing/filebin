@@ -1,5 +1,5 @@
-use byte_unit::Byte;
 use crate::repository::FilesRepository;
+use byte_unit::Byte;
 use cache::Cache;
 use domain::models::{files, folders};
 use storage::Storage;
@@ -44,7 +44,7 @@ where
         self.load_or_cache(folder_files_size_key(folder_id), async |repo| {
             repo.files_size(folder_id).await
         })
-            .await
+        .await
     }
 
     async fn delete_files_from_folder(
@@ -112,8 +112,12 @@ where
         let folder_files_size_key = folder_files_size_key(new_file.folder_id);
 
         let res = self.repository().new_file(new_file).await?;
-        self.clear_cache_keys([folder_files_key, folder_files_count_key, folder_files_size_key])
-            .await;
+        self.clear_cache_keys([
+            folder_files_key,
+            folder_files_count_key,
+            folder_files_size_key,
+        ])
+        .await;
 
         Ok(res)
     }

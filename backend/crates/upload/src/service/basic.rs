@@ -72,7 +72,7 @@ where
     async fn is_folder_full(
         &self,
         folder_id: models::folders::Id,
-        extended_size: impl Into<Option<usize>>
+        extended_size: impl Into<Option<usize>>,
     ) -> Result<bool, <Self as UploadService>::Error> {
         let files_count = self
             .files_service

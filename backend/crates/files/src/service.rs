@@ -3,13 +3,13 @@ pub mod basic;
 use crate::storage::{
     HasRawMultipartUploadHandle, IntoRawMultipartUploadHandle, MultipartUploadHandle,
 };
+use byte_unit::Byte;
 use bytes::Bytes;
 use domain::models::files::UploadFileData;
 use domain::models::{encrypted_blobs, encrypted_vault, files, folders};
 use futures_core::Stream;
 use service::service;
 use std::fmt::Debug;
-use byte_unit::Byte;
 
 #[service]
 pub trait FilesService {

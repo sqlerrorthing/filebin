@@ -11,7 +11,7 @@ pub trait FilesRepository {
 
     #[result]
     async fn files_count(&self, folder_id: folders::Id) -> u64;
-    
+
     #[result]
     async fn files_size(&self, folder_id: folders::Id) -> Option<Byte>;
 
