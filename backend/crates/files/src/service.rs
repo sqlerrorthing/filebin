@@ -9,6 +9,7 @@ use domain::models::{encrypted_blobs, encrypted_vault, files, folders};
 use futures_core::Stream;
 use service::service;
 use std::fmt::Debug;
+use byte_unit::Byte;
 
 #[service]
 pub trait FilesService {
@@ -20,6 +21,9 @@ pub trait FilesService {
 
     #[result]
     async fn files_count(&self, folder_id: folders::Id) -> u64;
+
+    #[result]
+    async fn files_size(&self, folder_id: folders::Id) -> Option<Byte>;
 
     #[result]
     async fn delete_files_from_folder(&self, folder_id: folders::Id);

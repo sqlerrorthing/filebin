@@ -11,6 +11,7 @@ share:
 limits:
   max_filesize: 10 MiB
   max_files_per_folder: 100
+  max_folder_size: 50 MiB
 
 caches:
   folders: "30m"

@@ -11,6 +11,7 @@ use id_generator::service::IdGeneratorService;
 use service::business;
 use service::error::ServiceError;
 use std::fmt::Debug;
+use byte_unit::Byte;
 use thiserror::Error;
 use tracing::{Level, error, span};
 use updates::service::UpdatesService;
@@ -49,6 +50,13 @@ where
     async fn files_count(&self, folder_id: folders::Id) -> Result<u64, Self::Error> {
         self.files_repository
             .files_count(folder_id)
+            .await
+            .map_err(Error::Repository)
+    }
+
+    async fn files_size(&self, folder_id: folders::Id) -> Result<Option<Byte>, Self::Error> {
+        self.files_repository
+            .files_size(folder_id)
             .await
             .map_err(Error::Repository)
     }

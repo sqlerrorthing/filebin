@@ -24,3 +24,4 @@ futures-util.workspace = true
 updates.path = "../updates"
 serde.workspace = true
 parking_lot.workspace = true
+byte-unit.workspace = true

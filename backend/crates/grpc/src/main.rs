@@ -184,6 +184,7 @@ async fn main() -> color_eyre::Result<()> {
         LimitsBuilder::default()
             .max_filesize(CONFIG.limits.max_filesize.as_u64())
             .max_files_per_folder(CONFIG.limits.max_files_per_folder)
+            .max_folder_size(CONFIG.limits.max_folder_size.as_u64())
             .max_chunk_size(1024 * 1024 * 6) // 6 MB, at least 5 required by S3
             .build()?,
     );

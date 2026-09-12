@@ -35,6 +35,7 @@ const MIN_BYTES_PER_SEC: usize = 10 * 1024;
 pub struct Limits {
     max_filesize: u64,
     max_files_per_folder: u32,
+    max_folder_size: u64,
     max_chunk_size: usize,
 }
 
@@ -71,13 +72,28 @@ where
     async fn is_folder_full(
         &self,
         folder_id: models::folders::Id,
+        extended_size: impl Into<Option<usize>>
     ) -> Result<bool, <Self as UploadService>::Error> {
-        Ok(self
+        let files_count = self
             .files_service
             .files_count(folder_id)
             .await
+            .map_err(Error::Files)?;
+
+        if files_count >= self.limits.max_files_per_folder as u64 {
+            return Ok(true);
+        }
+
+        let files_size = self
+            .files_service
+            .files_size(folder_id)
+            .await
             .map_err(Error::Files)?
-            >= self.limits.max_files_per_folder as u64)
+            .unwrap_or_default();
+
+        let extended_size = extended_size.into().unwrap_or(0);
+
+        Ok(files_size.as_u64() + extended_size as u64 > self.limits.max_folder_size)
     }
 
     async fn initiate_upload(
@@ -101,7 +117,7 @@ where
             .map_err(Error::Folders)?
             .ok_or_business(InitiateUploadError::FolderNotFound)?;
 
-        (!self.is_folder_full(folder.id).await?)
+        (!self.is_folder_full(folder.id, None).await?)
             .ok_or_business(InitiateUploadError::FolderIsFull)?;
 
         Ok(folder)
@@ -366,7 +382,7 @@ where
             return Err(business!(ConsumeChunkError::FileTooLarge));
         }
 
-        if self.is_folder_full(upload.folder_id).await? {
+        if self.is_folder_full(upload.folder_id, len).await? {
             _ = cleanup_keys(&self.storage, upload_id).await;
             return Err(business!(ConsumeChunkError::FolderIsFull));
         }
