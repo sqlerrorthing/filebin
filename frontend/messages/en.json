@@ -27,7 +27,7 @@
                 "description": "Creates E2EE Folder and uploads the content"
             },
             "join": {
-                "name": "Enter core",
+                "name": "Enter code",
                 "description": "Open a folder by short code"
             }
         }
