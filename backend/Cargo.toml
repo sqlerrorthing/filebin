@@ -57,3 +57,4 @@ proc-macro-crate = "3.5.0"
 heck = "0.5.0"
 serde_json = "1.0.151"
 serde_with = "3.21.0"
+byte-unit = { version = "5.2.3", features = ["serde"] }

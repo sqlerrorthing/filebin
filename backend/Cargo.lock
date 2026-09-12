@@ -1974,6 +1974,7 @@ dependencies = [
  "aws-sdk-s3",
  "aws-smithy-async",
  "aws-smithy-types",
+ "byte-unit",
  "bytes",
  "cache",
  "derive-new",
@@ -5448,6 +5449,7 @@ name = "upload"
 version = "0.1.0"
 dependencies = [
  "auth",
+ "byte-unit",
  "bytes",
  "derive-new",
  "derive_builder",
