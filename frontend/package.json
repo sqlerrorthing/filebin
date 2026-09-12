@@ -7,7 +7,7 @@
         "dev": "vite dev",
         "build": "vite build",
         "preview": "vite preview",
-        "prepare": "svelte-kit sync && tailwindcss-patch install && tailwindcss-patch extract",
+        "prepare": "svelte-kit sync",
         "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
         "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
         "proto:generate": "buf generate ../proto"
@@ -16,6 +16,7 @@
         "@bufbuild/buf": "^1.72.0",
         "@bufbuild/protoc-gen-es": "^2.13.0",
         "@connectrpc/protoc-gen-connect-es": "^1.7.0",
+        "@iconify-json/lucide": "^1.2.131",
         "@inlang/paraglide-js": "^2.23.0",
         "@sveltejs/adapter-auto": "^7.0.1",
         "@sveltejs/adapter-node": "^5.5.7",
@@ -25,14 +26,13 @@
         "prettier": "^3.9.6",
         "prettier-plugin-svelte": "^4.1.1",
         "prettier-plugin-tailwindcss": "^0.8.1",
-        "rollup-plugin-visualizer": "^7.0.1",
+        "rollup-plugin-visualizer": "^7.1.1",
         "svelte": "^5.56.1",
         "svelte-check": "^4.6.0",
         "tailwindcss": "^4.3.0",
-        "tailwindcss-patch": "^10.0.2",
         "terser": "^5.51.2",
         "typescript": "^6.0.3",
-        "unplugin-tailwindcss-mangle": "^6.0.1",
+        "unplugin-icons": "^23.0.1",
         "vite": "^8.0.16"
     },
     "dependencies": {

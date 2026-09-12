@@ -20,7 +20,6 @@ COPY --from=deps /app/node_modules ./node_modules
 
 COPY frontend/. .
 
-RUN pnpm exec tailwindcss-patch install && pnpm exec tailwindcss-patch extract
 RUN pnpm build
 
 FROM base AS prod-deps

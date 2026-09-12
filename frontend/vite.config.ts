@@ -1,9 +1,9 @@
 import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import tailwindcss from '@tailwindcss/vite';
 import adapter from '@sveltejs/adapter-node';
-import utwm from 'unplugin-tailwindcss-mangle/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
+import Icons from 'unplugin-icons/vite';
 
 export default defineConfig({
     plugins: [
@@ -24,7 +24,10 @@ export default defineConfig({
 
             adapter: adapter(),
         }),
-        utwm(),
+        Icons({
+            compiler: "svelte",
+            autoInstall: true
+        })
     ],
     ssr: {
         noExternal: ['@lucide/svelte', '@inlang/paraglide-js-svelte'],
@@ -42,8 +45,11 @@ export default defineConfig({
                 drop_console: true,
                 drop_debugger: true,
                 toplevel: true,
+                unsafe: true,
+                unsafe_arrows: true,
+                unsafe_methods: true,
+                unsafe_proto: true
             },
-
             mangle: {
                 toplevel: true,
             },
