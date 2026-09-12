@@ -234,7 +234,7 @@
 {:else if files}
     <div class="flex flex-col gap-1">
         <span
-            >{m["files.counter"]({
+            >{m['files.counter']({
                 count: files.size,
                 max: limitsStore.data?.maxFilesPerFolder ?? '...',
             })}</span

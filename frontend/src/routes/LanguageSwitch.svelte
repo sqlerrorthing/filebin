@@ -15,7 +15,7 @@
                 currentLocale === l && 'border-foreground'
             )}
             onclick={() => setLocale(l)}
-            title={m["display-language"](undefined, { locale: l })}
+            title={m['display-language'](undefined, { locale: l })}
         >
             <img
                 src="/flags/{region}.svg"

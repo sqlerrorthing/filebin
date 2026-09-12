@@ -185,19 +185,19 @@
 
         <h2 class="flex items-center gap-2 text-xl font-bold">
             <ShieldCheck class="text-primary h-6 w-6" />
-            {m["share.modal.title"]()}
+            {m['share.modal.title']()}
         </h2>
 
         {#if shareState.step === 'loading'}
             <div class="flex flex-col items-center justify-center gap-3 py-8">
                 <LoaderCircle class="text-primary h-8 w-8 animate-spin" />
-                <p class="text-muted-foreground">{m["share.session.init"]()}</p>
+                <p class="text-muted-foreground">{m['share.session.init']()}</p>
             </div>
         {:else if shareState.step === 'waiting'}
             {@const waitingState = shareState}
             <div class="flex flex-col items-center justify-center gap-4 py-6">
                 <p class="text-muted-foreground text-center text-sm">
-                    {m["share.modal.action-hint"]()}
+                    {m['share.modal.action-hint']()}
                 </p>
                 <div class="bg-muted flex items-center gap-3 p-4">
                     <span class="font-mono text-3xl font-bold tracking-widest"
@@ -206,7 +206,7 @@
                     <button
                         class="hover:bg-background cursor-pointer border p-2"
                         onclick={() => copyCode(waitingState.code)}
-                        title={m["common.actions.copy-code"]()}
+                        title={m['common.actions.copy-code']()}
                     >
                         {#if copied}
                             <Check class="h-5 w-5 text-green-500" />
@@ -225,7 +225,7 @@
         {:else if shareState.step === 'sas'}
             <div class="flex flex-col items-center justify-center gap-4 py-4">
                 <div class="bg-primary/10 text-primary p-3 text-center text-sm">
-                    {m["share.verification.match-prompt"]()}
+                    {m['share.verification.match-prompt']()}
                 </div>
                 <div
                     class="bg-muted flex max-w-full flex-wrap items-center justify-center gap-2 p-4 sm:gap-4"
@@ -237,14 +237,14 @@
                     {/each}
                 </div>
                 <p class="text-muted-foreground text-center text-xs">
-                    {m["share.verification.instruction"]()}
+                    {m['share.verification.instruction']()}
                 </p>
                 <button
                     class="bg-primary text-primary-foreground flex w-full cursor-pointer items-center justify-center gap-2 py-2 font-medium hover:opacity-90"
                     onclick={confirmAndSendKey}
                 >
                     <Check class="h-4 w-4" />
-                    {m["share.verification.confirm-btn"]()}
+                    {m['share.verification.confirm-btn']()}
                 </button>
             </div>
         {:else if shareState.step === 'success'}
@@ -254,12 +254,14 @@
                 >
                     <Check class="h-6 w-6" />
                 </div>
-                <p class="text-center font-medium">{m["share.session.success"]()}</p>
+                <p class="text-center font-medium">
+                    {m['share.session.success']()}
+                </p>
                 <button
                     class="bg-muted hover:bg-muted/80 cursor-pointer px-4 py-2 text-sm"
                     onclick={handleClose}
                 >
-                    {m["common.actions.close"]()}
+                    {m['common.actions.close']()}
                 </button>
             </div>
         {:else if shareState.step === 'error'}
@@ -269,7 +271,7 @@
                     class="bg-muted hover:bg-muted/80 cursor-pointer px-4 py-2 text-sm"
                     onclick={handleClose}
                 >
-                    {m["common.actions.close"]()}
+                    {m['common.actions.close']()}
                 </button>
             </div>
         {/if}

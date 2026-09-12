@@ -5,9 +5,7 @@
     import { folderClient, useGrpc } from '$lib/grpc';
     import { create } from '@bufbuild/protobuf';
     import { RenameRequestSchema } from '$lib/grpc/gen/folder/v1/folder_pb';
-    import {
-        FolderNameSchema,
-    } from '$lib/grpc/gen/folder/v1/common_pb';
+    import { FolderNameSchema } from '$lib/grpc/gen/folder/v1/common_pb';
 
     let isSyncing = $state(false);
     let syncError = $state<string | null>(null);

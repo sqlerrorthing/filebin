@@ -1,60 +1,60 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format",
-  "display-language": "Русский",
-  "common": {
-    "actions": {
-      "close": "Закрыть",
-      "confirm": "Подтвердить",
-      "join": "Присоединиться",
-      "upload": "Загрузить",
-      "copy-code": "Скопировать код"
+    "$schema": "https://inlang.com/schema/inlang-message-format",
+    "display-language": "Русский",
+    "common": {
+        "actions": {
+            "close": "Закрыть",
+            "confirm": "Подтвердить",
+            "join": "Присоединиться",
+            "upload": "Загрузить",
+            "copy-code": "Скопировать код"
+        },
+        "errors": {
+            "generic": "Ошибка: {error}"
+        }
     },
-    "errors": {
-      "generic": "Ошибка: {error}"
-    }
-  },
-  "head": {
-    "title": "Анонимное хранилище файлов с E2EE.\nМы уважаем вашу конфиденциальность!"
-  },
-  "crypto": {
-    "errors": {
-      "decrypt": "Ошибка расшифровки"
-    }
-  },
-  "folders": {
-    "default-name": "Папка",
-    "errors": {
-      "not-found": "Папка не найдена",
-      "incorrect-id": "Некорректный ID папки"
-    }
-  },
-  "files": {
-    "drop-zone": "Перетащите файлы сюда",
-    "limit-info": "До {limit}",
-    "counter": "{count} из {max}"
-  },
-  "share": {
-    "modal": {
-      "title": "Поделиться папкой",
-      "enter-code": "Введите 6-значный код",
-      "action-hint": "Поделитесь этим кодом с получателем. Ожидание подключения"
+    "head": {
+        "title": "Анонимное хранилище файлов с E2EE.\nМы уважаем вашу конфиденциальность!"
     },
-    "session": {
-      "init": "Инициализация защищенного сеанса",
-      "connecting": "Подключение к сеансу",
-      "waiting-sender": "Ожидание подтверждения от отправителя",
-      "decrypting": "Расшифровка ключа папки и открытие",
-      "success": "Папка успешно передана!"
+    "crypto": {
+        "errors": {
+            "decrypt": "Ошибка расшифровки"
+        }
     },
-    "verification": {
-      "match-prompt": "Получатель подключился! Убедитесь, что эти эмодзи совпадают на обоих экранах.",
-      "verify-sender": "Убедитесь, что эти эмодзи совпадают с эмодзи отправителя:",
-      "instruction": "Если эмодзи совпадают, нажмите «Подтвердить» для безопасной передачи ключа папки.",
-      "confirm-btn": "Эмодзи совпадают, подтвердить"
+    "folders": {
+        "default-name": "Папка",
+        "errors": {
+            "not-found": "Папка не найдена",
+            "incorrect-id": "Некорректный ID папки"
+        }
+    },
+    "files": {
+        "drop-zone": "Перетащите файлы сюда",
+        "limit-info": "До {limit}",
+        "counter": "{count} из {max}"
+    },
+    "share": {
+        "modal": {
+            "title": "Поделиться папкой",
+            "enter-code": "Введите 6-значный код",
+            "action-hint": "Поделитесь этим кодом с получателем. Ожидание подключения"
+        },
+        "session": {
+            "init": "Инициализация защищенного сеанса",
+            "connecting": "Подключение к сеансу",
+            "waiting-sender": "Ожидание подтверждения от отправителя",
+            "decrypting": "Расшифровка ключа папки и открытие",
+            "success": "Папка успешно передана!"
+        },
+        "verification": {
+            "match-prompt": "Получатель подключился! Убедитесь, что эти эмодзи совпадают на обоих экранах.",
+            "verify-sender": "Убедитесь, что эти эмодзи совпадают с эмодзи отправителя:",
+            "instruction": "Если эмодзи совпадают, нажмите «Подтвердить» для безопасной передачи ключа папки.",
+            "confirm-btn": "Эмодзи совпадают, подтвердить"
+        }
+    },
+    "footer": {
+        "made-by": "Сделано с ♥️ {#link to=$authorUrl}{author}{/link}",
+        "source-code": "Исходный код доступен на {#link to=$url}{platform}{/link}"
     }
-  },
-  "footer": {
-    "made-by": "Сделано с ♥️ {#link to=$authorUrl}{author}{/link}",
-    "source-code": "Исходный код доступен на {#link to=$url}{platform}{/link}"
-  }
 }

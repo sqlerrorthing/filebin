@@ -62,7 +62,7 @@
 
             <span class="text-muted-foreground text-sm">
                 <ParaglideMessage
-                    message={m["footer.source-code"]}
+                    message={m['footer.source-code']}
                     inputs={{
                         url: 'https://github.com/sqlerrorthing/filebin',
                         platform: 'Github',

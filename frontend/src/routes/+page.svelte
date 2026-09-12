@@ -11,7 +11,7 @@
 >
     <Upload />
     <span class="text-muted-foreground text-sm">
-        {m["files.limit-info"]({
+        {m['files.limit-info']({
             limit: limitsStore.loading
                 ? '...'
                 : (formatBytes(limitsStore.data?.maxFileSize ?? 0) ?? 'Error'),

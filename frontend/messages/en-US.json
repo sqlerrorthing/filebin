@@ -1,60 +1,60 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format",
-  "display-language": "English",
-  "common": {
-    "actions": {
-      "close": "Close",
-      "confirm": "Confirm",
-      "join": "Join",
-      "upload": "Upload",
-      "copy-code": "Copy code"
+    "$schema": "https://inlang.com/schema/inlang-message-format",
+    "display-language": "English",
+    "common": {
+        "actions": {
+            "close": "Close",
+            "confirm": "Confirm",
+            "join": "Join",
+            "upload": "Upload",
+            "copy-code": "Copy code"
+        },
+        "errors": {
+            "generic": "Error: {error}"
+        }
     },
-    "errors": {
-      "generic": "Error: {error}"
-    }
-  },
-  "head": {
-    "title": "Anonymous E2EE File storage.\nWe respect your privacy!"
-  },
-  "crypto": {
-    "errors": {
-      "decrypt": "Decryption error"
-    }
-  },
-  "folders": {
-    "default-name": "Folder",
-    "errors": {
-      "not-found": "Folder not found",
-      "incorrect-id": "Folder id is incorrect"
-    }
-  },
-  "files": {
-    "drop-zone": "Drop files here",
-    "limit-info": "Up to {limit}",
-    "counter": "{count} of {max}"
-  },
-  "share": {
-    "modal": {
-      "title": "Folder Share",
-      "enter-code": "Enter a 6-digit code",
-      "action-hint": "Share this code with the recipient. Waiting for them to join"
+    "head": {
+        "title": "Anonymous E2EE File storage.\nWe respect your privacy!"
     },
-    "session": {
-      "init": "Initializing secure session",
-      "connecting": "Connection to session",
-      "waiting-sender": "Waiting for sender to confirm",
-      "decrypting": "Decrypting folder key and opening",
-      "success": "Folder shared successfully!"
+    "crypto": {
+        "errors": {
+            "decrypt": "Decryption error"
+        }
     },
-    "verification": {
-      "match-prompt": "Recipient connected! Verify that these emojis match on both screens.",
-      "verify-sender": "Verify these emojis match with the sender:",
-      "instruction": "If the emojis match, click confirm to securely transmit the folder key.",
-      "confirm-btn": "Emojis Match, Confirm Share"
+    "folders": {
+        "default-name": "Folder",
+        "errors": {
+            "not-found": "Folder not found",
+            "incorrect-id": "Folder id is incorrect"
+        }
+    },
+    "files": {
+        "drop-zone": "Drop files here",
+        "limit-info": "Up to {limit}",
+        "counter": "{count} of {max}"
+    },
+    "share": {
+        "modal": {
+            "title": "Folder Share",
+            "enter-code": "Enter a 6-digit code",
+            "action-hint": "Share this code with the recipient. Waiting for them to join"
+        },
+        "session": {
+            "init": "Initializing secure session",
+            "connecting": "Connection to session",
+            "waiting-sender": "Waiting for sender to confirm",
+            "decrypting": "Decrypting folder key and opening",
+            "success": "Folder shared successfully!"
+        },
+        "verification": {
+            "match-prompt": "Recipient connected! Verify that these emojis match on both screens.",
+            "verify-sender": "Verify these emojis match with the sender:",
+            "instruction": "If the emojis match, click confirm to securely transmit the folder key.",
+            "confirm-btn": "Emojis Match, Confirm Share"
+        }
+    },
+    "footer": {
+        "made-by": "Made with ♥️ by {#link to=$authorUrl}{author}{/link}",
+        "source-code": "Source code available on {#link to=$url}{platform}{/link}"
     }
-  },
-  "footer": {
-    "made-by": "Made with ♥️ by {#link to=$authorUrl}{author}{/link}",
-    "source-code": "Source code available on {#link to=$url}{platform}{/link}"
-  }
 }
