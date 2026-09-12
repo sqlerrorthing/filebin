@@ -44,7 +44,7 @@
             target.value = values[index];
         }
 
-        checkCompletion();
+        checkCompletion(index+1);
     }
 
     function handleKeyDown(index: number, e: KeyboardEvent) {
@@ -57,14 +57,32 @@
                 inputRefs[index - 1]?.focus();
                 inputRefs[index - 1]?.select();
             }
-        } else if (e.key === 'ArrowLeft' && index > 0) {
+        } else if (e.key === 'ArrowLeft') {
+            const canMove = index > 0 || e.shiftKey;
+            if (!canMove) return;
+
             e.preventDefault();
-            inputRefs[index - 1]?.focus();
-            inputRefs[index - 1]?.select();
-        } else if (e.key === 'ArrowRight' && index < length - 1) {
+
+            if (e.shiftKey) {
+                values.push(...values.splice(0, 1));
+            }
+
+            const nextIndex = e.shiftKey ? (index - 1 + length) % length : index - 1;
+            inputRefs[nextIndex]?.focus();
+            inputRefs[nextIndex]?.select();
+        } else if (e.key === 'ArrowRight') {
+            const canMove = index < length - 1 || e.shiftKey;
+            if (!canMove) return;
+
             e.preventDefault();
-            inputRefs[index + 1]?.focus();
-            inputRefs[index + 1]?.select();
+
+            if (e.shiftKey) {
+                values.unshift(...values.splice(-1));
+            }
+
+            const nextIndex = e.shiftKey ? (index + 1) % length : index + 1;
+            inputRefs[nextIndex]?.focus();
+            inputRefs[nextIndex]?.select();
         }
     }
 
@@ -90,7 +108,7 @@
         inputRefs[nextFocus]?.focus();
         inputRefs[nextFocus]?.select();
 
-        checkCompletion();
+        checkCompletion(nextFocus);
     }
 
     function handleFocus(e: FocusEvent) {
@@ -98,13 +116,20 @@
         target.select();
     }
 
-    async function checkCompletion() {
+    async function checkCompletion(next_idx: number) {
         const fullCode = values.join('');
         if (fullCode.length === length) {
             const success = await onComplete(fullCode);
             if (success) {
                 values = Array(length).fill('');
                 inputRefs[0]?.focus();
+            }
+        } else if (next_idx >= values.length) {
+            for (let i = 0; i < values.length; i ++) {
+                if (values[i].trim().length == 0) {
+                    inputRefs[i]?.focus();
+                    break
+                }
             }
         }
     }
