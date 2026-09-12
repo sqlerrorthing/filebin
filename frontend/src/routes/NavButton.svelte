@@ -1,26 +1,23 @@
 <script lang="ts">
-    import type {Snippet} from "svelte";
-    import type {HTMLButtonAttributes} from "svelte/elements";
-    import {cn} from "$lib/utils";
+    import type { Snippet } from "svelte";
+    import type { HTMLButtonAttributes } from "svelte/elements";
+    import { cn } from "$lib/utils";
 
     interface Props extends HTMLButtonAttributes {
         children?: Snippet;
     }
 
-    let {
-        children,
-        class: className,
-        ...restProps
-    }: Props = $props();
+    let { children, class: className, ...restProps }: Props = $props();
 </script>
 
 <button
-        type="button"
-        class={cn(
-            "flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
-            className
-        )}
-        {...restProps}
+    type="button"
+    class={cn(
+        `text-muted-foreground hover:bg-accent hover:text-accent-foreground flex
+        size-9 items-center justify-center rounded-lg transition-colors`,
+        className
+    )}
+    {...restProps}
 >
     {@render children?.()}
 </button>
