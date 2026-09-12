@@ -6,7 +6,7 @@
         pattern = /[0-9]$/,
         uppercase = true,
         onComplete,
-        onFocus = () => {}
+        onFocus = () => {},
     }: {
         length?: number;
         pattern?: RegExp;

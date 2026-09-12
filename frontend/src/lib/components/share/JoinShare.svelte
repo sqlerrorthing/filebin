@@ -126,9 +126,15 @@
         {@const s = joinState}
 
         <div class="flex flex-col items-center justify-center gap-2">
-            <p class="text-sm font-medium">{m["share.modal.enter-code"]({ len: digits })}</p>
+            <p class="text-sm font-medium">
+                {m["share.modal.enter-code"]({ len: digits })}
+            </p>
 
-            <CodeInput length={6} onComplete={handleJoin} onFocus={clearError} />
+            <CodeInput
+                length={6}
+                onComplete={handleJoin}
+                onFocus={clearError}
+            />
 
             {#if s.step === "input" && s.errorMessage}
                 <span class="text-destructive text-sm">{s.errorMessage}</span>
