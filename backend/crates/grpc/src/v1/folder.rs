@@ -119,6 +119,7 @@ where
 
     async fn limits(&self, _: Request<Empty>) -> Result<Response<LimitsResponse>, Status> {
         Ok(Response::new(LimitsResponse {
+            max_folder_size: CONFIG.limits.max_folder_size.as_u64(),
             max_files_per_folder: CONFIG.limits.max_files_per_folder,
             max_file_size: CONFIG.limits.max_filesize.as_u64(),
         }))

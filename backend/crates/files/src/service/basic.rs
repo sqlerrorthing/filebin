@@ -1,6 +1,7 @@
 use crate::repository::FilesRepository;
 use crate::service::FilesService;
 use crate::storage::{FilesStorage, HasRawMultipartUploadHandle, IntoRawMultipartUploadHandle};
+use byte_unit::Byte;
 use bytes::Bytes;
 use derive_new::new;
 use domain::models::files::{NewFile, UploadFileData};
@@ -49,6 +50,13 @@ where
     async fn files_count(&self, folder_id: folders::Id) -> Result<u64, Self::Error> {
         self.files_repository
             .files_count(folder_id)
+            .await
+            .map_err(Error::Repository)
+    }
+
+    async fn files_size(&self, folder_id: folders::Id) -> Result<Option<Byte>, Self::Error> {
+        self.files_repository
+            .files_size(folder_id)
             .await
             .map_err(Error::Repository)
     }

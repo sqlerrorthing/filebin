@@ -35,7 +35,7 @@ tinystr.workspace = true
 bytes.workspace = true
 aws-sdk-s3.workspace = true
 aws-config = "1.8.18"
-byte-unit = { version = "5.2.3", features = ["serde"] }
+byte-unit.workspace = true
 tokio-util.workspace = true
 deadpool-redis = { workspace = true, features = ["rt_tokio_1"] }
 storage.path = "../storage"

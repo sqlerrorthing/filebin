@@ -1,8 +1,12 @@
 use crate::repository::FilesRepository;
+use byte_unit::Byte;
 use domain::{models, persistence};
+use futures_util::FutureExt;
+use sea_orm::ExprTrait;
+use sea_orm::sea_query::Expr;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait, QueryFilter,
-    Set,
+    QuerySelect, Set,
 };
 
 impl FilesRepository for DatabaseConnection {
@@ -13,6 +17,24 @@ impl FilesRepository for DatabaseConnection {
             .filter(persistence::files::Column::FolderId.eq(folder_id))
             .count(self)
             .await
+    }
+
+    async fn files_size(
+        &self,
+        folder_id: models::folders::Id,
+    ) -> Result<Option<Byte>, Self::Error> {
+        Ok(persistence::files::Entity::find()
+            .filter(persistence::files::Column::FolderId.eq(folder_id))
+            .select_only()
+            .expr_as(
+                Expr::col(persistence::files::Column::FileSize).sum(),
+                "files_size",
+            )
+            .into_tuple::<Option<i64>>()
+            .one(self)
+            .await?
+            .flatten()
+            .and_then(Byte::from_i64))
     }
 
     async fn delete_files_from_folder(

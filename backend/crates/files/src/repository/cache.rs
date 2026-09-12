@@ -1,4 +1,5 @@
 use crate::repository::FilesRepository;
+use byte_unit::Byte;
 use cache::Cache;
 use domain::models::{files, folders};
 use storage::Storage;
@@ -21,6 +22,10 @@ fn folder_files_count_key(folder_id: folders::Id) -> String {
     format!("{PREFIX}:folder:count:{folder_id}")
 }
 
+fn folder_files_size_key(folder_id: folders::Id) -> String {
+    format!("{PREFIX}:folder:count:{folder_id}")
+}
+
 impl<S, R> FilesRepository for Cache<S, R>
 where
     S: Storage,
@@ -31,6 +36,13 @@ where
     async fn files_count(&self, folder_id: folders::Id) -> Result<u64, Self::Error> {
         self.load_or_cache(folder_files_count_key(folder_id), async |repo| {
             repo.files_count(folder_id).await
+        })
+        .await
+    }
+
+    async fn files_size(&self, folder_id: folders::Id) -> Result<Option<Byte>, Self::Error> {
+        self.load_or_cache(folder_files_size_key(folder_id), async |repo| {
+            repo.files_size(folder_id).await
         })
         .await
     }
@@ -50,6 +62,7 @@ where
                 folder_files_key(folder_id),
                 key_by_public_id(&f.public_id),
                 folder_files_count_key(folder_id),
+                folder_files_size_key(folder_id),
             ]
         }))
         .await;
@@ -65,6 +78,7 @@ where
                 folder_files_key(file.folder_id),
                 key_by_public_id(&file.public_id),
                 folder_files_count_key(file.folder_id),
+                folder_files_size_key(file.folder_id),
             ])
             .await;
         }
@@ -95,10 +109,15 @@ where
     async fn new_file(&self, new_file: files::NewFile) -> Result<files::Model, Self::Error> {
         let folder_files_key = folder_files_key(new_file.folder_id);
         let folder_files_count_key = folder_files_count_key(new_file.folder_id);
+        let folder_files_size_key = folder_files_size_key(new_file.folder_id);
 
         let res = self.repository().new_file(new_file).await?;
-        self.clear_cache_keys([folder_files_key, folder_files_count_key])
-            .await;
+        self.clear_cache_keys([
+            folder_files_key,
+            folder_files_count_key,
+            folder_files_size_key,
+        ])
+        .await;
 
         Ok(res)
     }

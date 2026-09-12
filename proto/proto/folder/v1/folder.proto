@@ -39,6 +39,7 @@ message UpdatesRequest {
 message LimitsResponse {
   required uint32 max_files_per_folder = 1;
   required uint64 max_file_size = 2;
+  required uint64 max_folder_size = 3;
 }
 
 message CreateFolderRequest {
