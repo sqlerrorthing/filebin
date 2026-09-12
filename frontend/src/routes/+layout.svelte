@@ -5,21 +5,15 @@
     import NavButton from "./NavButton.svelte";
     import { ModeWatcher, toggleMode } from "mode-watcher";
     import icon from "$lib/assets/icon_32x32.png";
-    import { getLocale, locales, setLocale } from "$lib/paraglide/runtime";
+    import LangSelectDropdown from "./LangSelectDropdown.svelte";
+    import {localizeHref} from "$lib/paraglide/runtime";
 
     let { children } = $props();
-
-    const currentLocale = getLocale();
 
     let isLangMenuOpen = $state(false);
 
     function toggleLangMenu() {
         isLangMenuOpen = !isLangMenuOpen;
-    }
-
-    function changeLanguage(lang: (typeof locales)[number]) {
-        setLocale(lang);
-        isLangMenuOpen = false;
     }
 
     function handleClickOutside(event: MouseEvent) {
@@ -44,7 +38,7 @@
             class="mx-auto flex h-full max-w-7xl items-center justify-between
                 px-4 md:px-6"
         >
-            <a href="/" class="flex items-center gap-2">
+            <a href={localizeHref("/")} class="flex items-center gap-2">
                 <div
                     class="bg-background flex size-9 items-center
                         justify-center"
@@ -67,29 +61,7 @@
                     </NavButton>
 
                     {#if isLangMenuOpen}
-                        <div
-                            class="border-border bg-popover absolute right-0
-                                z-50 mt-2 w-32 rounded-md border p-1 shadow-md"
-                        >
-                            {#each locales as lang}
-                                <button
-                                    type="button"
-                                    onclick={() => changeLanguage(lang)}
-                                    class="hover:bg-accent
-                                        hover:text-accent-foreground flex w-full
-                                        items-center justify-between rounded-sm
-                                        px-3 py-1.5 text-sm transition-colors{lang ===
-                                    currentLocale
-                                        ? "text-primary font-bold"
-                                        : ""}"
-                                >
-                                    <span class="uppercase">{lang}</span>
-                                    {#if lang === currentLocale}
-                                        <span class="text-xs">✓</span>
-                                    {/if}
-                                </button>
-                            {/each}
-                        </div>
+                        <LangSelectDropdown />
                     {/if}
                 </div>
 
