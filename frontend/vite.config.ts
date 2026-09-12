@@ -22,7 +22,7 @@ export default defineConfig({
                         : true,
             },
             paths: {
-                relative: false
+                relative: false,
             },
             adapter: adapter(),
         }),
