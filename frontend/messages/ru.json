@@ -1,6 +1,9 @@
 {
     "$schema": "https://inlang.com/schema/inlang-message-format",
-    "display-language": "Русский",
+    "languages": {
+        "en": "Английский",
+        "ru": "Русский"
+    },
     "common": {
         "actions": {
             "close": "Закрыть",
