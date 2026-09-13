@@ -45,6 +45,7 @@
         "@lucide/svelte": "^1.28.0",
         "@noble/ciphers": "^2.4.0",
         "clsx": "^2.1.1",
+        "mode-watcher": "^1.1.0",
         "tailwind-merge": "^3.6.0"
     }
 }

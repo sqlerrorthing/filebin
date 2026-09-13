@@ -16,48 +16,20 @@
             "generic": "Error: {error}"
         }
     },
-    "head": {
-        "title": "Anonymous E2EE File storage.\nWe respect your privacy!"
-    },
-    "crypto": {
-        "errors": {
-            "decrypt": "Decryption error"
+    "index": {
+        "subtitle": "PERMANENT E2EE FILE STORAGE",
+        "title": "Files.\nWithout Name.",
+        "description": "Upload a file or folder and get an access code. Or simply enter a code someone already shared with you. End-to-end encrypted, with no account or profile required.",
+
+        "actions": {
+            "upload": {
+                "name": "Upload",
+                "description": "Creates E2EE Folder and uploads the content"
+            },
+            "join": {
+                "name": "Enter code",
+                "description": "Open a folder by short code"
+            }
         }
-    },
-    "folders": {
-        "default-name": "Folder",
-        "errors": {
-            "not-found": "Folder not found",
-            "incorrect-id": "Folder id is incorrect"
-        }
-    },
-    "files": {
-        "drop-zone": "Drop files here",
-        "limit-info": "Up to {limit}",
-        "counter": "{count} of {max}"
-    },
-    "share": {
-        "modal": {
-            "title": "Folder Share",
-            "enter-code": "Enter a {len}-digit code",
-            "action-hint": "Share this code with the recipient. Waiting for them to join"
-        },
-        "session": {
-            "init": "Initializing secure session",
-            "connecting": "Connection to session",
-            "waiting-sender": "Waiting for sender to confirm",
-            "decrypting": "Decrypting folder key and opening",
-            "success": "Folder shared successfully!"
-        },
-        "verification": {
-            "match-prompt": "Recipient connected! Verify that these emojis match on both screens.",
-            "verify-sender": "Verify these emojis match with the sender:",
-            "instruction": "If the emojis match, click confirm to securely transmit the folder key.",
-            "confirm-btn": "Emojis Match, Confirm Share"
-        }
-    },
-    "footer": {
-        "made-by": "Made with ♥️ by {#link to=$authorUrl}{author}{/link}",
-        "source-code": "Source code available on {#link to=$url}{platform}{/link}"
     }
 }
