@@ -1,8 +1,8 @@
 <script lang="ts">
     import * as m from "$lib/paraglide/messages";
-    import MoveUpRight from "@lucide/svelte/icons/move-up-right";
     import ActionButton from "./ActionButton.svelte";
     import MoveRight from "@lucide/svelte/icons/move-right";
+    import UploadButton from "./UploadButton.svelte";
 </script>
 
 <div class="mx-auto w-full max-w-7xl p-4 sm:p-6 md:my-auto lg:p-8">
@@ -27,19 +27,17 @@
             </p>
         </div>
 
-        <div class="flex flex-col gap-2 rounded-2xl p-2 shadow-xl">
-            <ActionButton
-                name={m["index.actions.upload.name"]}
-                description={m["index.actions.upload.description"]}
-                highlight={true}
-                icon={MoveUpRight}
-            />
+        <div class="flex flex-col gap-2 rounded-2xl p-2 shadow-xl border-card-foreground border border-solid">
+            <UploadButton />
 
             <ActionButton
-                name={m["index.actions.join.name"]}
+                displayName={m["index.actions.join.name"]}
                 description={m["index.actions.join.description"]}
-                icon={MoveRight}
-            />
+            >
+                {#snippet icon()}
+                    <MoveRight class="w-full h-full" />
+                {/snippet}
+            </ActionButton>
         </div>
     </div>
 </div>

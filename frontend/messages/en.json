@@ -16,6 +16,9 @@
             "generic": "Error: {error}"
         }
     },
+    "folder": {
+        "default_name": "Folder"
+    },
     "index": {
         "subtitle": "PERMANENT E2EE FILE STORAGE",
         "title": "Files.\nWithout Name.",
@@ -24,7 +27,8 @@
         "actions": {
             "upload": {
                 "name": "Upload",
-                "description": "Creates E2EE Folder and uploads the content"
+                "description": "Creates E2EE Folder and uploads the content",
+                "release-to-upload": "Release to upload..."
             },
             "join": {
                 "name": "Enter code",
