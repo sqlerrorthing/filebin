@@ -1,11 +1,12 @@
 <script lang="ts">
     import * as m from "$lib/paraglide/messages";
     import ActionButton from "./ActionButton.svelte";
-    import MoveRight from "@lucide/svelte/icons/move-right";
     import UploadButton from "./UploadButton.svelte";
+    import Container from "$lib/components/container/Container.svelte";
+    import { MoveRight } from "@lucide/svelte";
 </script>
 
-<div class="mx-auto w-full max-w-7xl p-4 sm:p-6 md:my-auto lg:p-8">
+<Container class="md:my-auto">
     <div
         class="flex w-full flex-col gap-4 md:flex-row md:items-center
             md:justify-between"
@@ -43,4 +44,4 @@
             </ActionButton>
         </div>
     </div>
-</div>
+</Container>

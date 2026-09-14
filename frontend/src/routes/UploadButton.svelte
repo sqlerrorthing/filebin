@@ -45,10 +45,10 @@
             const folder = createFolder.folder;
             const exportedKey = await exportKey(key);
 
-            if (folder?.id) {
-                await goto(localizeHref(`${folder.id.value}#${exportedKey}`), {
+            if (folder) {
+                await goto(localizeHref(`${folder.id!!.value}#${exportedKey}`), {
                     state: {
-                        folder: folder.id,
+                        folder: folder,
                         key: key,
                         token: createFolder.token,
                         pendingFiles: Array.from(files),
