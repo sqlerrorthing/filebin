@@ -3,27 +3,30 @@
     import MoveUpRight from "@lucide/svelte/icons/move-up-right";
     import ActionButton from "./ActionButton.svelte";
     import FilesSelector from "$lib/components/upload/FilesSelector.svelte";
-    import {SelectedBy} from "$lib/types/files";
-    import {cn} from "$lib/utils";
-    import {LoaderCircle} from "@lucide/svelte";
-    import {encryptBlob, exportKey, generateCryptoKey} from "$lib/crypt/key";
-    import {folderClient} from "$lib/grpc";
-    import {create} from "@bufbuild/protobuf";
-    import {FolderNameSchema} from "$lib/grpc/gen/folder/v1/common_pb";
-    import {goto} from "$app/navigation";
-    import {localizeHref} from "$lib/paraglide/runtime";
+    import { SelectedBy } from "$lib/types/files";
+    import { cn } from "$lib/utils";
+    import { LoaderCircle } from "@lucide/svelte";
+    import { encryptBlob, exportKey, generateCryptoKey } from "$lib/crypt/key";
+    import { folderClient } from "$lib/grpc";
+    import { create } from "@bufbuild/protobuf";
+    import { FolderNameSchema } from "$lib/grpc/gen/folder/v1/common_pb";
+    import { goto } from "$app/navigation";
+    import { localizeHref } from "$lib/paraglide/runtime";
 
     let isDragging = $state(false);
     let selector = $state<FilesSelector | null>(null);
     let loading = $state(false);
 
-    const createFolderAndQueueFiles = async (files: FileList | File[], by: SelectedBy) => {
+    const createFolderAndQueueFiles = async (
+        files: FileList | File[],
+        by: SelectedBy
+    ) => {
         if (by === SelectedBy.DROP) {
             isDragging = false;
         }
 
         if (!files || files.length === 0) {
-            return
+            return;
         }
 
         loading = true;
@@ -32,11 +35,12 @@
             const key = await generateCryptoKey();
             const folder = await folderClient.createFolder({
                 name: create(FolderNameSchema, {
-                    value: await encryptBlob(key, new TextEncoder().encode(
-                        m["folder.default_name"]()
-                    ))
-                })
-            })
+                    value: await encryptBlob(
+                        key,
+                        new TextEncoder().encode(m["folder.default_name"]())
+                    ),
+                }),
+            });
 
             const exportedKey = await exportKey(key);
 
@@ -46,51 +50,53 @@
                         folder: folder.id,
                         key: key,
                         token: folder.token,
-                        pendingFiles: Array.from(files)
-                    }
-                })
+                        pendingFiles: Array.from(files),
+                    },
+                });
             }
         } catch (e: any) {
-            console.log(e)
+            console.log(e);
             // todo: toast
         } finally {
             loading = false;
         }
-    }
+    };
 
     const handleDragOver = (event: DragEvent) => {
         event.preventDefault();
         isDragging = true;
-    }
+    };
 
     const handleDragLeave = () => {
         isDragging = false;
-    }
+    };
 </script>
 
-<svelte:window
-        ondragover={handleDragOver}
-        ondragleave={handleDragLeave}
-/>
+<svelte:window ondragover={handleDragOver} ondragleave={handleDragLeave} />
 
-<FilesSelector bind:this={selector} onSelect={createFolderAndQueueFiles}/>
+<FilesSelector bind:this={selector} onSelect={createFolderAndQueueFiles} />
 
 <ActionButton
-        displayName={m["index.actions.upload.name"]}
-        description={isDragging ? m["index.actions.upload.release-to-upload"] : m["index.actions.upload.description"]}
-        highlight={true}
-        class={cn(
-            "relative",
-            isDragging && "before:absolute before:inset-1 before:pointer-events-none before:border-4 before:border-dashed before:border-accent before:rounded-lg"
-        )}
-        onclick={() => selector?.select()}
-        disabled={loading}
+    displayName={m["index.actions.upload.name"]}
+    description={isDragging
+        ? m["index.actions.upload.release-to-upload"]
+        : m["index.actions.upload.description"]}
+    highlight={true}
+    class={cn(
+        "relative",
+        isDragging &&
+            `before:border-accent before:pointer-events-none before:absolute
+            before:inset-1 before:rounded-lg before:border-4
+            before:border-dashed`
+    )}
+    onclick={() => selector?.select()}
+    disabled={loading}
 >
     {#snippet icon()}
         {#if loading}
-            <LoaderCircle class="animate-spin"/>
+            <LoaderCircle class="animate-spin" />
         {:else}
-            <MoveUpRight class="w-full h-full"/>
+            <MoveUpRight class="h-full w-full" />
         {/if}
     {/snippet}
 </ActionButton>

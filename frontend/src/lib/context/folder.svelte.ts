@@ -1,5 +1,5 @@
-import {setContext, getContext} from 'svelte';
-import type {FolderId, FolderToken} from "$lib/grpc/gen/folder/v1/common_pb";
+import { setContext, getContext } from "svelte";
+import type { FolderId, FolderToken } from "$lib/grpc/gen/folder/v1/common_pb";
 
 export class EncryptedFolderContext {
     folder: FolderId = $state()!;
@@ -7,7 +7,12 @@ export class EncryptedFolderContext {
     token = $state<FolderToken | null>(null);
     pendingFiles: File[] = $state([]);
 
-    constructor(folder: FolderId, key: CryptoKey, token?: FolderToken, pendingFiles: File[] = []) {
+    constructor(
+        folder: FolderId,
+        key: CryptoKey,
+        token?: FolderToken,
+        pendingFiles: File[] = []
+    ) {
         this.folder = folder;
         this.key = key;
         this.token = token ?? null;
@@ -15,17 +20,25 @@ export class EncryptedFolderContext {
     }
 }
 
-const KEY = Symbol('ECNRYPTED_FOLDER_CONTEXT');
+const KEY = Symbol("ECNRYPTED_FOLDER_CONTEXT");
 
 export const setEncryptedFolderContext = (initial: {
     folder: FolderId;
     key: CryptoKey;
-    token?: FolderToken,
-    pendingFiles?: File[]
+    token?: FolderToken;
+    pendingFiles?: File[];
 }) => {
-    return setContext(KEY, new EncryptedFolderContext(initial.folder, initial.key, initial.token, initial.pendingFiles));
-}
+    return setContext(
+        KEY,
+        new EncryptedFolderContext(
+            initial.folder,
+            initial.key,
+            initial.token,
+            initial.pendingFiles
+        )
+    );
+};
 
 export const useFolderContext = () => {
     return getContext<EncryptedFolderContext>(KEY);
-}
+};

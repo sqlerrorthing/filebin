@@ -1,11 +1,14 @@
 <script lang="ts">
-    import {SelectedBy} from "$lib/types/files";
+    import { SelectedBy } from "$lib/types/files";
     import { onMount } from "svelte";
 
     let {
-        onSelect
+        onSelect,
     }: {
-        onSelect: (files: FileList | File[], by: SelectedBy) => void | Promise<void>
+        onSelect: (
+            files: FileList | File[],
+            by: SelectedBy
+        ) => void | Promise<void>;
     } = $props();
 
     let fileInput = $state<HTMLInputElement | null>(null);
@@ -33,7 +36,7 @@
             default:
                 return "bin";
         }
-    }
+    };
 
     const isInput = (target: HTMLElement): boolean => {
         const isInput =
@@ -42,7 +45,7 @@
             target.hasAttribute("contenteditable") || target.isContentEditable;
 
         return isInput || isEditable;
-    }
+    };
 
     const handlePaste = (event: ClipboardEvent) => {
         const target = event.target as HTMLElement | null;
@@ -111,39 +114,36 @@
         if (files.length > 0) {
             onSelect(files, SelectedBy.PASTE);
         }
-    }
+    };
 
     const onFileSelect = (event: Event) => {
         const input = event.target as HTMLInputElement;
         if (input.files) {
             onSelect(input.files, SelectedBy.CHOOSE);
         }
-    }
+    };
 
     const handleDrop = (event: DragEvent) => {
         event.preventDefault();
         if (event.dataTransfer?.files) {
             onSelect(event.dataTransfer.files, SelectedBy.DROP);
         }
-    }
+    };
 
     export const select = () => {
-        fileInput?.click()
-    }
+        fileInput?.click();
+    };
 
     onMount(() => {
         document.addEventListener("paste", handlePaste);
 
         return () => {
-            document.removeEventListener("paste", handlePaste)
-        }
-    })
+            document.removeEventListener("paste", handlePaste);
+        };
+    });
 </script>
 
-
-<svelte:window
-    ondrop={handleDrop}
-/>
+<svelte:window ondrop={handleDrop} />
 
 <input
     type="file"

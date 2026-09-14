@@ -1,10 +1,11 @@
 import {
     AlgorithmSchema,
-    type EncryptedBlobs, EncryptedBlobsSchema,
+    type EncryptedBlobs,
+    EncryptedBlobsSchema,
     EncryptedVaultSchema,
-    VersionSchema
+    VersionSchema,
 } from "$lib/grpc/gen/folder/v1/encryption_pb";
-import {create} from "@bufbuild/protobuf";
+import { create } from "@bufbuild/protobuf";
 
 export const generateCryptoKey = async (): Promise<CryptoKey> => {
     return await window.crypto.subtle.generateKey(
@@ -12,19 +13,19 @@ export const generateCryptoKey = async (): Promise<CryptoKey> => {
         true,
         ["encrypt", "decrypt"]
     );
-}
+};
 
 export const exportKey = async (key: CryptoKey): Promise<string> => {
     return (await exportKeyToArray(key)).toBase64({
         alphabet: "base64url",
         omitPadding: true,
     });
-}
+};
 
 export const exportKeyToArray = async (key: CryptoKey): Promise<Uint8Array> => {
     const exportedKey = await window.crypto.subtle.exportKey("raw", key);
     return new Uint8Array(exportedKey);
-}
+};
 
 export const bufferToBase64 = (buffer: ArrayBuffer | Uint8Array): string => {
     const bytes =
@@ -34,7 +35,7 @@ export const bufferToBase64 = (buffer: ArrayBuffer | Uint8Array): string => {
         binary += String.fromCharCode(bytes[i]);
     }
     return btoa(binary);
-}
+};
 
 export const importKeyFromUrlSafe = async (
     urlSafeString: string
@@ -50,7 +51,7 @@ export const importKeyFromUrlSafe = async (
         true,
         ["encrypt", "decrypt"]
     );
-}
+};
 
 export const encryptBlob = async (
     key: CryptoKey,
@@ -87,11 +88,11 @@ export const encryptBlob = async (
         meta: encryptedVault,
         data: ciphertext,
     });
-}
+};
 
 const base64ToBuffer = (base64: string): Uint8Array => {
     return Uint8Array.fromBase64(base64, { alphabet: "base64" });
-}
+};
 
 export const decryptBlob = async (
     key: CryptoKey,
@@ -124,7 +125,7 @@ export const decryptBlob = async (
     );
 
     return new Uint8Array(decryptedBuffer);
-}
+};
 
 export const decryptBlobAsString = async (
     key: CryptoKey,
@@ -132,4 +133,4 @@ export const decryptBlobAsString = async (
 ): Promise<string> => {
     const bytes = await decryptBlob(key, encryptedBlob);
     return new TextDecoder().decode(bytes);
-}
+};

@@ -27,7 +27,10 @@
             </p>
         </div>
 
-        <div class="flex flex-col gap-2 rounded-2xl p-2 shadow-xl border-card-foreground border border-solid">
+        <div
+            class="border-card-foreground flex flex-col gap-2 rounded-2xl border
+                border-solid p-2 shadow-xl"
+        >
             <UploadButton />
 
             <ActionButton
@@ -35,7 +38,7 @@
                 description={m["index.actions.join.description"]}
             >
                 {#snippet icon()}
-                    <MoveRight class="w-full h-full" />
+                    <MoveRight class="h-full w-full" />
                 {/snippet}
             </ActionButton>
         </div>
