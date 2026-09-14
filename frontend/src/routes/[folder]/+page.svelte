@@ -1,11 +1,14 @@
 <script lang="ts">
     import { page } from "$app/state";
-    import { setEncryptedFolderContext, EncryptedFolderContext } from "$lib/context/folder.svelte";
+    import {
+        setEncryptedFolderContext,
+        EncryptedFolderContext,
+    } from "$lib/context/folder.svelte";
     import { create } from "@bufbuild/protobuf";
     import { FolderTokenSchema } from "$lib/grpc/gen/folder/v1/common_pb";
     import { importKeyFromUrlSafe } from "$lib/crypt/key";
     import FolderOverview from "./FolderOverview.svelte";
-    import {onMount} from "svelte";
+    import { onMount } from "svelte";
 
     const pageState = page.state as any;
     const folderId = page.params.folder;
@@ -28,11 +31,18 @@
     onMount(async () => {
         try {
             if (initialToken) {
-                localStorage.setItem(`folder_token_${initialFolder.id.value}`, initialToken.id.value);
+                localStorage.setItem(
+                    `folder_token_${initialFolder.id.value}`,
+                    initialToken.id.value
+                );
             } else {
-                const storedTokenVal = localStorage.getItem(`folder_token_${initialFolder.id.value}`);
+                const storedTokenVal = localStorage.getItem(
+                    `folder_token_${initialFolder.id.value}`
+                );
                 if (storedTokenVal) {
-                    ctx.token = create(FolderTokenSchema, { value: storedTokenVal });
+                    ctx.token = create(FolderTokenSchema, {
+                        value: storedTokenVal,
+                    });
                 }
             }
 
@@ -51,7 +61,7 @@
         } finally {
             isLoading = false;
         }
-    })
+    });
 </script>
 
 {#if error}

@@ -1,5 +1,9 @@
-import {setContext, getContext} from "svelte";
-import type {Folder, FolderId, FolderToken} from "$lib/grpc/gen/folder/v1/common_pb";
+import { setContext, getContext } from "svelte";
+import type {
+    Folder,
+    FolderId,
+    FolderToken,
+} from "$lib/grpc/gen/folder/v1/common_pb";
 
 export class EncryptedFolderContext {
     folder: Folder = $state()!;
@@ -23,10 +27,7 @@ export class EncryptedFolderContext {
 const EFC = Symbol("EFC");
 
 export const setEncryptedFolderContext = (ctx: EncryptedFolderContext) => {
-    return setContext(
-        EFC,
-        ctx
-    );
+    return setContext(EFC, ctx);
 };
 
 export const useFolderContext = () => {
@@ -37,8 +38,6 @@ export class FolderContext {
     #encryptedCtx: EncryptedFolderContext;
 
     constructor(encryptedCtx: EncryptedFolderContext) {
-        this.#encryptedCtx = encryptedCtx
+        this.#encryptedCtx = encryptedCtx;
     }
-
-
 }

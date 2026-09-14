@@ -46,14 +46,17 @@
             const exportedKey = await exportKey(key);
 
             if (folder) {
-                await goto(localizeHref(`${folder.id!!.value}#${exportedKey}`), {
-                    state: {
-                        folder: folder,
-                        key: key,
-                        token: createFolder.token,
-                        pendingFiles: Array.from(files),
-                    },
-                });
+                await goto(
+                    localizeHref(`${folder.id!!.value}#${exportedKey}`),
+                    {
+                        state: {
+                            folder: folder,
+                            key: key,
+                            token: createFolder.token,
+                            pendingFiles: Array.from(files),
+                        },
+                    }
+                );
             }
         } catch (e: any) {
             console.log(e);
