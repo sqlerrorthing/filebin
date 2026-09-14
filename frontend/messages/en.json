@@ -4,6 +4,12 @@
         "en": "English",
         "ru": "Russian"
     },
+    "page": {
+        "index": {
+            "title": "Main page",
+            "description": "Free and fast service for file share."
+        }
+    },
     "common": {
         "actions": {
             "close": "Close",

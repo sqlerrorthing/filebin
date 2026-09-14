@@ -33,7 +33,7 @@
 
         try {
             const key = await generateCryptoKey();
-            const folder = await folderClient.createFolder({
+            const createFolder = await folderClient.createFolder({
                 name: create(FolderNameSchema, {
                     value: await encryptBlob(
                         key,
@@ -42,6 +42,7 @@
                 }),
             });
 
+            const folder = createFolder.folder;
             const exportedKey = await exportKey(key);
 
             if (folder?.id) {
@@ -49,7 +50,7 @@
                     state: {
                         folder: folder.id,
                         key: key,
-                        token: folder.token,
+                        token: createFolder.token,
                         pendingFiles: Array.from(files),
                     },
                 });
