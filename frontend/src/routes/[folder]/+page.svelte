@@ -142,6 +142,4 @@
 
 <!--{/if}-->
 
-<Bubble variant="error">
-    asdas
-</Bubble>
+<Bubble variant="error">asdas</Bubble>
