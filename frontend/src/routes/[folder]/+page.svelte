@@ -1,77 +1,125 @@
 <script lang="ts">
-    import { page } from "$app/state";
+    import {page} from "$app/state";
     import {
         setEncryptedFolderContext,
         EncryptedFolderContext,
     } from "$lib/context/folder.svelte";
-    import { create } from "@bufbuild/protobuf";
-    import { FolderTokenSchema } from "$lib/grpc/gen/folder/v1/common_pb";
-    import { importKeyFromUrlSafe } from "$lib/crypt/key";
+    import {create} from "@bufbuild/protobuf";
+    import {
+        type Folder,
+        type FolderId,
+        FolderIdSchema,
+        type FolderToken,
+        FolderTokenSchema
+    } from "$lib/grpc/gen/folder/v1/common_pb";
+    import {importKeyFromUrlSafe} from "$lib/crypt/key";
     import FolderOverview from "./FolderOverview.svelte";
-    import { onMount } from "svelte";
+    import {onMount} from "svelte";
+    import {folderClient} from "$lib/grpc";
+    import * as m from "$lib/paraglide/messages";
+    import {Code, type ConnectError} from "@connectrpc/connect";
 
-    const pageState = page.state as any;
-    const folderId = page.params.folder;
+    const pageState = page.state as {
+        folder?: Folder,
+        key?: CryptoKey,
+        token?: FolderToken,
+        pendingFiles?: File[]
+    } | undefined;
 
-    let initialFolder = pageState?.folder;
-    let initialToken = pageState?.token;
+    const folderId = $derived.by(() => {
+        let id = page.params.folder;
+        return create(FolderIdSchema, {
+            value: id
+        });
+    });
 
-    const ctx = new EncryptedFolderContext(
-        initialFolder,
-        pageState?.key,
-        initialToken,
-        pageState?.pendingFiles ?? []
-    );
+    let state: {
+        case: "loading"
+    } | {
+        case: "error",
+        error: string
+    } | {
+        case: "ctx",
+        ctx: EncryptedFolderContext
+    } = $state({case: "loading"});
 
-    setEncryptedFolderContext(ctx);
+    const loadFolder = async (folderId: FolderId): Promise<Folder | null> => {
+        try {
+            return await folderClient.getFolder({
+                id: folderId
+            });
+        } catch (e: ConnectError) {
+            if (e.code === Code.NotFound) {
+                return null;
+            }
 
-    let isLoading = $state(true);
-    let error = $state<string | null>(null);
+            throw e;
+        }
+    }
+
+    const showError = (error: string) => {
+        state = {
+            case: "error",
+            error
+        }
+    }
 
     onMount(async () => {
         try {
-            if (initialToken) {
-                localStorage.setItem(
-                    `folder_token_${initialFolder.id.value}`,
-                    initialToken.id.value
-                );
+            state = {case: "loading"};
+
+            let folder = pageState?.folder;
+            let key = pageState?.key;
+            let token = pageState?.token;
+            const pendingFiles = pageState?.pendingFiles ?? [];
+
+            if (!folder) {
+                let loadedFolder = await loadFolder(folderId);
+
+                if (!loadedFolder) {
+                    return showError(m["folder.errors.not_found"]());
+                }
+
+                folder = loadedFolder;
+            }
+
+            if (token) {
+                localStorage.setItem(`folder_token_${folder.id!!.value}`, token.value);
             } else {
-                const storedTokenVal = localStorage.getItem(
-                    `folder_token_${initialFolder.id.value}`
-                );
-                if (storedTokenVal) {
-                    ctx.token = create(FolderTokenSchema, {
-                        value: storedTokenVal,
-                    });
+                const storedTokenValue = localStorage.getItem(`folder_token_${folder.id!!.value}`);
+                if (storedTokenValue) {
+                    token = create(FolderTokenSchema, {value: storedTokenValue,});
                 }
             }
 
-            if (!ctx.key) {
+            if (!key) {
                 const hash = window.location.hash;
-                if (hash && hash.startsWith("#")) {
+                if (hash.startsWith("#")) {
                     const keyStr = hash.slice(1);
-                    ctx.key = await importKeyFromUrlSafe(keyStr);
+                    if (keyStr) {
+                        key = await importKeyFromUrlSafe(keyStr);
+                    }
                 }
             }
 
-            if (!ctx.key) {
-                error = "Encryption key is missing";
-                return;
+            if (!key) {
+                return showError(m["common.errors.key.missing"]());
             }
-        } finally {
-            isLoading = false;
+
+            state = {
+                case: "ctx",
+                ctx: new EncryptedFolderContext(folder, key, token, pendingFiles)
+            }
+        } catch (e: any) {
+            showError(m["common.errors.generic"]({ error: e }))
         }
-    });
+    })
 </script>
 
-{#if error}
-    <div>
-        <p>Init error: {error}</p>
-    </div>
-{:else if isLoading}
-    <div>
-        <p>Loading...</p>
-    </div>
+{#if state.case === "loading"}
+    <p>Loading...</p>
+{:else if state.case === "error"}
+    <p>Init error: {state.error}</p>
 {:else}
-    <FolderOverview />
+    <p>{JSON.stringify(state.ctx)}</p>
 {/if}

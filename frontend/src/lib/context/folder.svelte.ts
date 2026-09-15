@@ -29,15 +29,3 @@ const EFC = Symbol("EFC");
 export const setEncryptedFolderContext = (ctx: EncryptedFolderContext) => {
     return setContext(EFC, ctx);
 };
-
-export const useFolderContext = () => {
-    return getContext<EncryptedFolderContext>(EFC);
-};
-
-export class FolderContext {
-    #encryptedCtx: EncryptedFolderContext;
-
-    constructor(encryptedCtx: EncryptedFolderContext) {
-        this.#encryptedCtx = encryptedCtx;
-    }
-}

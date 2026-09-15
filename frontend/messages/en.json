@@ -19,11 +19,18 @@
             "copy-code": "Copy code"
         },
         "errors": {
-            "generic": "Error: {error}"
+            "generic": "Error: {error}",
+            "key": {
+                "missing": "Encryption key is missing",
+                "invalid": "Provided encryption key is invalid"
+            }
         }
     },
     "folder": {
-        "default_name": "Folder"
+        "default_name": "Folder",
+        "errors": {
+            "not_found": "Folder not found"
+        }
     },
     "index": {
         "subtitle": "PERMANENT E2EE FILE STORAGE",
