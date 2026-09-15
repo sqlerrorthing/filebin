@@ -142,4 +142,12 @@
 
 <!--{/if}-->
 
-<Bubble variant="error">asdas</Bubble>
+<Bubble variant="error" onClose={() => { console.log("pisunn") }}>
+    <p>asdasd</p>
+    <p>asdasd</p>
+    <p>asdasd</p>
+    <p>asdasd</p>
+    <p>asdasd</p>
+    <p>asdasd</p>
+    <p>asdasd</p>
+</Bubble>
