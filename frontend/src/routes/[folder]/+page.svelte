@@ -1,52 +1,57 @@
 <script lang="ts">
-    import {page} from "$app/state";
+    import { page } from "$app/state";
     import {
         setEncryptedFolderContext,
         EncryptedFolderContext,
     } from "$lib/context/folder.svelte";
-    import {create} from "@bufbuild/protobuf";
+    import { create } from "@bufbuild/protobuf";
     import {
         type Folder,
         type FolderId,
         FolderIdSchema,
         type FolderToken,
-        FolderTokenSchema
+        FolderTokenSchema,
     } from "$lib/grpc/gen/folder/v1/common_pb";
-    import {importKeyFromUrlSafe} from "$lib/crypt/key";
+    import { importKeyFromUrlSafe } from "$lib/crypt/key";
     import FolderOverview from "./FolderOverview.svelte";
-    import {onMount} from "svelte";
-    import {folderClient} from "$lib/grpc";
+    import { onMount } from "svelte";
+    import { folderClient } from "$lib/grpc";
     import * as m from "$lib/paraglide/messages";
-    import {Code, type ConnectError} from "@connectrpc/connect";
+    import { Code, type ConnectError } from "@connectrpc/connect";
 
-    const pageState = page.state as {
-        folder?: Folder,
-        key?: CryptoKey,
-        token?: FolderToken,
-        pendingFiles?: File[]
-    } | undefined;
+    const pageState = page.state as
+        | {
+              folder?: Folder;
+              key?: CryptoKey;
+              token?: FolderToken;
+              pendingFiles?: File[];
+          }
+        | undefined;
 
     const folderId = $derived.by(() => {
         let id = page.params.folder;
         return create(FolderIdSchema, {
-            value: id
+            value: id,
         });
     });
 
-    let state: {
-        case: "loading"
-    } | {
-        case: "error",
-        error: string
-    } | {
-        case: "ctx",
-        ctx: EncryptedFolderContext
-    } = $state({case: "loading"});
+    let state:
+        | {
+              case: "loading";
+          }
+        | {
+              case: "error";
+              error: string;
+          }
+        | {
+              case: "ctx";
+              ctx: EncryptedFolderContext;
+          } = $state({ case: "loading" });
 
     const loadFolder = async (folderId: FolderId): Promise<Folder | null> => {
         try {
             return await folderClient.getFolder({
-                id: folderId
+                id: folderId,
             });
         } catch (e: ConnectError) {
             if (e.code === Code.NotFound) {
@@ -55,18 +60,18 @@
 
             throw e;
         }
-    }
+    };
 
     const showError = (error: string) => {
         state = {
             case: "error",
-            error
-        }
-    }
+            error,
+        };
+    };
 
     onMount(async () => {
         try {
-            state = {case: "loading"};
+            state = { case: "loading" };
 
             let folder = pageState?.folder;
             let key = pageState?.key;
@@ -84,11 +89,18 @@
             }
 
             if (token) {
-                localStorage.setItem(`folder_token_${folder.id!!.value}`, token.value);
+                localStorage.setItem(
+                    `folder_token_${folder.id!!.value}`,
+                    token.value
+                );
             } else {
-                const storedTokenValue = localStorage.getItem(`folder_token_${folder.id!!.value}`);
+                const storedTokenValue = localStorage.getItem(
+                    `folder_token_${folder.id!!.value}`
+                );
                 if (storedTokenValue) {
-                    token = create(FolderTokenSchema, {value: storedTokenValue,});
+                    token = create(FolderTokenSchema, {
+                        value: storedTokenValue,
+                    });
                 }
             }
 
@@ -108,12 +120,17 @@
 
             state = {
                 case: "ctx",
-                ctx: new EncryptedFolderContext(folder, key, token, pendingFiles)
-            }
+                ctx: new EncryptedFolderContext(
+                    folder,
+                    key,
+                    token,
+                    pendingFiles
+                ),
+            };
         } catch (e: any) {
-            showError(m["common.errors.generic"]({ error: e }))
+            showError(m["common.errors.generic"]({ error: e }));
         }
-    })
+    });
 </script>
 
 {#if state.case === "loading"}
