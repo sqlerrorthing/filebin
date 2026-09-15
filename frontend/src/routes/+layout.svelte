@@ -1,89 +1,64 @@
 <script lang="ts">
     import "./layout.css";
-    import favicon from "$lib/assets/favicon.ico";
-    import { limitsStore } from "$lib/stores/limits.svelte";
-    import { onMount } from "svelte";
     import * as m from "$lib/paraglide/messages";
-    import { ParaglideMessage } from "@inlang/paraglide-js-svelte";
-    import LanguageSwitch from "./LanguageSwitch.svelte";
+    import favicon from "$lib/assets/favicon.ico";
+    import { ModeWatcher } from "mode-watcher";
+    import Header from "$lib/components/header/Header.svelte";
+    import { Toaster } from "svelte-sonner";
 
     let { children } = $props();
-
-    onMount(async () => {
-        if (!limitsStore.data && !limitsStore.hasCalled) {
-            await limitsStore.fetch();
-        }
-    });
 </script>
 
 <svelte:head>
+    <title>{m["page.index.title"]()} — Filebin</title>
+    <meta name="description" content={m["page.index.description"]()} />
+
+    <meta property="og:title" content={m["page.index.title"]()} />
+    <meta property="og:description" content={m["page.index.description"]()} />
+    <meta property="og:type" content="website" />
+
     <link rel="icon" href={favicon} />
 </svelte:head>
 
-<div class="flex justify-center p-4">
-    <div class="bg-card min-w-full shadow sm:min-w-lg">
-        <div
-            class="border-muted flex flex-col items-center justify-center gap-4
-                border-b-2 border-dashed p-4 pb-2 text-center sm:flex-row
-                sm:text-left"
-        >
-            <img
-                src={favicon}
-                class="h-auto w-32 min-w-32 object-cover sm:w-24 sm:min-w-24"
-                alt=""
-            />
-            <h2 class="text-md whitespace-pre-line">{m["head.title"]()}</h2>
-        </div>
-        <div class="p-4">
-            {@render children()}
-        </div>
-        <div
-            class="border-muted flex flex-col items-center justify-center
-                border-t-2 border-dashed p-4"
-        >
-            <LanguageSwitch />
+<ModeWatcher />
 
-            <span class="text-muted-foreground text-sm">
-                <ParaglideMessage
-                    message={m["footer.made-by"]}
-                    inputs={{
-                        author: "sqlerrorthing",
-                        authorUrl: "https://github.com/sqlerrorthing",
-                    }}
-                >
-                    {#snippet link({ children, options })}
-                        <a
-                            href={options.to as string}
-                            class="text-foreground hover:text-primary
-                                hover:underline"
-                            target="_blank"
-                        >
-                            {@render children?.()}
-                        </a>
-                    {/snippet}
-                </ParaglideMessage>
-            </span>
+<Toaster
+    position="top-right"
+    style="top: 5rem;"
+    toastOptions={{
+        unstyled: true,
+        classes: {
+            toast: "group flex w-full items-center gap-3 rounded-xl border border-border bg-popover p-4 text-popover-foreground shadow-lg transition-all",
+            content: "flex flex-col gap-0.5 min-w-0 flex-1",
 
-            <span class="text-muted-foreground text-sm">
-                <ParaglideMessage
-                    message={m["footer.source-code"]}
-                    inputs={{
-                        url: "https://github.com/sqlerrorthing/filebin",
-                        platform: "Github",
-                    }}
-                >
-                    {#snippet link({ children, options })}
-                        <a
-                            href={options.to as string}
-                            class="text-foreground hover:text-primary
-                                hover:underline"
-                            target="_blank"
-                        >
-                            {@render children?.()}
-                        </a>
-                    {/snippet}
-                </ParaglideMessage>
-            </span>
-        </div>
-    </div>
+            title: "text-sm font-semibold tracking-tight leading-none text-foreground",
+            description: "text-xs text-muted-foreground leading-normal",
+
+            icon: "relative flex items-center justify-center shrink-0 size-5 text-foreground [&_[data-icon]]:flex [&_[data-icon]]:items-center [&_[data-icon]]:justify-center [&_[data-icon]]:size-full [&_svg]:size-5",
+            actionButton:
+                "inline-flex shrink-0 items-center justify-center rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+            cancelButton:
+                "inline-flex shrink-0 items-center justify-center rounded-md bg-secondary px-3 py-1.5 text-xs font-medium text-secondary-foreground transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+            closeButton:
+                "absolute right-2 top-2 rounded-md p-1 text-muted-foreground/50 opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100",
+
+            default: "border-border bg-popover text-popover-foreground",
+            success:
+                "border-emerald-500/30 bg-emerald-500/10 text-emerald-900 dark:text-emerald-200 [&_[data-icon]]:text-emerald-500",
+            error: "border-destructive/30 bg-destructive/10 text-destructive dark:text-red-300 [&_[data-icon]]:text-destructive",
+            warning:
+                "border-amber-500/30 bg-amber-500/10 text-amber-900 dark:text-amber-200 [&_[data-icon]]:text-amber-500",
+            info: "border-sky-500/30 bg-sky-500/10 text-sky-900 dark:text-sky-200 [&_[data-icon]]:text-sky-500",
+        },
+    }}
+/>
+
+<div class="bg-background text-foreground min-h-screen">
+    <header class="border-border h-16 border-b">
+        <Header />
+    </header>
+
+    <main class="flex min-h-[calc(100vh-4rem)] flex-col">
+        {@render children()}
+    </main>
 </div>

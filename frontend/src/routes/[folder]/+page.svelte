@@ -1,259 +1,147 @@
 <script lang="ts">
-    import { activeFolder } from "$lib/stores/folder.svelte";
     import { page } from "$app/state";
-    import { folderClient, useGrpc, useStreamGrpc } from "$lib/grpc";
-    import { onMount } from "svelte";
-    import * as m from "$lib/paraglide/messages";
-    import { exportKey, importKeyFromUrlSafe } from "$lib/crypt";
-    import ErrorBanner from "$lib/components/error/ErrorBanner.svelte";
-    import { Check, LoaderCircle, Share2 } from "@lucide/svelte";
-    import ShareModal from "$lib/components/share/ShareModal.svelte";
+    import {
+        setEncryptedFolderContext,
+        EncryptedFolderContext,
+    } from "$lib/context/folder.svelte";
     import { create } from "@bufbuild/protobuf";
     import {
-        DeleteFolderRequestSchema,
-        GetFolderRequestSchema,
-    } from "$lib/grpc/gen/folder/v1/folder_pb";
-    import { FolderIdSchema } from "$lib/grpc/gen/folder/v1/common_pb";
+        type Folder,
+        type FolderId,
+        FolderIdSchema,
+        type FolderToken,
+        FolderTokenSchema,
+    } from "$lib/grpc/gen/folder/v1/common_pb";
+    import { importKeyFromUrlSafe } from "$lib/crypt/key";
+    import FolderOverview from "./FolderOverview.svelte";
+    import { onMount } from "svelte";
+    import { folderClient } from "$lib/grpc";
+    import * as m from "$lib/paraglide/messages";
     import { Code, ConnectError } from "@connectrpc/connect";
-    import FolderName from "./FolderName.svelte";
-    import { goto } from "$app/navigation";
-    import { localizeHref } from "$lib/paraglide/runtime";
-    import FileList from "./FileList.svelte";
-    import { uploadStore } from "$lib/stores/upload.svelte";
-    import { limitsStore } from "$lib/stores/limits.svelte";
-    import Upload from "$lib/components/upload/Upload.svelte";
-    import { Trash } from "@lucide/svelte";
-    import { cn } from "$lib/utils";
+    import Bubble from "$lib/components/bubble/Bubble.svelte";
 
-    const useGetFolder = useGrpc(folderClient.getFolder);
-    const useDeleteFolder = useGrpc(folderClient.deleteFolder);
+    const pageState = page.state as
+        | {
+              folder?: Folder;
+              key?: CryptoKey;
+              token?: FolderToken;
+              pendingFiles?: File[];
+          }
+        | undefined;
 
-    const updatesStream = useStreamGrpc(folderClient.updates);
-
-    let filesCount = $state(0);
-    let filesList: FileList | null = $state(null);
-
-    let localLoading = $state(true);
-    let localError = $state<string | null>(null);
-
-    const isLoading = $derived(localLoading || activeFolder.isDecrypting);
-    const errorMessage = $derived(localError || activeFolder.error);
-
-    const routeFolderId = $derived(page.params.folder);
-
-    onMount(async () => {
-        const keyString = page.url.hash.replace("#", "");
-
-        if (
-            activeFolder.key !== null &&
-            activeFolder?.id?.value === routeFolderId &&
-            (await exportKey(activeFolder.key)) === keyString
-        ) {
-            localLoading = false;
-            return;
-        }
-
-        try {
-            localLoading = true;
-            const key = await importKeyFromUrlSafe(keyString);
-
-            await useGetFolder.call(
-                create(GetFolderRequestSchema, {
-                    id: create(FolderIdSchema, {
-                        value: routeFolderId,
-                    }),
-                })
-            );
-
-            if (useGetFolder.error instanceof ConnectError) {
-                if (useGetFolder.error.code === Code.NotFound) {
-                    localError = m["folders.errors.not-found"]();
-                } else if (useGetFolder.error.code === Code.InvalidArgument) {
-                    localError = m["folders.errors.incorrect-id"]();
-                } else {
-                    localError = useGetFolder.error.toString();
-                }
-            }
-
-            if (useGetFolder.data) {
-                await activeFolder.set(useGetFolder.data, key, undefined);
-
-                startListening().then();
-            }
-        } catch (e: any) {
-            localError = e.message;
-        } finally {
-            localLoading = false;
-        }
+    const folderId = $derived.by(() => {
+        let id = page.params.folder;
+        return create(FolderIdSchema, {
+            value: id,
+        });
     });
 
-    async function startListening() {
-        if (activeFolder.id === null) return;
+    let state:
+        | {
+              case: "loading";
+          }
+        | {
+              case: "error";
+              error: string;
+          }
+        | {
+              case: "ctx";
+              ctx: EncryptedFolderContext;
+          } = $state({ case: "loading" });
 
-        for await (const updateMsg of updatesStream.call({
-            id: activeFolder.id,
-        })) {
-            const update = updateMsg.update;
-            switch (update.case) {
-                case "folderDeleted": {
-                    activeFolder.clear();
-                    await goto(localizeHref("/"), { replaceState: true });
-                    break;
-                }
-                case "folderNameChanged": {
-                    break;
-                }
-                case "newFile": {
-                    if (filesList) {
-                        await filesList.addFile(update.value);
-                    }
-
-                    break;
-                }
-            }
-        }
-    }
-
-    async function deleteFolder() {
-        if (!activeFolder.ownedRef) {
-            return;
-        }
-
-        localLoading = true;
-
+    const loadFolder = async (folderId: FolderId): Promise<Folder | null> => {
         try {
-            let resp = await useDeleteFolder.call(
-                create(DeleteFolderRequestSchema, {
-                    ownedFolder: activeFolder.ownedRef,
-                })
-            );
-
-            if (resp) {
-                activeFolder.clear();
-                await goto(localizeHref("/"), { replaceState: true });
+            return await folderClient.getFolder({
+                id: folderId,
+            });
+        } catch (e: any) {
+            if (e instanceof ConnectError && e.code === Code.NotFound) {
+                return null;
             }
-        } finally {
-            localLoading = false;
+
+            throw e;
         }
-    }
+    };
 
-    let isConfirming = $state(false);
-    let canConfirm = $state(false);
-    let isSharing = $state(false);
+    const showError = (error: string) => {
+        state = {
+            case: "error",
+            error,
+        };
+    };
 
-    let cooldownTimer: number | null = null;
-    let totalTimer: number | null = null;
+    onMount(async () => {
+        try {
+            state = { case: "loading" };
 
-    function startCooldown() {
-        canConfirm = false;
-        if (cooldownTimer) clearTimeout(cooldownTimer);
+            let folder = pageState?.folder;
+            let key = pageState?.key;
+            let token = pageState?.token;
+            const pendingFiles = pageState?.pendingFiles ?? [];
 
-        cooldownTimer = setTimeout(() => {
-            canConfirm = true;
-        }, 500);
-    }
+            if (!folder) {
+                let loadedFolder = await loadFolder(folderId);
 
-    function handleDeleteClick() {
-        if (!isConfirming) {
-            isConfirming = true;
-            startCooldown();
+                if (!loadedFolder) {
+                    return showError(m["folder.errors.not_found"]());
+                }
 
-            totalTimer = setTimeout(() => {
-                resetState();
-            }, 2000);
-        } else {
-            if (!canConfirm) {
-                startCooldown();
+                folder = loadedFolder;
+            }
+
+            if (token) {
+                localStorage.setItem(
+                    `folder_token_${folder.id!!.value}`,
+                    token.value
+                );
             } else {
-                clearAllTimers();
-                resetState();
-                deleteFolder();
+                const storedTokenValue = localStorage.getItem(
+                    `folder_token_${folder.id!!.value}`
+                );
+                if (storedTokenValue) {
+                    token = create(FolderTokenSchema, {
+                        value: storedTokenValue,
+                    });
+                }
             }
+
+            if (!key) {
+                const hash = window.location.hash;
+                if (hash.startsWith("#")) {
+                    const keyStr = hash.slice(1);
+                    if (keyStr) {
+                        key = await importKeyFromUrlSafe(keyStr);
+                    }
+                }
+            }
+
+            if (!key) {
+                return showError(m["common.errors.key.missing"]());
+            }
+
+            state = {
+                case: "ctx",
+                ctx: new EncryptedFolderContext(
+                    folder,
+                    key,
+                    token,
+                    pendingFiles
+                ),
+            };
+        } catch (e: any) {
+            showError(m["common.errors.generic"]({ error: e }));
         }
-    }
-
-    function resetState() {
-        isConfirming = false;
-        canConfirm = false;
-        clearAllTimers();
-    }
-
-    function clearAllTimers() {
-        if (cooldownTimer) clearTimeout(cooldownTimer);
-        if (totalTimer) clearTimeout(totalTimer);
-        cooldownTimer = null;
-        totalTimer = null;
-    }
+    });
 </script>
 
-{#if isLoading}
-    <div class="flex justify-center">
-        <LoaderCircle class="h-auto w-8 animate-spin" />
-    </div>
-{:else if errorMessage}
-    <ErrorBanner error={errorMessage} />
-{:else if activeFolder.decrypted}
-    <div class="flex flex-col gap-3">
-        <div class="flex">
-            <div class="min-w-0 flex-1">
-                <FolderName />
-            </div>
-
-            <div class="flex items-center gap-1">
-                <button
-                    class="hover:bg-muted flex cursor-pointer items-center gap-2
-                        px-3 py-2"
-                    onclick={() => (isSharing = true)}
-                    title="Share folder"
-                >
-                    <Share2 class="h-4 w-4" />
-                </button>
-                {#if activeFolder.token}
-                    <button
-                        class={cn(
-                            "flex cursor-pointer items-center gap-2 px-3 py-2",
-                            isConfirming
-                                ? "bg-destructive text-primary-foreground"
-                                : "hover:bg-muted",
-                            isConfirming &&
-                                !canConfirm &&
-                                `bg-muted text-muted-foreground
-                                pointer-events-none`
-                        )}
-                        onclick={handleDeleteClick}
-                        disabled={isConfirming && !canConfirm}
-                    >
-                        {#if isConfirming}
-                            <Check class="h-4 w-4" />
-                            <span class="text-sm/2"
-                                >{m["common.actions.confirm"]()}</span
-                            >
-                        {:else}
-                            <Trash class="h-4 w-4" />
-                        {/if}
-                    </button>
-                {/if}
-            </div>
-        </div>
-        <div>
-            <FileList
-                bind:id={activeFolder.id!!}
-                bind:uploading={uploadStore.items}
-                bind:key={activeFolder.key!!}
-                bind:token={activeFolder.token}
-                bind:filesCount
-                bind:this={filesList}
-            />
-        </div>
-
-        {#if activeFolder.token && filesCount < (limitsStore.data?.maxFilesPerFolder ?? 0)}
-            <div class="flex justify-center">
-                <Upload />
-            </div>
-        {/if}
-    </div>
-
-    {#if isSharing}
-        <ShareModal onClose={() => (isSharing = false)} />
-    {/if}
+{#if state.case === "loading"}
+    <p class="text-red-500">Loading...</p>
+{:else if state.case === "error"}
+    <Bubble variant="error">
+        <span>
+            {state.error}
+        </span>
+    </Bubble>
+{:else}
+    <FolderOverview ctx={state.ctx} />
 {/if}

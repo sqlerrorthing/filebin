@@ -7,9 +7,9 @@ use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum Error {
-    #[error("serializer error: {0}")]
+    #[error("serializer bubble: {0}")]
     Serialize(#[from] postcard::Error),
-    #[error("pool error: {0}")]
+    #[error("pool bubble: {0}")]
     Pool(#[from] PoolError),
 }
 

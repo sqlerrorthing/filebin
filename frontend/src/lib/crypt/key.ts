@@ -7,27 +7,27 @@ import {
 } from "$lib/grpc/gen/folder/v1/encryption_pb";
 import { create } from "@bufbuild/protobuf";
 
-export async function generateCryptoKey(): Promise<CryptoKey> {
+export const generateCryptoKey = async (): Promise<CryptoKey> => {
     return await window.crypto.subtle.generateKey(
         { name: "AES-GCM", length: 256 },
         true,
         ["encrypt", "decrypt"]
     );
-}
+};
 
-export async function exportKey(key: CryptoKey): Promise<string> {
+export const exportKey = async (key: CryptoKey): Promise<string> => {
     return (await exportKeyToArray(key)).toBase64({
         alphabet: "base64url",
         omitPadding: true,
     });
-}
+};
 
-export async function exportKeyToArray(key: CryptoKey): Promise<Uint8Array> {
+export const exportKeyToArray = async (key: CryptoKey): Promise<Uint8Array> => {
     const exportedKey = await window.crypto.subtle.exportKey("raw", key);
     return new Uint8Array(exportedKey);
-}
+};
 
-export function bufferToBase64(buffer: ArrayBuffer | Uint8Array): string {
+export const bufferToBase64 = (buffer: ArrayBuffer | Uint8Array): string => {
     const bytes =
         buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
     let binary = "";
@@ -35,11 +35,11 @@ export function bufferToBase64(buffer: ArrayBuffer | Uint8Array): string {
         binary += String.fromCharCode(bytes[i]);
     }
     return btoa(binary);
-}
+};
 
-export async function importKeyFromUrlSafe(
+export const importKeyFromUrlSafe = async (
     urlSafeString: string
-): Promise<CryptoKey> {
+): Promise<CryptoKey> => {
     const bytes = Uint8Array.fromBase64(urlSafeString, {
         alphabet: "base64url",
     });
@@ -51,12 +51,12 @@ export async function importKeyFromUrlSafe(
         true,
         ["encrypt", "decrypt"]
     );
-}
+};
 
-export async function encryptBlob(
+export const encryptBlob = async (
     key: CryptoKey,
     array: Uint8Array<ArrayBuffer>
-): Promise<EncryptedBlobs> {
+): Promise<EncryptedBlobs> => {
     const iv = window.crypto.getRandomValues(new Uint8Array(12));
 
     const encryptedName = await window.crypto.subtle.encrypt(
@@ -88,16 +88,16 @@ export async function encryptBlob(
         meta: encryptedVault,
         data: ciphertext,
     });
-}
+};
 
-function base64ToBuffer(base64: string): Uint8Array {
+const base64ToBuffer = (base64: string): Uint8Array => {
     return Uint8Array.fromBase64(base64, { alphabet: "base64" });
-}
+};
 
-export async function decryptBlob(
+export const decryptBlob = async (
     key: CryptoKey,
     encryptedBlob: EncryptedBlobs
-): Promise<Uint8Array> {
+): Promise<Uint8Array> => {
     if (!encryptedBlob.meta) {
         throw new Error("Missing encrypted blob metadata");
     }
@@ -125,12 +125,12 @@ export async function decryptBlob(
     );
 
     return new Uint8Array(decryptedBuffer);
-}
+};
 
-export async function decryptBlobAsString(
+export const decryptBlobAsString = async (
     key: CryptoKey,
     encryptedBlob: EncryptedBlobs
-): Promise<string> {
+): Promise<string> => {
     const bytes = await decryptBlob(key, encryptedBlob);
     return new TextDecoder().decode(bytes);
-}
+};

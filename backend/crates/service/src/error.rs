@@ -42,13 +42,13 @@ dynamic_error!(
     DynamicError: ();
 );
 
-/// The error can be either business or internal
+/// The bubble can be either business or internal
 #[derive(Debug, Error)]
 pub enum ServiceError<B, I> {
     #[error("{0}")]
     Business(#[source] B),
 
-    #[error("internal service error: {0}")]
+    #[error("internal service bubble: {0}")]
     Internal(#[from] I),
 }
 

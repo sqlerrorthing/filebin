@@ -41,9 +41,9 @@ where
     S: Storage,
     FS: FoldersService,
 {
-    #[error("storage error: {0}")]
+    #[error("storage bubble: {0}")]
     Storage(#[source] S::Error),
-    #[error("folders service error: {0}")]
+    #[error("folders service bubble: {0}")]
     Folders(#[source] FS::Error),
 }
 

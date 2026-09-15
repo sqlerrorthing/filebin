@@ -135,12 +135,12 @@ pub trait IntoInternal: Error {
 
 impl<E: Error> IntoInternal for E {
     fn into_internal(self) -> Status {
-        error!("Server internal error: {self}");
+        error!("Server internal bubble: {self}");
 
         Status::internal(if cfg!(debug_assertions) {
-            format!("server error: {self}")
+            format!("server bubble: {self}")
         } else {
-            "server error".to_string()
+            "server bubble".to_string()
         })
     }
 }
