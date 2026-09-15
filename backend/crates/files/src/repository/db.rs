@@ -3,13 +3,13 @@ use byte_unit::Byte;
 use domain::{models, persistence};
 use futures_util::FutureExt;
 use sea_orm::ExprTrait;
+use sea_orm::prelude::BigDecimal;
 use sea_orm::sea_query::Expr;
+use sea_orm::sea_query::prelude::bigdecimal::ToPrimitive;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait, QueryFilter,
     QuerySelect, Set,
 };
-use sea_orm::prelude::BigDecimal;
-use sea_orm::sea_query::prelude::bigdecimal::ToPrimitive;
 
 impl FilesRepository for DatabaseConnection {
     type Error = sea_orm::DbErr;
