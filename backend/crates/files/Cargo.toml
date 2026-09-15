@@ -12,7 +12,7 @@ aws-sdk-s3.workspace = true
 thiserror.workspace = true
 tracing.workspace = true
 id-generator.path = "../id-generator"
-sea-orm.workspace = true
+sea-orm = { workspace = true, features = ["with-bigdecimal"] }
 derive-new.workspace = true
 tokio-util = { workspace = true, features = ["futures-io"] }
 aws-smithy-types = "1.5.0"
