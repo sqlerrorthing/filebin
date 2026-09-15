@@ -8,6 +8,8 @@ use sea_orm::{
     ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait, QueryFilter,
     QuerySelect, Set,
 };
+use sea_orm::prelude::BigDecimal;
+use sea_orm::sea_query::prelude::bigdecimal::ToPrimitive;
 
 impl FilesRepository for DatabaseConnection {
     type Error = sea_orm::DbErr;
@@ -30,11 +32,11 @@ impl FilesRepository for DatabaseConnection {
                 Expr::col(persistence::files::Column::FileSize).sum(),
                 "files_size",
             )
-            .into_tuple::<Option<i64>>()
+            .into_tuple::<Option<BigDecimal>>()
             .one(self)
             .await?
             .flatten()
-            .and_then(Byte::from_i64))
+            .and_then(|d| Byte::from_i64(d.to_i64().unwrap())))
     }
 
     async fn delete_files_from_folder(
