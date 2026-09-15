@@ -24,6 +24,41 @@
             "decrypt": "Ошибка расшифровки"
         }
     },
+    "folder": {
+        "default-name": "Папка",
+        "created_at": "Создана: {date}",
+        "empty": "Эта папка пуста",
+        "uploads": "Загрузки ({count})",
+        "table": {
+            "name": "Название",
+            "size": "Размер",
+            "date": "Дата",
+            "actions": "Действия"
+        },
+        "actions": {
+            "upload": "Загрузить файлы",
+            "download": "Скачать файл",
+            "delete": "Удалить файл",
+            "retry": "Повторить",
+            "cancel": "Отменить загрузку",
+            "dismiss": "Закрыть"
+        },
+        "status": {
+            "loading": "Загрузка файлов...",
+            "uploading": "Загрузка...",
+            "completed": "Завершено",
+            "cancelled": "Отменено",
+            "just_now": "Только что"
+        },
+        "errors": {
+            "not-found": "Папка не найдена",
+            "load-failed": "Не удалось загрузить файлы",
+            "rename-failed": "Не удалось переименовать папку",
+            "delete-failed": "Не удалось удалить файл",
+            "download-failed": "Не удалось скачать файл",
+            "upload-failed": "Ошибка загрузки"
+        }
+    },
     "folders": {
         "default-name": "Папка",
         "errors": {

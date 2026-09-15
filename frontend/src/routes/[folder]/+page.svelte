@@ -2,8 +2,8 @@
     import { page } from "$app/state";
     import {
         setEncryptedFolderContext,
-        EncryptedFolderContext,
     } from "$lib/context/folder.svelte";
+    import { FolderContext as EncryptedFolderContext } from "$lib/context/folder.svelte";
     import { create } from "@bufbuild/protobuf";
     import {
         type Folder,

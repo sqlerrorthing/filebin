@@ -28,8 +28,37 @@
     },
     "folder": {
         "default_name": "Folder",
+        "created_at": "Created: {date}",
+        "empty": "This folder is empty",
+        "uploads": "Uploads ({count})",
+        "table": {
+            "name": "Name",
+            "size": "Size",
+            "date": "Date",
+            "actions": "Actions"
+        },
+        "actions": {
+            "upload": "Upload files",
+            "download": "Download file",
+            "delete": "Delete file",
+            "retry": "Retry",
+            "cancel": "Cancel upload",
+            "dismiss": "Dismiss"
+        },
+        "status": {
+            "loading": "Loading files...",
+            "uploading": "Uploading...",
+            "completed": "Completed",
+            "cancelled": "Cancelled",
+            "just_now": "Just now"
+        },
         "errors": {
-            "not_found": "Folder not found"
+            "not_found": "Folder not found",
+            "load_failed": "Failed to load files",
+            "rename_failed": "Failed to rename folder",
+            "delete_failed": "Failed to delete file",
+            "download_failed": "Failed to download file",
+            "upload_failed": "Upload failed"
         }
     },
     "index": {
