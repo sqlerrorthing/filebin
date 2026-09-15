@@ -17,7 +17,8 @@
     import { onMount } from "svelte";
     import { folderClient } from "$lib/grpc";
     import * as m from "$lib/paraglide/messages";
-    import { Code, type ConnectError } from "@connectrpc/connect";
+    import { Code, ConnectError } from "@connectrpc/connect";
+    import Bubble from "$lib/components/bubble/Bubble.svelte";
 
     const pageState = page.state as
         | {
@@ -53,8 +54,8 @@
             return await folderClient.getFolder({
                 id: folderId,
             });
-        } catch (e: ConnectError) {
-            if (e.code === Code.NotFound) {
+        } catch (e: any) {
+            if (e instanceof ConnectError && e.code === Code.NotFound) {
                 return null;
             }
 
@@ -133,10 +134,14 @@
     });
 </script>
 
-{#if state.case === "loading"}
-    <p>Loading...</p>
-{:else if state.case === "error"}
-    <p>Init error: {state.error}</p>
-{:else}
-    <p>{JSON.stringify(state.ctx)}</p>
-{/if}
+<!--{#if state.case === "loading"}-->
+<!--    <p>Loading...</p>-->
+<!--{:else if state.case === "error"}-->
+
+<!--{:else}-->
+
+<!--{/if}-->
+
+<Bubble variant="error">
+    asdas
+</Bubble>

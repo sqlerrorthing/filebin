@@ -51,13 +51,13 @@ pub struct BasicUploadService<FilesS, FoldersS, TS, US, SS> {
 
 #[derive(Debug, Error)]
 pub enum Error<FilesS: FilesService, FoldersS: FoldersService, TS: TokenService, SS: Storage> {
-    #[error("files service error: {0}")]
+    #[error("files service bubble: {0}")]
     Files(#[source] FilesS::Error),
-    #[error("folders service error: {0}")]
+    #[error("folders service bubble: {0}")]
     Folders(#[source] FoldersS::Error),
-    #[error("token service error: {0}")]
+    #[error("token service bubble: {0}")]
     Token(#[source] TS::Error),
-    #[error("storage error: {0}")]
+    #[error("storage bubble: {0}")]
     Storage(#[source] SS::Error),
 }
 

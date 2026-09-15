@@ -17,9 +17,9 @@ use thiserror::Error;
 pub enum StreamUploadFileError<E> {
     #[error("the file is too large")]
     FileTooLarge,
-    #[error("initiate upload error: {0}")]
+    #[error("initiate upload bubble: {0}")]
     InitiateUploadError(#[from] InitiateUploadError),
-    #[error("stream error: {0}")]
+    #[error("stream bubble: {0}")]
     Stream(#[source] E),
 }
 
