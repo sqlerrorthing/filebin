@@ -21,11 +21,11 @@
 </script>
 
 <div
-        {...restProps}
-        class={cn(`
-        @container h-full w-full rounded-xl border border-solid p-4 relative flex items-start`,
-        variant === "error" &&
-            "bg-destructive/20 border-destructive",
+    {...restProps}
+    class={cn(
+        ` @container relative flex h-full w-full items-start rounded-xl border
+        border-solid p-4`,
+        variant === "error" && "bg-destructive/20 border-destructive",
         className
     )}
 >
