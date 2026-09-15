@@ -1,10 +1,10 @@
 <script lang="ts">
-    import {page} from "$app/state";
+    import { page } from "$app/state";
     import {
         setEncryptedFolderContext,
         EncryptedFolderContext,
     } from "$lib/context/folder.svelte";
-    import {create} from "@bufbuild/protobuf";
+    import { create } from "@bufbuild/protobuf";
     import {
         type Folder,
         type FolderId,
@@ -12,21 +12,21 @@
         type FolderToken,
         FolderTokenSchema,
     } from "$lib/grpc/gen/folder/v1/common_pb";
-    import {importKeyFromUrlSafe} from "$lib/crypt/key";
+    import { importKeyFromUrlSafe } from "$lib/crypt/key";
     import FolderOverview from "./FolderOverview.svelte";
-    import {onMount} from "svelte";
-    import {folderClient} from "$lib/grpc";
+    import { onMount } from "svelte";
+    import { folderClient } from "$lib/grpc";
     import * as m from "$lib/paraglide/messages";
-    import {Code, ConnectError} from "@connectrpc/connect";
+    import { Code, ConnectError } from "@connectrpc/connect";
     import Bubble from "$lib/components/bubble/Bubble.svelte";
 
     const pageState = page.state as
         | {
-        folder?: Folder;
-        key?: CryptoKey;
-        token?: FolderToken;
-        pendingFiles?: File[];
-    }
+              folder?: Folder;
+              key?: CryptoKey;
+              token?: FolderToken;
+              pendingFiles?: File[];
+          }
         | undefined;
 
     const folderId = $derived.by(() => {
@@ -38,16 +38,16 @@
 
     let state:
         | {
-        case: "loading";
-    }
+              case: "loading";
+          }
         | {
-        case: "error";
-        error: string;
-    }
+              case: "error";
+              error: string;
+          }
         | {
-        case: "ctx";
-        ctx: EncryptedFolderContext;
-    } = $state({case: "loading"});
+              case: "ctx";
+              ctx: EncryptedFolderContext;
+          } = $state({ case: "loading" });
 
     const loadFolder = async (folderId: FolderId): Promise<Folder | null> => {
         try {
@@ -72,7 +72,7 @@
 
     onMount(async () => {
         try {
-            state = {case: "loading"};
+            state = { case: "loading" };
 
             let folder = pageState?.folder;
             let key = pageState?.key;
@@ -129,7 +129,7 @@
                 ),
             };
         } catch (e: any) {
-            showError(m["common.errors.generic"]({error: e}));
+            showError(m["common.errors.generic"]({ error: e }));
         }
     });
 </script>
@@ -145,4 +145,3 @@
 {:else}
     <FolderOverview ctx={state.ctx} />
 {/if}
-

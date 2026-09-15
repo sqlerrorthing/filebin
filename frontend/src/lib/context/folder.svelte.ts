@@ -29,4 +29,3 @@ const EFC = Symbol("EFC");
 export const setEncryptedFolderContext = (ctx: EncryptedFolderContext) => {
     return setContext(EFC, ctx);
 };
-
