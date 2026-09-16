@@ -17,9 +17,6 @@ updates:
       npm-dependencies:
         patterns:
           - "*"
-    manifest-files:
-      - "package.json"
-      - "pnpm-workspace.yaml"
 
   - package-ecosystem: "github-actions"
     directory: "/"
