@@ -27,7 +27,7 @@
         md:px-6"
 >
     <a href={localizeHref("/")} class="flex items-center gap-2">
-        <div class="bg-background flex size-9 items-center justify-center">
+        <div class="flex size-9 items-center justify-center">
             <img src={icon} alt="" />
         </div>
 
