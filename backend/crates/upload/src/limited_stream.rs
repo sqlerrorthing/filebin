@@ -28,7 +28,7 @@ impl<S> LimitedStream<S> {
 pub enum LimitStreamError<E> {
     #[error("the stream limits is exceeds")]
     LimitExceeds,
-    #[error("stream error: {0}")]
+    #[error("stream bubble: {0}")]
     Stream(#[source] E),
 }
 

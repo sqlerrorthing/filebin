@@ -38,34 +38,34 @@ pub struct S3FilesStorage {
 
 #[derive(Debug, Error)]
 pub enum Error {
-    #[error("create multipart upload error: {0:?}")]
+    #[error("create multipart upload bubble: {0:?}")]
     CreateMultipartUpload(#[from] SdkError<CreateMultipartUploadError>),
 
-    #[error("upload multipart part error: {0}")]
+    #[error("upload multipart part bubble: {0}")]
     UploadPart(#[from] SdkError<UploadPartError>),
 
-    #[error("complete multipart upload error: {0:?}")]
+    #[error("complete multipart upload bubble: {0:?}")]
     CompleteMultipartUpload(#[from] SdkError<CompleteMultipartUploadError>),
 
     #[error("missing `uplodad_id` after create multipart upload")]
     MissingUploadId,
 
-    #[error("build error: {0}")]
+    #[error("build bubble: {0}")]
     Build(#[from] BuildError),
 
-    #[error("delete objects error: {0}")]
+    #[error("delete objects bubble: {0}")]
     DeleteObjects(#[from] SdkError<DeleteObjectsError>),
 
-    #[error("delete object error: {0}")]
+    #[error("delete object bubble: {0}")]
     DeleteObject(#[from] SdkError<DeleteObjectError>),
 
-    #[error("get object error: {0}")]
+    #[error("get object bubble: {0}")]
     GetObject(#[from] SdkError<GetObjectError>),
 
     #[error("the multipart handler dropped")]
     MultipartHandlerDropped,
 
-    #[error("steram error: {0}")]
+    #[error("steram bubble: {0}")]
     Stream(#[from] byte_stream::error::Error),
 }
 
@@ -129,7 +129,7 @@ impl Drop for S3MultipartUploadHandle {
                     .send()
                     .await
                 {
-                    error!("Abort multipart upload caught an error: {e}")
+                    error!("Abort multipart upload caught an bubble: {e}")
                 }
             });
         }

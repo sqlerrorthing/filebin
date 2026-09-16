@@ -18,7 +18,7 @@ use syn::{Error, ItemTrait, parse_macro_input};
 /// This won't add this to trait bounds if provided
 ///
 /// * Use `#[result]` to wrap return value into `Result<..., Self::Error>`
-/// * Use `#[result(Err)` where `Err` is your business error,
+/// * Use `#[result(Err)` where `Err` is your business bubble,
 ///   and it will wrap it in `Result<..., ServiceError<Err, Self::Error>>`
 #[proc_macro_attribute]
 pub fn service(attr: TokenStream, item: TokenStream) -> TokenStream {

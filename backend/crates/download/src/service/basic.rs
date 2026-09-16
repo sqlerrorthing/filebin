@@ -21,9 +21,9 @@ where
     FilesS: FilesService,
     FoldersS: FoldersService,
 {
-    #[error("files error: {0}")]
+    #[error("files bubble: {0}")]
     Files(#[source] FilesS::Error),
-    #[error("folders error: {0}")]
+    #[error("folders bubble: {0}")]
     Folders(#[source] FoldersS::Error),
 }
 

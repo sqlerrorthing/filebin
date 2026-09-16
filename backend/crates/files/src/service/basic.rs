@@ -26,9 +26,9 @@ pub struct BasicFilesService<FS, FR, IGS, US> {
 
 #[derive(Debug, Error)]
 pub enum Error<FS: FilesStorage, FR: FilesRepository> {
-    #[error("files storage error: {0}")]
+    #[error("files storage bubble: {0}")]
     Storage(#[source] FS::Error),
-    #[error("files repository error: {0}")]
+    #[error("files repository bubble: {0}")]
     Repository(#[source] FR::Error),
 }
 
