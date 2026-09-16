@@ -1,0 +1,27 @@
+version: 2
+updates:
+  - package-ecosystem: cargo
+    directory: "/backend"
+    schedule:
+      interval: weekly
+    groups:
+      cargo-dependencies:
+        patterns:
+          - "*"
+
+  - package-ecosystem: npm
+    directory: "/frontend"
+    schedule:
+      interval: weekly
+    groups:
+      npm-dependencies:
+        patterns:
+          - "*"
+    manifest-files:
+      - "package.json"
+      - "pnpm-workspace.yaml"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: weekly
