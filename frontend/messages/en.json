@@ -29,6 +29,7 @@
     "folder": {
         "default_name": "Folder",
         "errors": {
+            "cannot_decrypt_name": "Error while decrypting folder name: {error}",
             "not_found": "Folder not found"
         }
     },

@@ -4,6 +4,7 @@ import type {
     FolderToken,
 } from "$lib/grpc/gen/folder/v1/common_pb";
 import {folderService} from "$lib/services/folder.service";
+import * as m from "$lib/paraglide/messages";
 
 export class EncryptedFolderContext {
     folder: Folder = $state()!;
@@ -54,7 +55,7 @@ export class EncryptedFolderContext {
                 )
             }
         } catch (e: any) {
-            return this.showDecryptionError(e.toString())
+            return this.showDecryptionError(m["folder.errors.cannot_decrypt_name"]({error: e.toString()}))
         }
     }
 }
