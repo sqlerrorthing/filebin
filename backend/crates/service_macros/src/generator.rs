@@ -586,7 +586,7 @@ impl ParsedGeneratorContext {
 
 macro_rules! erase {
     ($i:ident, |$x:ident| => $block:block) => {
-        if let Type::Path(TypePath { qself, path }) = $i
+        if let Type::Path(TypePath { qself, path, .. }) = $i
             && qself.is_none()
             && path.segments.first().is_some_and(|s| s.ident == "Self")
             && let Some($x) = path.segments.get(1)
@@ -636,7 +636,7 @@ impl VisitMut for RetTypeDynSignatureEraser<'_> {
 }
 
 fn extract_ok_ty(ty: &Type) -> Option<Type> {
-    if let Type::Path(TypePath { qself, path }) = ty
+    if let Type::Path(TypePath { qself, path, .. }) = ty
         && qself.is_none()
         && path.segments.last().is_some_and(|s| s.ident == "Result")
         && let Some(PathArguments::AngleBracketed(args)) =
@@ -653,7 +653,7 @@ fn transform_type_expr(
     expr: TokenStream,
     assoc_types: &HashMap<Ident, ParsedAssocType>,
 ) -> TokenStream {
-    if let Type::Path(TypePath { qself, path }) = ty
+    if let Type::Path(TypePath { qself, path, .. }) = ty
         && qself.is_none()
         && path.segments.first().is_some_and(|s| s.ident == "Self")
         && let Some(segment) = path.segments.get(1)
@@ -732,7 +732,7 @@ fn uses_self_assoc(ty: &Type, assoc_types: &HashMap<Ident, ParsedAssocType>) -> 
 }
 
 fn is_direct_self_assoc(ty: &Type, assoc_types: &HashMap<Ident, ParsedAssocType>) -> bool {
-    if let Type::Path(TypePath { qself, path }) = ty
+    if let Type::Path(TypePath { qself, path, .. }) = ty
         && qself.is_none()
         && path.segments.first().is_some_and(|s| s.ident == "Self")
         && let Some(segment) = path.segments.get(1)
@@ -771,7 +771,7 @@ fn find_used_assoc_type(ty: &Type, assoc_types: &HashMap<Ident, ParsedAssocType>
 fn requires_map(ty: &Type, assoc_types: &HashMap<Ident, ParsedAssocType>) -> bool {
     match ty {
         Type::Tuple(_) => false,
-        Type::Path(TypePath { qself, path }) if qself.is_none() => {
+        Type::Path(TypePath { qself, path, .. }) if qself.is_none() => {
             if path.segments.last().is_some_and(|s| s.ident == "Result") {
                 return false;
             }
