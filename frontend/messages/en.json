@@ -8,6 +8,10 @@
         "index": {
             "title": "Main page",
             "description": "Free and fast service for file share."
+        },
+        "folder": {
+            "title": "An encrypted folder {id}",
+            "description": "See encrypted folder {id}"
         }
     },
     "common": {
@@ -29,7 +33,7 @@
     "folder": {
         "default_name": "Folder",
         "errors": {
-            "cannot_decrypt_name": "Error while decrypting folder name: {error}",
+            "cannot_decrypt_folder": "Error while decrypting folder: {error}",
             "not_found": "Folder not found"
         }
     },

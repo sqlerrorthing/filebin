@@ -6,6 +6,14 @@
     import { MoveRight } from "@lucide/svelte";
 </script>
 
+<svelte:head>
+    <title>{m["page.index.title"]()} — Filebin</title>
+    <meta name="description" content={m["page.index.description"]()} />
+
+    <meta property="og:title" content={m["page.index.title"]()} />
+    <meta property="og:description" content={m["page.index.description"]()} />
+</svelte:head>
+
 <Container class="md:my-auto">
     <div
         class="flex w-full flex-col gap-4 md:flex-row md:items-center

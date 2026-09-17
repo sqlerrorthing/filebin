@@ -1,22 +1,15 @@
 <script lang="ts">
     import "./layout.css";
-    import * as m from "$lib/paraglide/messages";
-    import favicon from "$lib/assets/favicon.ico";
     import { ModeWatcher } from "mode-watcher";
     import Header from "$lib/components/header/Header.svelte";
     import { Toaster } from "svelte-sonner";
+    import favicon from "$lib/assets/favicon.ico";
 
     let { children } = $props();
 </script>
 
 <svelte:head>
-    <title>{m["page.index.title"]()} — Filebin</title>
-    <meta name="description" content={m["page.index.description"]()} />
-
-    <meta property="og:title" content={m["page.index.title"]()} />
-    <meta property="og:description" content={m["page.index.description"]()} />
     <meta property="og:type" content="website" />
-
     <link rel="icon" href={favicon} />
 </svelte:head>
 

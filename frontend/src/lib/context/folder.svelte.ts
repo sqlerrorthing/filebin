@@ -1,4 +1,4 @@
-import {setContext} from "svelte";
+import {getContext, setContext} from "svelte";
 import type {
     Folder,
     FolderToken,
@@ -55,7 +55,7 @@ export class EncryptedFolderContext {
                 )
             }
         } catch (e: any) {
-            return this.showDecryptionError(m["folder.errors.cannot_decrypt_name"]({error: e.toString()}))
+            return this.showDecryptionError(m["folder.errors.cannot_decrypt_folder"]({error: e.toString()}))
         }
     }
 }
@@ -70,6 +70,10 @@ export class DecryptedFolderContext {
 
 const EFC = Symbol("EFC");
 
-export const setEncryptedFolderContext = (ctx: EncryptedFolderContext) => {
+export const setEncryptedFolderContext = (ctx: () => EncryptedFolderContext) => {
     return setContext(EFC, ctx);
+};
+
+export const getEncryptedFolderContext = (): (() => EncryptedFolderContext) => {
+    return getContext<() => EncryptedFolderContext>(EFC);
 };

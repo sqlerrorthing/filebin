@@ -19,6 +19,7 @@
     import * as m from "$lib/paraglide/messages";
     import { Code, ConnectError } from "@connectrpc/connect";
     import Bubble from "$lib/components/bubble/Bubble.svelte";
+    import favicon from "$lib/assets/favicon.ico";
 
     const pageState = page.state as
         | {
@@ -34,6 +35,14 @@
         return create(FolderIdSchema, {
             value: id,
         });
+    });
+
+    const title = $derived.by(() => {
+        return m["page.folder.title"]({id: folderId.value});
+    });
+
+    const description = $derived.by(() => {
+        return m["page.folder.description"]({id: folderId.value});
     });
 
     let state:
@@ -133,6 +142,14 @@
     });
 </script>
 
+<svelte:head>
+    <title>{title} — Filebin</title>
+    <meta name="description" content={description} />
+
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+</svelte:head>
+
 {#if state.case === "loading"}
     <p class="text-red-500">Loading...</p>
 {:else if state.case === "error"}
@@ -142,5 +159,5 @@
         </span>
     </Bubble>
 {:else}
-    <FolderOverview ctx={state.ctx} />
+    <FolderOverview bind:ctx={state.ctx} />
 {/if}
