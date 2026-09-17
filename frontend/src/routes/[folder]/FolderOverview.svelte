@@ -2,9 +2,15 @@
     import Container from "$lib/components/container/Container.svelte";
     import type { EncryptedFolderContext } from "$lib/context/folder.svelte";
 
-    let ctx: {
+    let {ctx}: {
         ctx: EncryptedFolderContext;
     } = $props();
 </script>
 
-<Container></Container>
+<Container>
+    {#if ctx.decrypted.state === "decrypted"}
+        <p>
+            {ctx.decrypted.ctx.name}
+        </p>
+    {/if}
+</Container>

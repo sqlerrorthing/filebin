@@ -125,7 +125,6 @@
                     folder,
                     key,
                     token,
-                    pendingFiles
                 ),
             };
         } catch (e: any) {
