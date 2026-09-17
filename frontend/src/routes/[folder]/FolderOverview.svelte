@@ -14,10 +14,16 @@
     setEncryptedFolderContext(() => ctx);
 </script>
 
+<svelte:head>
+    {#if ctx.decrypted.state === "decrypted"}
+        <title>{ctx.decrypted.ctx.name} — Filebin</title>
+    {/if}
+</svelte:head>
+
 <Container>
     {#if ctx.decrypted.state === "decrypted"}
         <div>
-            <FolderHeader />
+            <FolderHeader/>
         </div>
     {:else if ctx.decrypted.state === "error"}
         <Bubble variant="error">
