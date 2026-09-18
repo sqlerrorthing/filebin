@@ -4,6 +4,7 @@
     import Bubble from "$lib/components/bubble/Bubble.svelte";
     import FolderHeader from "./FolderHeader.svelte";
     import {onMount} from "svelte";
+    import Share from "./Share.svelte";
 
     let {
         ctx = $bindable()
@@ -22,8 +23,14 @@
 
 <Container>
     {#if ctx.decrypted.state === "decrypted"}
-        <div>
-            <FolderHeader/>
+        <div class="flex gap-2">
+            <div class="flex-1">
+                <FolderHeader/>
+            </div>
+
+            <div>
+                <Share />
+            </div>
         </div>
     {:else if ctx.decrypted.state === "error"}
         <Bubble variant="error">

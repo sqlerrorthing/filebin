@@ -20,7 +20,8 @@
             "confirm": "Confirm",
             "join": "Join",
             "upload": "Upload",
-            "copy-code": "Copy code"
+            "copy-code": "Copy code",
+            "copied": "Copied"
         },
         "errors": {
             "generic": "Error: {error}",
@@ -32,9 +33,15 @@
     },
     "folder": {
         "default_name": "Folder",
+        "files_count": "{count} files",
         "errors": {
             "cannot_decrypt_folder": "Error while decrypting folder: {error}",
             "not_found": "Folder not found"
+        },
+        "share": {
+            "share": {
+                "code": "Code of this folder"
+            }
         }
     },
     "index": {

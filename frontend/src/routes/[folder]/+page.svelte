@@ -19,7 +19,6 @@
     import * as m from "$lib/paraglide/messages";
     import { Code, ConnectError } from "@connectrpc/connect";
     import Bubble from "$lib/components/bubble/Bubble.svelte";
-    import favicon from "$lib/assets/favicon.ico";
 
     const pageState = page.state as
         | {
