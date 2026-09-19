@@ -58,12 +58,19 @@
 
         "download": {
             "all_as_zip": "Download all as .zip",
-            "as_zip": "Download all in {path} as .zip"
+            "as_zip": "Download all in {path} as .zip",
+            "preparing": "Preparing files...",
+            "downloading": "Downloading {name} ({current}/{total})",
+            "compressing": "Compressing into ZIP...",
+            "compressing_percent": "Compressing... {percent}%",
+            "cancel": "Cancel"
         },
 
         "delete": {
             "folder": "Delete folder",
-            "confirm_folder": "Are you sure to delete this folder?"
+            "confirm_folder": "Are you sure to delete this folder?",
+            "action": "Delete",
+            "confirm_prompt": "Are you sure you want to delete this folder?"
         }
     },
     "index": {

@@ -2,7 +2,6 @@ import type {FileId} from "$lib/grpc/gen/folder/v1/common_pb";
 import type {FolderContext} from "$lib/context/folder.svelte";
 import {getContext, setContext} from "svelte";
 import {filesService} from "$lib/services/files.service";
-import JSZip from "jszip";
 
 export type FilesState =
     | { case: "loading" }
@@ -178,53 +177,16 @@ export class FilesContext {
         const signal = this.zipAbortController.signal;
 
         try {
-            const zip = new JSZip();
-            let current = 0;
-            const total = filesToZip.length;
-
-            this.zipProgress = { current, total, status: "Подготовка файлов..." };
-
-            for (const file of filesToZip) {
-                if (signal.aborted) {
-                    throw new Error("Aborted");
-                }
-
-                this.zipProgress = {
-                    current: ++current,
-                    total,
-                    status: `Загрузка ${file.name} (${current}/${total})`,
-                };
-
-                const decrypted = await filesService.download(folderId, file.id, key);
-                const relativePath = file.path.slice(prefix.length);
-                zip.file(relativePath, new Uint8Array(decrypted));
-            }
-
-            if (signal.aborted) {
-                throw new Error("Aborted");
-            }
-
-            this.zipProgress = { current: total, total, status: "Сжатие в ZIP..." };
-
-            const content = await zip.generateAsync(
-                {
-                    type: "blob",
-                    compression: "DEFLATE",
-                    compressionOptions: { level: 6 }
+            const blob = await filesService.downloadZip(
+                folderId,
+                key,
+                filesToZip,
+                prefix,
+                (progress) => {
+                    this.zipProgress = progress;
                 },
-                (metadata) => {
-                    if (signal.aborted) return;
-                    this.zipProgress = {
-                        current: total,
-                        total,
-                        status: `Сжатие... ${Math.round(metadata.percent)}%`,
-                    };
-                }
+                signal
             );
-
-            if (signal.aborted) {
-                throw new Error("Aborted");
-            }
 
             const folderName = this.currentPath.length
                 ? this.currentPath[this.currentPath.length - 1]
@@ -232,7 +194,7 @@ export class FilesContext {
             
             const zipFileName = `${folderName}.zip`;
 
-            const url = window.URL.createObjectURL(content);
+            const url = window.URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
             a.download = zipFileName;

@@ -23,6 +23,7 @@
         "@sveltejs/kit": "^2.63.0",
         "@sveltejs/vite-plugin-svelte": "^7.1.2",
         "@tailwindcss/vite": "^4.3.0",
+        "@types/node": "^26.6.1",
         "prettier": "^3.9.6",
         "prettier-plugin-classnames": "^0.10.4",
         "prettier-plugin-merge": "^0.10.1",

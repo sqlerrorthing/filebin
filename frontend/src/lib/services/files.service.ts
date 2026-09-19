@@ -5,6 +5,8 @@ import type {FileItem} from "$lib/context/files.svelte";
 import {fileClient} from "$lib/grpc";
 import {create} from "@bufbuild/protobuf";
 import {EncryptedBlobsSchema} from "$lib/grpc/gen/folder/v1/encryption_pb";
+import JSZip from "jszip";
+import * as m from "$lib/paraglide/messages";
 
 type DecryptedFileMetadata = {
     path: string;
@@ -89,6 +91,72 @@ export const filesService = {
         });
 
         return await decryptBlob(key, encryptedBlob);
+    },
+
+    async downloadZip(
+        folderId: FolderId,
+        key: CryptoKey,
+        filesToZip: FileItem[],
+        prefix: string,
+        onProgress?: (progress: { current: number; total: number; status: string }) => void,
+        signal?: AbortSignal
+    ): Promise<Blob> {
+        const zip = new JSZip();
+        let current = 0;
+        const total = filesToZip.length;
+
+        onProgress?.({ current, total, status: m["folder.download.preparing"]() });
+
+        for (const file of filesToZip) {
+            if (signal?.aborted) {
+                throw new Error("Aborted");
+            }
+
+            onProgress?.({
+                current: ++current,
+                total,
+                status: m["folder.download.downloading"]({
+                    name: file.name,
+                    current: current.toString(),
+                    total: total.toString(),
+                }),
+            });
+
+            const decrypted = await this.download(folderId, file.id, key);
+            const relativePath = file.path.slice(prefix.length);
+            zip.file(relativePath, new Uint8Array(decrypted));
+        }
+
+        if (signal?.aborted) {
+            throw new Error("Aborted");
+        }
+
+        onProgress?.({ current: total, total, status: m["folder.download.compressing"]() });
+
+        const content = await zip.generateAsync(
+            {
+                type: "blob",
+                compression: "DEFLATE",
+                compressionOptions: { level: 6 }
+            },
+            (metadata) => {
+                if (signal?.aborted) return;
+                const pct = Math.round(metadata.percent);
+                onProgress?.({
+                    current: total,
+                    total,
+                    status: m["folder.download.compressing_percent"]({
+                        percent: pct.toString(),
+                    }),
+                });
+            }
+        );
+
+        if (signal?.aborted) {
+            throw new Error("Aborted");
+        }
+
+        return content;
     },
 
     async delete(folderId: FolderId, token: FolderToken, fileId: FileId): Promise<void> {

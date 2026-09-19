@@ -1,6 +1,6 @@
 <script lang="ts">
     import {getFilesContext} from "$lib/context/files.svelte";
-    import {ChevronRight, Home} from "@lucide/svelte";
+    import {ChevronRight, Home, Slash} from "@lucide/svelte";
 
     const ctx = getFilesContext();
 
@@ -24,7 +24,7 @@
         </button>
 
         {#each path as segment, index}
-            <ChevronRight class="h-3.5 w-3.5 text-muted-foreground/60" />
+            <Slash class="h-3.5 w-3.5 text-muted-foreground/60 rotate-[340deg]" />
             {#if index === path.length - 1}
                 <span class="font-medium text-foreground">{segment}</span>
             {:else}

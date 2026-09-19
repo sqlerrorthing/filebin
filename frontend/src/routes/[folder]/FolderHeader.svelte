@@ -28,8 +28,7 @@
         if (filesCtx.isRoot) {
             return m["folder.download.all_as_zip"]();
         }
-
-        return m["folder.download.as_zip"]({path: filesCtx.path.join("/")});
+        return m["folder.download.as_zip"]({ path: filesCtx.path.join("/") });
     });
 
     let deletingFolder = $state(false);
@@ -38,7 +37,7 @@
         const folderCtx = ctx();
         if (!folderCtx.folder?.id || !folderCtx.token) return;
 
-        if (!confirm(m["folder.delete.confirm_folder"]())) return;
+        if (!confirm(m["folder.delete.confirm_prompt"]())) return;
 
         deletingFolder = true;
         try {
@@ -61,76 +60,75 @@
     {@const dCtx = decrypted.ctx}
 
     <div>
-        <div class="flex items-center gap-4">
-            <div class="flex flex-col flex-1">
-                <span class="text-3xl font-bold">{dCtx.name}</span>
+        <div class="flex items-center justify-between gap-4">
+            <div class="flex flex-col min-w-0">
+                <span class="text-3xl font-bold truncate">{dCtx.name}</span>
                 <span class="text-muted-foreground">
                     {#if filesCtx.isLoading}
                         Loading...
                     {:else}
-                        {m["folder.files_count"]({count: count.toString()})}
+                        {m["folder.files_count"]({ count: count.toString() })}
                     {/if}
                 </span>
             </div>
 
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 shrink-0">
                 {#if filesCtx.downloadingZip}
-                    <div class="flex items-center gap-3 px-3 py-2 text-xs font-medium rounded-xl bg-card border border-border shadow-sm">
-                        <LoaderCircle class="h-4 w-4 animate-spin text-primary shrink-0"/>
-                        <div class="flex flex-col min-w-32.5">
+                    <div class="flex items-center gap-3 px-3 py-2 text-xs font-medium rounded-xl bg-card border border-border shadow-sm min-w-[210px] justify-between">
+                        <LoaderCircle class="h-4 w-4 animate-spin text-primary shrink-0" />
+                        <div class="flex flex-col flex-1 min-w-0 mx-2">
                             <span class="font-medium truncate text-foreground">
-                                {filesCtx.zipProgress?.status || "..."}
+                                {filesCtx.zipProgress?.status || m["folder.download.preparing"]()}
                             </span>
                             {#if filesCtx.zipProgress && filesCtx.zipProgress.total > 0}
                                 <div class="w-full bg-muted rounded-full h-1 mt-1 overflow-hidden">
-                                    <div
-                                            class="bg-primary h-1 transition-all duration-200"
-                                            style="width: {(filesCtx.zipProgress.current / filesCtx.zipProgress.total) * 100}%"
+                                    <div 
+                                        class="bg-primary h-1 transition-all duration-200" 
+                                        style="width: {(filesCtx.zipProgress.current / filesCtx.zipProgress.total) * 100}%"
                                     ></div>
                                 </div>
                             {/if}
                         </div>
                         <button
-                                type="button"
-                                title={m["common.actions.cancel"]()}
-                                onclick={() => filesCtx.cancelZipDownload()}
-                                class="flex h-6 w-6 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-destructive transition-colors cursor-pointer shrink-0"
+                            type="button"
+                            title={m["folder.download.cancel"]()}
+                            onclick={() => filesCtx.cancelZipDownload()}
+                            class="flex h-6 w-6 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-destructive transition-colors cursor-pointer shrink-0"
                         >
-                            <X class="h-3.5 w-3.5"/>
+                            <X class="h-3.5 w-3.5" />
                         </button>
                     </div>
                 {:else}
                     <button
-                            type="button"
-                            title={downloadTitle}
-                            onclick={() => void filesCtx.downloadZip(dCtx.name)}
-                            class="flex items-center gap-2 px-3.5 py-2 text-sm font-medium rounded-xl bg-card border border-border text-foreground hover:bg-muted transition-colors cursor-pointer shadow-sm"
+                        type="button"
+                        title={downloadTitle}
+                        onclick={() => void filesCtx.downloadZip(dCtx.name)}
+                        class="flex items-center gap-2 px-3.5 py-2 text-sm font-medium rounded-xl bg-card border border-border text-foreground hover:bg-muted transition-colors cursor-pointer shadow-sm"
                     >
-                        <Download class="h-4 w-4"/>
+                        <Download class="h-4 w-4" />
                         <span class="hidden sm:inline">Zip</span>
                     </button>
                 {/if}
 
                 {#if ctx().token !== null}
                     <button
-                            type="button"
-                            title={m["folder.delete.folder"]()}
-                            onclick={handleDeleteFolder}
-                            disabled={deletingFolder}
-                            class="flex items-center gap-2 px-3.5 py-2 text-sm font-medium rounded-xl bg-card border border-border text-destructive hover:bg-destructive/10 disabled:opacity-50 transition-colors cursor-pointer shadow-sm"
+                        type="button"
+                        title={m["folder.delete.folder"]()}
+                        onclick={handleDeleteFolder}
+                        disabled={deletingFolder}
+                        class="flex items-center gap-2 px-3.5 py-2 text-sm font-medium rounded-xl bg-card border border-border text-destructive hover:bg-destructive/10 disabled:opacity-50 transition-colors cursor-pointer shadow-sm"
                     >
                         {#if deletingFolder}
-                            <LoaderCircle class="h-4 w-4 animate-spin"/>
+                            <LoaderCircle class="h-4 w-4 animate-spin" />
                         {:else}
-                            <Trash2 class="h-4 w-4"/>
+                            <Trash2 class="h-4 w-4" />
                         {/if}
-
-                        <span class="hidden sm:inline">{m["common.actions.delete"]()}</span>
+                        <span class="hidden sm:inline">{m["folder.delete.action"]()}</span>
                     </button>
                 {/if}
             </div>
         </div>
 
-        <Breadcrumbs/>
+        <Breadcrumbs />
     </div>
 {/if}
