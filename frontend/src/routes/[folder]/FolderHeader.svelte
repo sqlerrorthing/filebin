@@ -1,9 +1,9 @@
 <script lang="ts">
-    import {getEncryptedFolderContext} from "$lib/context/folder.svelte";
+    import {getFolderContext} from "$lib/context/folder.svelte";
     import * as m from "$lib/paraglide/messages";
     import Breadcrumbs from "./Breadcrumbs.svelte";
 
-    const ctx = getEncryptedFolderContext();
+    const ctx = getFolderContext();
 
     const decrypted = $derived.by(() => {
         return ctx().decrypted;

@@ -1,8 +1,8 @@
 <script lang="ts">
     import { page } from "$app/state";
     import {
-        setEncryptedFolderContext,
-        EncryptedFolderContext,
+        setFolderContext,
+        FolderContext,
     } from "$lib/context/folder.svelte";
     import { create } from "@bufbuild/protobuf";
     import {
@@ -54,7 +54,7 @@
           }
         | {
               case: "ctx";
-              ctx: EncryptedFolderContext;
+              ctx: FolderContext;
           } = $state({ case: "loading" });
 
     const loadFolder = async (folderId: FolderId): Promise<Folder | null> => {
@@ -129,7 +129,7 @@
 
             state = {
                 case: "ctx",
-                ctx: new EncryptedFolderContext(
+                ctx: new FolderContext(
                     folder,
                     key,
                     token,

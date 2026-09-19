@@ -1,18 +1,24 @@
 <script lang="ts">
     import Container from "$lib/components/container/Container.svelte";
-    import {type EncryptedFolderContext, setEncryptedFolderContext} from "$lib/context/folder.svelte";
+    import {type FolderContext, getFolderContext, setFolderContext} from "$lib/context/folder.svelte";
     import Bubble from "$lib/components/bubble/Bubble.svelte";
     import FolderHeader from "./FolderHeader.svelte";
     import {onMount} from "svelte";
     import Share from "./Share.svelte";
+    import {FilesContext, setFilesContext} from "$lib/context/files.svelte";
+    import FilesTable from "$lib/components/files-table/FilesTable.svelte";
 
     let {
         ctx = $bindable()
     }: {
-        ctx: EncryptedFolderContext;
+        ctx: FolderContext;
     } = $props();
 
-    setEncryptedFolderContext(() => ctx);
+    setFolderContext(() => ctx);
+    
+    setFilesContext(new FilesContext(
+        getFolderContext()
+    ));
 </script>
 
 <svelte:head>
@@ -23,13 +29,16 @@
 
 <Container>
     {#if ctx.decrypted.state === "decrypted"}
-        <div class="flex gap-2">
+        <div class="flex gap-2 flex-col md:flex-row">
             <div class="flex-1">
                 <FolderHeader/>
+                <div class="mt-2">
+                    <FilesTable />
+                </div>
             </div>
 
             <div>
-                <Share />
+                <Share/>
             </div>
         </div>
     {:else if ctx.decrypted.state === "error"}

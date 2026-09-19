@@ -6,7 +6,7 @@ import type {
 import {folderService} from "$lib/services/folder.service";
 import * as m from "$lib/paraglide/messages";
 
-export class EncryptedFolderContext {
+export class FolderContext {
     folder: Folder = $state()!;
     key: CryptoKey = $state()!;
     token = $state<FolderToken | null>(null);
@@ -70,10 +70,10 @@ export class DecryptedFolderContext {
 
 const EFC = Symbol("EFC");
 
-export const setEncryptedFolderContext = (ctx: () => EncryptedFolderContext) => {
+export const setFolderContext = (ctx: () => FolderContext) => {
     return setContext(EFC, ctx);
 };
 
-export const getEncryptedFolderContext = (): (() => EncryptedFolderContext) => {
-    return getContext<() => EncryptedFolderContext>(EFC);
+export const getFolderContext = (): (() => FolderContext) => {
+    return getContext<() => FolderContext>(EFC);
 };
