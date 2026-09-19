@@ -2,9 +2,10 @@
     import type {Row} from "$lib/components/files-table/types";
     import {getFilesContext} from "$lib/context/files.svelte";
     import {formatBytes} from "$lib/utils";
-    import {Download, Trash2, LoaderCircle, ChevronRight, Trash} from "@lucide/svelte";
+    import {Download, LoaderCircle, ChevronRight, Trash} from "@lucide/svelte";
     import Action from "$lib/components/files-table/Action.svelte";
     import {getFolderContext} from "$lib/context/folder.svelte";
+    import * as m from "$lib/paraglide/messages";
 
     let {row = $bindable()}: {
         row: Row
@@ -19,10 +20,10 @@
     const name = $derived(row.kind === "goUp" ? ".." : row.name);
     const rowType = $derived(
         row.kind === "goUp"
-            ? "Parent directory"
+            ? m["folder.contents.parent"]()
             : row.kind === "folder"
-                ? "Folder"
-                : row.type || "File"
+                ? m["folder.contents.folder"]()
+                : row.type || m["folder.contents.file"]()
     )
 
     function handleClick() {

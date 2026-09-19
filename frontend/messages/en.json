@@ -44,7 +44,6 @@
             "not_found": "Folder not found",
             "failed_to_load_files": "Failed to load files"
         },
-
         "share": {
             "share": {
                 "code": "Code of this folder"
@@ -53,7 +52,11 @@
         "contents": {
             "name": "Name",
             "size": "Size",
-            "actions": "Actions"
+            "actions": "Actions",
+
+            "folder": "Folder",
+            "parent": "Parent directory",
+            "file": "File"
         },
 
         "download": {
