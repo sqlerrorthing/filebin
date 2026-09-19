@@ -91,6 +91,10 @@ export class FilesContext {
         this.state.files.set(file.path, file);
     }
 
+    get isRoot(): boolean {
+        return this.currentPath.length === 0;
+    }
+
     enterFolder(name: string) {
         this.currentPath.push(name);
     }

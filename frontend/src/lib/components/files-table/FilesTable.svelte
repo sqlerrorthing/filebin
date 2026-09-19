@@ -1,20 +1,79 @@
 <script lang="ts">
-    import {getFolderContext} from "$lib/context/folder.svelte";
-    import {getFilesContext} from "$lib/context/files.svelte";
+    import {type FileItem, getFilesContext} from "$lib/context/files.svelte";
+    import {
+        File,
+        FileArchive,
+        FileCode, FileHeadphone,
+        FileImage, FilePlay,
+        FileSpreadsheet,
+        FileText,
+        Folder, type LucideProps
+    } from "@lucide/svelte";
+    import type {Component} from "svelte";
+    import type {Row} from "$lib/components/files-table/types";
+    import RowEntry from "$lib/components/files-table/RowEntry.svelte";
 
     const ctx = getFilesContext();
 
-    const items = $derived.by(() => {
-        return ctx.currentItems;
+    const items = $derived(ctx.currentItems);
+
+    const rows = $derived.by(() => {
+        let result: Row[] = [];
+
+        if (!ctx.isRoot) {
+            result.push({
+                kind: "goUp" as const,
+                icon: Folder
+            });
+        }
+
+        for (const folder of items.folders) {
+            result.push({
+                kind: "folder" as const,
+                icon: Folder,
+                ...folder
+            })
+        }
+
+        for (const file of items.files) {
+            result.push({
+                kind: "file" as const,
+                icon: getFileIcon(file.type),
+                ...file,
+            });
+        }
+
+        return result;
     })
 
-    const folders = $derived.by(() => {
-        return items.folders;
-    })
+    const getFileIcon = (mimeType: string): Component<LucideProps> => {
+        if (mimeType.startsWith("image/")) return FileImage;
+        if (mimeType.startsWith("video/")) return FilePlay;
+        if (mimeType.startsWith("audio/")) return FileHeadphone;
+        if (mimeType.includes("pdf") || mimeType.includes("text/"))
+            return FileText;
+        if (
+            mimeType.includes("zip") ||
+            mimeType.includes("tar") ||
+            mimeType.includes("compressed")
+        )
+            return FileArchive;
+        if (
+            mimeType.includes("json") ||
+            mimeType.includes("javascript") ||
+            mimeType.includes("html") ||
+            mimeType.includes("xml")
+        )
+            return FileCode;
+        if (
+            mimeType.includes("sheet") ||
+            mimeType.includes("excel") ||
+            mimeType.includes("csv")
+        )
+            return FileSpreadsheet;
 
-    const files = $derived.by(() => {
-        return items.files;
-    })
+        return File;
+    }
 </script>
 
 <div class="overflow-hidden border border-solid border-border bg-card rounded-2xl">
@@ -24,31 +83,11 @@
         <span class="text-right">Actions</span>
     </div>
 
-    {#each files as file}
+    {#each rows as _, i}
         <div
                 class="grid grid-cols-[1fr_120px_100px] items-center px-4 py-3 transition-colors hover:bg-muted/50"
         >
-            <div class="flex min-w-0 items-center gap-3">
-                <div
-                        class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted"
-                >
-                    📄
-                </div>
-
-                <div class="min-w-0">
-                    <p class="truncate text-sm font-medium">
-                        {file.name}
-                    </p>
-                </div>
-            </div>
-
-            <span class="text-sm text-muted-foreground">
-                {file.size}
-            </span>
-
-            <div class="flex justify-end gap-1">
-
-            </div>
+            <RowEntry bind:row={rows[i]} />
         </div>
     {/each}
 </div>
