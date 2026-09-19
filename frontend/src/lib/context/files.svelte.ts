@@ -27,6 +27,10 @@ export class FilesContext {
         void this.loadFiles()
     }
 
+    get path(): string[] {
+        return this.currentPath;
+    }
+
     get currentItems() {
         if (this.state.case !== "loaded") {
             return {
@@ -105,6 +109,51 @@ export class FilesContext {
 
     resetPath() {
         this.currentPath = [];
+    }
+
+    async downloadFile(file: FileItem) {
+        const folderId = this.folderCtx()?.folder?.id;
+        const key = this.folderCtx()?.key;
+
+        if (!folderId || !key) return;
+
+        this.downloading.add(file.id);
+        try {
+            const decrypted = await filesService.download(folderId, file.id, key);
+            const blob = new Blob([new Uint8Array(decrypted)], { type: file.type || "application/octet-stream" });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = file.name;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        } catch (e: any) {
+            console.error("Failed to download file:", e);
+        } finally {
+            this.downloading.delete(file.id);
+        }
+    }
+
+    async deleteFile(file: FileItem) {
+        const folderId = this.folderCtx()?.folder?.id;
+        const token = this.folderCtx()?.token;
+
+        if (!folderId || !token) return;
+
+        this.deleting.add(file.id);
+
+        try {
+            await filesService.delete(folderId, token, file.id);
+            if (this.state.case === "loaded") {
+                this.state.files.delete(file.path);
+            }
+        } catch (e: any) {
+            console.error("Failed to delete file:", e);
+        } finally {
+            this.deleting.delete(file.id);
+        }
     }
 
     async loadFiles() {

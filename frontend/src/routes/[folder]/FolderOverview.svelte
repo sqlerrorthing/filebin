@@ -3,7 +3,6 @@
     import {type FolderContext, getFolderContext, setFolderContext} from "$lib/context/folder.svelte";
     import Bubble from "$lib/components/bubble/Bubble.svelte";
     import FolderHeader from "./FolderHeader.svelte";
-    import {onMount} from "svelte";
     import Share from "./Share.svelte";
     import {FilesContext, setFilesContext} from "$lib/context/files.svelte";
     import FilesTable from "$lib/components/files-table/FilesTable.svelte";
@@ -29,10 +28,10 @@
 
 <Container>
     {#if ctx.decrypted.state === "decrypted"}
-        <div class="flex gap-2 flex-col md:flex-row">
+        <div class="flex gap-4 flex-col md:flex-row">
             <div class="flex-1">
                 <FolderHeader/>
-                <div class="mt-2">
+                <div class="mt-4">
                     <FilesTable />
                 </div>
             </div>

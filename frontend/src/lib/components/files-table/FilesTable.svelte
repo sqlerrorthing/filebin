@@ -1,17 +1,24 @@
 <script lang="ts">
-    import {type FileItem, getFilesContext} from "$lib/context/files.svelte";
+    import {getFilesContext} from "$lib/context/files.svelte";
     import {
         File,
         FileArchive,
-        FileCode, FileHeadphone,
-        FileImage, FilePlay,
+        FileCode,
+        FileHeadphone,
+        FileImage,
+        FilePlay,
         FileSpreadsheet,
         FileText,
-        Folder, type LucideProps
+        Folder,
+        FolderOpen,
+        Inbox,
+        LoaderCircle,
+        type LucideProps
     } from "@lucide/svelte";
     import type {Component} from "svelte";
     import type {Row} from "$lib/components/files-table/types";
     import RowEntry from "$lib/components/files-table/RowEntry.svelte";
+    import * as m from "$lib/paraglide/messages";
 
     const ctx = getFilesContext();
 
@@ -23,7 +30,7 @@
         if (!ctx.isRoot) {
             result.push({
                 kind: "goUp" as const,
-                icon: Folder
+                icon: FolderOpen
             });
         }
 
@@ -76,18 +83,42 @@
     }
 </script>
 
-<div class="overflow-hidden border border-solid border-border bg-card rounded-2xl">
-    <div class="grid grid-cols-[1fr_120px_100px] items-center border-b border-border px-4 py-3 text-sm text-muted-foreground">
-        <span>File</span>
-        <span>Size</span>
-        <span class="text-right">Actions</span>
+<div class="overflow-hidden border border-solid border-border bg-card rounded-2xl shadow-sm">
+    <div class="grid grid-cols-[1fr_120px_100px] items-center border-b border-border px-4 py-3 text-xs font-semibold tracking-wider uppercase text-muted-foreground bg-muted/30">
+        <span>{m["folder.contents.name"]()}</span>
+        <span>{m["folder.contents.size"]()}</span>
+        <span class="text-right">{m["folder.contents.actions"]()}</span>
     </div>
 
-    {#each rows as _, i}
-        <div
-                class="grid grid-cols-[1fr_120px_100px] items-center px-4 py-3 transition-colors hover:bg-muted/50"
-        >
-            <RowEntry bind:row={rows[i]} />
+    {#if ctx.isLoading}
+        <div class="flex flex-col items-center justify-center py-16 text-muted-foreground gap-3">
+            <LoaderCircle class="h-6 w-6 animate-spin" />
+            <span class="text-sm font-medium">Loading files...</span>
         </div>
-    {/each}
+    {:else if ctx.error}
+        <div class="flex flex-col items-center justify-center py-16 text-destructive gap-2 px-4 text-center">
+            <span class="text-sm font-medium">Failed to load files</span>
+            <span class="text-xs text-muted-foreground">{ctx.error}</span>
+        </div>
+    {:else if rows.length === 0}
+        <div class="flex flex-col items-center justify-center py-16 text-muted-foreground gap-3">
+            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+                <Inbox class="h-6 w-6" />
+            </div>
+            <div class="flex flex-col items-center gap-1">
+                <span class="text-sm font-medium text-foreground">This folder is empty</span>
+                <span class="text-xs">Upload files to get started</span>
+            </div>
+        </div>
+    {:else}
+        <div class="divide-y divide-border/60">
+            {#each rows as _, i}
+                <div
+                    class="grid grid-cols-[1fr_120px_100px] items-center px-4 transition-colors hover:bg-muted/50"
+                >
+                    <RowEntry bind:row={rows[i]} />
+                </div>
+            {/each}
+        </div>
+    {/if}
 </div>

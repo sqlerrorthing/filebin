@@ -42,6 +42,11 @@
             "share": {
                 "code": "Code of this folder"
             }
+        },
+        "contents": {
+            "name": "Name",
+            "size": "Size",
+            "actions": "Actions"
         }
     },
     "index": {
