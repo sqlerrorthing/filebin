@@ -19,8 +19,10 @@
     import type {Row} from "$lib/components/files-table/types";
     import RowEntry from "$lib/components/files-table/RowEntry.svelte";
     import * as m from "$lib/paraglide/messages";
+    import {getFolderContext} from "$lib/context/folder.svelte";
 
     const ctx = getFilesContext();
+    const folderCtx = getFolderContext();
 
     const items = $derived(ctx.currentItems);
 
@@ -83,7 +85,7 @@
     }
 </script>
 
-<div class="overflow-hidden border border-solid border-border bg-card rounded-2xl shadow-sm">
+<div class="overflow-hidden border border-solid border-border bg-card rounded-2xl">
     <div class="grid grid-cols-[1fr_120px_100px] items-center border-b border-border px-4 py-3 text-xs font-semibold tracking-wider uppercase text-muted-foreground bg-muted/30">
         <span>{m["folder.contents.name"]()}</span>
         <span>{m["folder.contents.size"]()}</span>
@@ -93,11 +95,11 @@
     {#if ctx.isLoading}
         <div class="flex flex-col items-center justify-center py-16 text-muted-foreground gap-3">
             <LoaderCircle class="h-6 w-6 animate-spin" />
-            <span class="text-sm font-medium">Loading files...</span>
+            <span class="text-sm font-medium">{m["folder.loading"]()}</span>
         </div>
     {:else if ctx.error}
         <div class="flex flex-col items-center justify-center py-16 text-destructive gap-2 px-4 text-center">
-            <span class="text-sm font-medium">Failed to load files</span>
+            <span class="text-sm font-medium">{m["folder.errors.failed_to_load_files"]()}</span>
             <span class="text-xs text-muted-foreground">{ctx.error}</span>
         </div>
     {:else if rows.length === 0}
@@ -106,8 +108,10 @@
                 <Inbox class="h-6 w-6" />
             </div>
             <div class="flex flex-col items-center gap-1">
-                <span class="text-sm font-medium text-foreground">This folder is empty</span>
-                <span class="text-xs">Upload files to get started</span>
+                <span class="text-sm font-medium text-foreground">{m["folder.empty"]()}</span>
+                {#if folderCtx().token}
+                    <span class="text-xs">{m["folder.upload_to_get_started"]()}</span>
+                {/if}
             </div>
         </div>
     {:else}

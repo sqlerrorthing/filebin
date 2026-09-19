@@ -45,7 +45,7 @@
 >
     <div class="flex items-center gap-3 py-3 pr-4 overflow-hidden">
         <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted/60 text-foreground group-hover:bg-accent group-hover:text-accent-foreground transition-colors">
-            <row.icon class="h-5 w-5"/>
+            <row.icon class="h-5 w-5" />
         </div>
         <div class="flex flex-col min-w-0">
             <span class="font-medium truncate text-foreground group-hover:text-accent-foreground transition-colors">

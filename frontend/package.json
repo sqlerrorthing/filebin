@@ -44,7 +44,9 @@
         "@inlang/paraglide-js-svelte": "^1.0.3",
         "@lucide/svelte": "^1.28.0",
         "@noble/ciphers": "^2.4.0",
+        "@types/jszip": "^3.4.1",
         "clsx": "^2.1.1",
+        "jszip": "^3.10.2",
         "mode-watcher": "^1.1.0",
         "svelte-sonner": "^1.2.1",
         "tailwind-merge": "^3.6.0"

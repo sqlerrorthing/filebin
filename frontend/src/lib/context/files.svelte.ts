@@ -2,6 +2,7 @@ import type {FileId} from "$lib/grpc/gen/folder/v1/common_pb";
 import type {FolderContext} from "$lib/context/folder.svelte";
 import {getContext, setContext} from "svelte";
 import {filesService} from "$lib/services/files.service";
+import JSZip from "jszip";
 
 export type FilesState =
     | { case: "loading" }
@@ -22,6 +23,10 @@ export class FilesContext {
 
     private readonly deleting = $state(new Set<FileId>());
     private readonly downloading = $state(new Set<FileId>());
+
+    downloadingZip = $state(false);
+    zipProgress = $state<{ current: number; total: number; status: string } | null>(null);
+    private zipAbortController: AbortController | null = null;
 
     constructor(private readonly folderCtx: () => FolderContext) {
         void this.loadFiles()
@@ -136,6 +141,116 @@ export class FilesContext {
         }
     }
 
+    cancelZipDownload() {
+        if (this.zipAbortController) {
+            this.zipAbortController.abort();
+            this.zipAbortController = null;
+        }
+        this.downloadingZip = false;
+        this.zipProgress = null;
+    }
+
+    async downloadZip(defaultFolderName: string = "archive") {
+        if (this.state.case !== "loaded") return;
+        if (this.downloadingZip) return;
+
+        const folderId = this.folderCtx()?.folder?.id;
+        const key = this.folderCtx()?.key;
+        if (!folderId || !key) return;
+
+        const prefix = this.currentPath.length
+            ? this.currentPath.join("/") + "/"
+            : "";
+
+        const filesToZip: FileItem[] = [];
+        for (const file of this.state.files.values()) {
+            if (file.path.startsWith(prefix)) {
+                filesToZip.push(file);
+            }
+        }
+
+        if (filesToZip.length === 0) {
+            return;
+        }
+
+        this.downloadingZip = true;
+        this.zipAbortController = new AbortController();
+        const signal = this.zipAbortController.signal;
+
+        try {
+            const zip = new JSZip();
+            let current = 0;
+            const total = filesToZip.length;
+
+            this.zipProgress = { current, total, status: "Подготовка файлов..." };
+
+            for (const file of filesToZip) {
+                if (signal.aborted) {
+                    throw new Error("Aborted");
+                }
+
+                this.zipProgress = {
+                    current: ++current,
+                    total,
+                    status: `Загрузка ${file.name} (${current}/${total})`,
+                };
+
+                const decrypted = await filesService.download(folderId, file.id, key);
+                const relativePath = file.path.slice(prefix.length);
+                zip.file(relativePath, new Uint8Array(decrypted));
+            }
+
+            if (signal.aborted) {
+                throw new Error("Aborted");
+            }
+
+            this.zipProgress = { current: total, total, status: "Сжатие в ZIP..." };
+
+            const content = await zip.generateAsync(
+                {
+                    type: "blob",
+                    compression: "DEFLATE",
+                    compressionOptions: { level: 6 }
+                },
+                (metadata) => {
+                    if (signal.aborted) return;
+                    this.zipProgress = {
+                        current: total,
+                        total,
+                        status: `Сжатие... ${Math.round(metadata.percent)}%`,
+                    };
+                }
+            );
+
+            if (signal.aborted) {
+                throw new Error("Aborted");
+            }
+
+            const folderName = this.currentPath.length
+                ? this.currentPath[this.currentPath.length - 1]
+                : defaultFolderName;
+            
+            const zipFileName = `${folderName}.zip`;
+
+            const url = window.URL.createObjectURL(content);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = zipFileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        } catch (e: any) {
+            if (e.message !== "Aborted") {
+                console.error("Failed to generate ZIP:", e);
+            }
+        } finally {
+            this.downloadingZip = false;
+            this.zipProgress = null;
+            this.zipAbortController = null;
+        }
+    }
+
     async deleteFile(file: FileItem) {
         const folderId = this.folderCtx()?.folder?.id;
         const token = this.folderCtx()?.token;
@@ -143,7 +258,6 @@ export class FilesContext {
         if (!folderId || !token) return;
 
         this.deleting.add(file.id);
-
         try {
             await filesService.delete(folderId, token, file.id);
             if (this.state.case === "loaded") {

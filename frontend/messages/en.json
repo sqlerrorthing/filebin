@@ -16,12 +16,14 @@
     },
     "common": {
         "actions": {
+            "cancel": "Cancel",
             "close": "Close",
             "confirm": "Confirm",
             "join": "Join",
             "upload": "Upload",
             "copy-code": "Copy code",
-            "copied": "Copied"
+            "copied": "Copied",
+            "delete": "Delete"
         },
         "errors": {
             "generic": "Error: {error}",
@@ -34,10 +36,15 @@
     "folder": {
         "default_name": "Folder",
         "files_count": "{count} files",
+        "loading": "Loading files...",
+        "empty": "This folder is empty",
+        "upload_to_get_started": "Upload files to get started",
         "errors": {
             "cannot_decrypt_folder": "Error while decrypting folder: {error}",
-            "not_found": "Folder not found"
+            "not_found": "Folder not found",
+            "failed_to_load_files": "Failed to load files"
         },
+
         "share": {
             "share": {
                 "code": "Code of this folder"
@@ -47,6 +54,16 @@
             "name": "Name",
             "size": "Size",
             "actions": "Actions"
+        },
+
+        "download": {
+            "all_as_zip": "Download all as .zip",
+            "as_zip": "Download all in {path} as .zip"
+        },
+
+        "delete": {
+            "folder": "Delete folder",
+            "confirm_folder": "Are you sure to delete this folder?"
         }
     },
     "index": {
