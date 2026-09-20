@@ -20,3 +20,16 @@ export function formatBytes(
 
     return `${parseFloat((numBytes / Math.pow(k, i)).toFixed(dm))} ${unit}`;
 }
+
+export function formatSpeed(bytesPerSecond: number): string {
+    if (!bytesPerSecond || bytesPerSecond <= 0) return "0 B/s";
+    return `${formatBytes(bytesPerSecond)}/s`;
+}
+
+export function formatEta(seconds: number): string {
+    if (!seconds || !isFinite(seconds) || seconds <= 0) return "0s";
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    if (mins === 0) return `${secs}s`;
+    return `${mins}m ${secs}s`;
+}

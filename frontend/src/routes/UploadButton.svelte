@@ -1,6 +1,8 @@
 <script lang="ts">
     import * as m from "$lib/paraglide/messages";
     import MoveUpRight from "@lucide/svelte/icons/move-up-right";
+    import FolderUp from "@lucide/svelte/icons/folder-up";
+    import Upload from "@lucide/svelte/icons/upload";
     import ActionButton from "./ActionButton.svelte";
     import FilesSelector from "$lib/components/upload/FilesSelector.svelte";
     import { SelectedBy } from "$lib/types/files";
@@ -16,16 +18,34 @@
     let isDragging = $state(false);
     let selector = $state<FilesSelector | null>(null);
     let loading = $state(false);
+    let showMenu = $state(false);
 
     const createFolderAndQueueFiles = async (
-        files: FileList | File[],
+        inputFiles: { file: File; path: string }[] | FileList | File[],
         by: SelectedBy
     ) => {
         if (by === SelectedBy.DROP) {
             isDragging = false;
         }
 
-        if (!files || files.length === 0) {
+        let fileItems: { file: File; path: string }[] = [];
+        if (Array.isArray(inputFiles)) {
+            if (inputFiles.length > 0 && typeof inputFiles[0] === 'object' && inputFiles[0] !== null && 'file' in inputFiles[0]) {
+                fileItems = inputFiles as { file: File; path: string }[];
+            } else {
+                fileItems = (inputFiles as File[]).map(f => ({
+                    file: f,
+                    path: (f as any).webkitRelativePath || f.name
+                }));
+            }
+        } else {
+            fileItems = Array.from(inputFiles).map(f => ({
+                file: f,
+                path: (f as any).webkitRelativePath || f.name
+            }));
+        }
+
+        if (!fileItems || fileItems.length === 0) {
             return;
         }
 
@@ -53,7 +73,7 @@
                             folder: folder,
                             key: key,
                             token: createFolder.token,
-                            pendingFiles: Array.from(files),
+                            pendingFiles: fileItems,
                         },
                     }
                 );
@@ -80,27 +100,50 @@
 
 <FilesSelector bind:this={selector} onSelect={createFolderAndQueueFiles} />
 
-<ActionButton
-    displayName={m["index.actions.upload.name"]}
-    description={isDragging
-        ? m["index.actions.upload.release-to-upload"]
-        : m["index.actions.upload.description"]}
-    highlight={true}
-    class={cn(
-        "relative",
-        isDragging &&
-            `before:border-accent before:pointer-events-none before:absolute
-            before:inset-1 before:rounded-lg before:border-4
-            before:border-dashed`
-    )}
-    onclick={() => selector?.select()}
-    disabled={loading}
->
-    {#snippet icon()}
-        {#if loading}
-            <LoaderCircle class="animate-spin" />
-        {:else}
-            <MoveUpRight class="h-full w-full" />
-        {/if}
-    {/snippet}
-</ActionButton>
+<div class="relative w-full md:w-84">
+    <ActionButton
+        displayName={m["index.actions.upload.name"]}
+        description={isDragging
+            ? m["index.actions.upload.release-to-upload"]
+            : m["index.actions.upload.description"]}
+        highlight={true}
+        class={cn(
+            "relative w-full",
+            isDragging &&
+                `before:border-accent before:pointer-events-none before:absolute
+                before:inset-1 before:rounded-lg before:border-4
+                before:border-dashed`
+        )}
+        onclick={() => showMenu = !showMenu}
+        disabled={loading}
+    >
+        {#snippet icon()}
+            {#if loading}
+                <LoaderCircle class="animate-spin" />
+            {:else}
+                <MoveUpRight class="h-full w-full" />
+            {/if}
+        {/snippet}
+    </ActionButton>
+
+    {#if showMenu}
+        <div class="absolute left-0 right-0 top-full mt-2 z-20 bg-card border border-border rounded-xl shadow-lg p-1.5 flex flex-col gap-1">
+            <button
+                type="button"
+                onclick={() => { showMenu = false; selector?.selectFiles(); }}
+                class="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-muted text-sm font-medium text-foreground transition-colors cursor-pointer text-left w-full"
+            >
+                <Upload class="h-4 w-4 text-primary" />
+                <span>{m["common.actions.choose.files"]()}</span>
+            </button>
+            <button
+                type="button"
+                onclick={() => { showMenu = false; selector?.selectFolder(); }}
+                class="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-muted text-sm font-medium text-foreground transition-colors cursor-pointer text-left w-full"
+            >
+                <FolderUp class="h-4 w-4 text-primary" />
+                <span>{m["common.actions.choose.folder"]()}</span>
+            </button>
+        </div>
+    {/if}
+</div>

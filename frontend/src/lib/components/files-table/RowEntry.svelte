@@ -7,7 +7,7 @@
     import {getFolderContext} from "$lib/context/folder.svelte";
     import * as m from "$lib/paraglide/messages";
 
-    let {row = $bindable()}: {
+    let {row}: {
         row: Row
     } = $props();
 

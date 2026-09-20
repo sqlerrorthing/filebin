@@ -6,6 +6,9 @@
     import Share from "./Share.svelte";
     import {FilesContext, setFilesContext} from "$lib/context/files.svelte";
     import FilesTable from "$lib/components/files-table/FilesTable.svelte";
+    import UploadZone from "./UploadZone.svelte";
+    import {page} from "$app/state";
+    import {onMount} from "svelte";
 
     let {
         ctx = $bindable()
@@ -15,9 +18,15 @@
 
     setFolderContext(() => ctx);
     
-    setFilesContext(new FilesContext(
-        getFolderContext()
-    ));
+    const filesCtx = new FilesContext(getFolderContext());
+    setFilesContext(filesCtx);
+
+    onMount(() => {
+        const pageState = page.state as { pendingFiles?: File[] } | undefined;
+        if (pageState?.pendingFiles && pageState.pendingFiles.length > 0) {
+            void filesCtx.uploadFiles(pageState.pendingFiles);
+        }
+    });
 </script>
 
 <svelte:head>
@@ -32,6 +41,7 @@
             <div class="flex-1">
                 <FolderHeader/>
                 <div class="mt-4">
+                    <UploadZone />
                     <FilesTable />
                 </div>
             </div>

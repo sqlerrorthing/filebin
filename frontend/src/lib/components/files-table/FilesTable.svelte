@@ -120,7 +120,7 @@
                 <div
                     class="grid grid-cols-[1fr_120px_100px] items-center px-4 transition-colors hover:bg-muted/50"
                 >
-                    <RowEntry bind:row={rows[i]} />
+                    <RowEntry row={rows[i]} />
                 </div>
             {/each}
         </div>

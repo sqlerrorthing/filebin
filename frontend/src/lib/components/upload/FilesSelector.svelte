@@ -6,12 +6,13 @@
         onSelect,
     }: {
         onSelect: (
-            files: FileList | File[],
+            files: { file: File; path: string }[] | FileList | File[],
             by: SelectedBy
         ) => void | Promise<void>;
     } = $props();
 
     let fileInput = $state<HTMLInputElement | null>(null);
+    let folderInput = $state<HTMLInputElement | null>(null);
 
     const getExtensionFromMime = (mime: string): string => {
         switch (mime) {
@@ -119,15 +120,101 @@
     const onFileSelect = (event: Event) => {
         const input = event.target as HTMLInputElement;
         if (input.files) {
-            onSelect(input.files, SelectedBy.CHOOSE);
+            const items = Array.from(input.files).map(f => ({
+                file: f,
+                path: (f as any).webkitRelativePath || f.name
+            }));
+            onSelect(items, SelectedBy.CHOOSE);
+            input.value = "";
         }
     };
 
-    const handleDrop = (event: DragEvent) => {
-        event.preventDefault();
-        if (event.dataTransfer?.files) {
-            onSelect(event.dataTransfer.files, SelectedBy.DROP);
+    const onFolderSelect = (event: Event) => {
+        const input = event.target as HTMLInputElement;
+        if (input.files) {
+            const items = Array.from(input.files).map(f => ({
+                file: f,
+                path: (f as any).webkitRelativePath || f.name
+            }));
+            onSelect(items, SelectedBy.CHOOSE);
+            input.value = "";
         }
+    };
+
+    const getAllFileEntries = async (dataTransferItemList: DataTransferItemList): Promise<{ file: File; path: string }[]> => {
+        let files: { file: File; path: string }[] = [];
+        
+        const readEntry = async (entry: FileSystemEntry, path = ""): Promise<void> => {
+            if (entry.isFile) {
+                const fileEntry = entry as FileSystemFileEntry;
+                await new Promise<void>((resolve) => {
+                    fileEntry.file((file) => {
+                        files.push({ file, path: path + file.name });
+                        resolve();
+                    });
+                });
+            } else if (entry.isDirectory) {
+                const dirEntry = entry as FileSystemDirectoryEntry;
+                const reader = dirEntry.createReader();
+                const readBatch = async (): Promise<void> => {
+                    return new Promise<void>((resolve) => {
+                        reader.readEntries(async (entries) => {
+                            if (entries.length === 0) {
+                                resolve();
+                                return;
+                            }
+                            for (const entry of entries) {
+                                await readEntry(entry, path + dirEntry.name + "/");
+                            }
+                            await readBatch();
+                            resolve();
+                        });
+                    });
+                };
+                await readBatch();
+            }
+        };
+
+        for (let i = 0; i < dataTransferItemList.length; i++) {
+            const item = dataTransferItemList[i];
+            if (item.kind === "file") {
+                const entry = (item as any).webkitGetAsEntry?.();
+                if (entry) {
+                    await readEntry(entry, "");
+                } else {
+                    const file = item.getAsFile();
+                    if (file) {
+                        files.push({ file, path: file.name });
+                    }
+                }
+            }
+        }
+
+        return files;
+    };
+
+    const handleDrop = async (event: DragEvent) => {
+        event.preventDefault();
+        if (event.dataTransfer?.items) {
+            const items = await getAllFileEntries(event.dataTransfer.items);
+            if (items.length > 0) {
+                onSelect(items, SelectedBy.DROP);
+            }
+        } else if (event.dataTransfer?.files) {
+            const items = Array.from(event.dataTransfer.files).map(f => ({
+                file: f,
+                path: (f as any).webkitRelativePath || f.name
+            }));
+            onSelect(items, SelectedBy.DROP);
+        }
+    };
+
+    export const selectFiles = () => {
+        fileInput?.click();
+    };
+
+    export const selectFolder = () => {
+        folderInput?.click();
     };
 
     export const select = () => {
@@ -150,5 +237,14 @@
     multiple
     bind:this={fileInput}
     onchange={onFileSelect}
+    class="hidden"
+/>
+
+<input
+    type="file"
+    webkitdirectory
+    multiple
+    bind:this={folderInput}
+    onchange={onFolderSelect}
     class="hidden"
 />

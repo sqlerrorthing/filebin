@@ -17,13 +17,22 @@
     "common": {
         "actions": {
             "cancel": "Cancel",
+            "cancel_all": "Cancel all",
             "close": "Close",
             "confirm": "Confirm",
             "join": "Join",
             "upload": "Upload",
             "copy-code": "Copy code",
             "copied": "Copied",
-            "delete": "Delete"
+            "delete": "Delete",
+            "done": "Done",
+            "clear": "Clear",
+            "retry_all": "Retry all",
+            "retry": "Retry",
+            "choose": {
+                "files": "Choose files",
+                "folder": "Choose folder"
+            }
         },
         "errors": {
             "generic": "Error: {error}",
@@ -32,6 +41,10 @@
                 "invalid": "Provided encryption key is invalid"
             }
         }
+    },
+    "file": {
+        "loading": "Loading...",
+        "uploading": "Uploading ({progress}%)"
     },
     "folder": {
         "default_name": "Folder",
@@ -68,7 +81,15 @@
             "compressing_percent": "Compressing... {percent}%",
             "cancel": "Cancel"
         },
-
+        "upload": {
+            "title": "Press for upload or drag and drop files/folders here",
+            "overall_progress": "Total progress ({completed} of {total} files)",
+            "failed": {
+                "total": "Failed uploads ({count})",
+                "detailed": "Failed to upload {count} files",
+                "and": "And {count} files..."
+            }
+        },
         "delete": {
             "folder": "Delete folder",
             "confirm_folder": "Are you sure to delete this folder?",
