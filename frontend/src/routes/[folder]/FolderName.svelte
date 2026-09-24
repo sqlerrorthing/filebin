@@ -67,37 +67,37 @@
 
 <div class="flex items-center gap-3">
     {#if activeFolder.decrypted}
-        {#if activeFolder.token}
-            <div class="relative flex items-center">
-                <input
-                    type="text"
-                    bind:value={activeFolder.decrypted.name}
-                    oninput={handleInput}
-                    class="border-b-2 bg-transparent px-1 text-2xl font-bold
-                        transition-colors outline-none hover:border-gray-300
-                        focus:border-blue-500"
-                />
+        <!--{#if activeFolder.token}-->
+        <!--    <div class="relative flex items-center">-->
+        <!--        <input-->
+        <!--            type="text"-->
+        <!--            bind:value={activeFolder.decrypted.name}-->
+        <!--            oninput={handleInput}-->
+        <!--            class="border-b-2 bg-transparent px-1 text-2xl font-bold-->
+        <!--                transition-colors outline-none hover:border-gray-300-->
+        <!--                focus:border-blue-500"-->
+        <!--        />-->
 
-                {#if isSyncing}
-                    <LoaderCircle
-                        class="absolute -right-6 h-4 w-4 animate-spin
-                            text-gray-500"
-                    />
-                {:else}
-                    <Pencil
-                        class="absolute -right-6 h-4 w-4 text-gray-400 opacity-0
-                            hover:opacity-100"
-                    />
-                {/if}
-            </div>
+        <!--        {#if isSyncing}-->
+        <!--            <LoaderCircle-->
+        <!--                class="absolute -right-6 h-4 w-4 animate-spin-->
+        <!--                    text-gray-500"-->
+        <!--            />-->
+        <!--        {:else}-->
+        <!--            <Pencil-->
+        <!--                class="absolute -right-6 h-4 w-4 text-gray-400 opacity-0-->
+        <!--                    hover:opacity-100"-->
+        <!--            />-->
+        <!--        {/if}-->
+        <!--    </div>-->
 
-            {#if syncError}
-                <span class="ml-4 text-sm text-red-500">{syncError}</span>
-            {/if}
-        {:else}
+        <!--    {#if syncError}-->
+        <!--        <span class="ml-4 text-sm text-red-500">{syncError}</span>-->
+        <!--    {/if}-->
+        <!--{:else}-->
             <h1 class="px-1 text-2xl font-bold">
                 {activeFolder.decrypted.name}
             </h1>
-        {/if}
+        <!--{/if}-->
     {/if}
 </div>
