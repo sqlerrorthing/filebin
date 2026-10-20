@@ -95,9 +95,9 @@
         <!--        <span class="ml-4 text-sm text-red-500">{syncError}</span>-->
         <!--    {/if}-->
         <!--{:else}-->
-            <h1 class="px-1 text-2xl font-bold">
-                {activeFolder.decrypted.name}
-            </h1>
+        <h1 class="px-1 text-2xl font-bold">
+            {activeFolder.decrypted.name}
+        </h1>
         <!--{/if}-->
     {/if}
 </div>
