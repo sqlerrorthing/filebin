@@ -22,7 +22,7 @@ tokio = { version = "1.52.3", features = ["macros", "sync"] }
 sea-orm = { version = "2.0.0-rc.41", features = ["sqlx-postgres", "runtime-tokio"] }
 sea-orm-migration = "2.0.0-rc.41"
 chrono = { version = "0.4.45", features = ["serde"] }
-nutype = { version = "0.7.0", features = ["serde", "derive_unchecked"] }
+nutype = { version = "0.8.0", features = ["serde", "derive_unchecked"] }
 serde = { version = "1.0.228", features = ["derive"] }
 hmac = "0.13.0"
 sha2 = "0.11.0"
@@ -38,7 +38,7 @@ aws-sdk-s3 = "1.137.0"
 tokio-util = "0.7.18"
 derive_builder = "0.20.2"
 deadpool-redis = "0.23.0"
-parking_lot = "0.12.5"
+parking_lot = "0.13.0"
 futures = "0.3.32"
 futures-util = "0.3.32"
 futures-core = "0.3.32"
